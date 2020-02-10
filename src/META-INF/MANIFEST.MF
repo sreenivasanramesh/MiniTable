@@ -1,0 +1,77 @@
+Manifest-Version: 1.0
+
+Name: global/AttrOperator.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: gOOrzOpaERRZoNEJ+fu094uvjNo=
+MD5-Digest: KBM2bTYfCrpN4fhy+oOw0A==
+
+Name: global/AttrType.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: UY03V4eaOBbHeJAmdne9SxLdAaQ=
+MD5-Digest: /123JeLsJpKWI52N5aFxVA==
+
+Name: global/Catalogglobal.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: pcp95PhWrpXJIBZB1AhMuUi6x5E=
+MD5-Digest: zwQPQ3W1yZynlvjIIXVVTA==
+
+Name: global/Convert.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: lcLeldz3ck7HlbF8bN6IGlBOQKg=
+MD5-Digest: Cu/wk2WFw2Il0vloVYrB6w==
+
+Name: global/ExtendedSystemDefs.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: o52PLV5JhuPtCALmJ1QvK5tuLzs=
+MD5-Digest: 6kSvpyMUaTUnDSHsDvN/TQ==
+
+Name: global/Flags.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: biFkkf1e3hTC32cjpJrZunzwjwk=
+MD5-Digest: eTRzq7WDjXDBaMEY+7WpnQ==
+
+Name: global/GlobalConst.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: GudAyPJgzM7pW9eFO6A9QVKNefE=
+MD5-Digest: uyRE/6I9Gbye/ydFrefb7g==
+
+Name: global/IndexType.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: ERudwoaMMvXPBsE4W9TxbIEXuLU=
+MD5-Digest: Lwg6411lS+KG6RW4RELhvA==
+
+Name: global/LogicalOperator.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: r2Vfe8GajC2IIg+QMSLuGuVmSGY=
+MD5-Digest: 2KaP5ssyiyxrI8OOnl8dKA==
+
+Name: global/PageId.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: zYsPDAyN1lIpgS55owSg10mYBi0=
+MD5-Digest: JQp8N5KIZIWfLMA5MoActQ==
+
+Name: global/RID.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: ObTMLhy3syvFlS1ElmIwauC156c=
+MD5-Digest: j/ZaQPbytUDnm+J8U1ltQg==
+
+Name: global/SelectType.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: Mg6dmfxiYdVEdron9V0tePgsjEU=
+MD5-Digest: Z+tE5ZEVM6HRPWW5JB8Upw==
+
+Name: global/SystemDefs.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: 1Eln3Ei6gNB6w4usW7THPeUSXss=
+MD5-Digest: bnZiWgp38+L9sN/3P2nS8g==
+
+Name: global/TupleOrder.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: nvy3mVrF6MAUIQ/HKnkZQSrRSDQ=
+MD5-Digest: jmmrsfWWaIvjq3nQNU9Dlg==
+
+Name: chainexception/ChainException.class
+Digest-Algorithms: SHA MD5 
+SHA-Digest: fVq2cUqDqi8sHeKzMiGiP5nBsIk=
+MD5-Digest: V/3PvyHR+lb25rjLCSONLw==
+

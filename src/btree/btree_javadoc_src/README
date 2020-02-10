@@ -1,0 +1,11 @@
+The files here are the ones used to create the javadoc
+and src for the btree assignment.  The code is definitely
+NOT usable due to all the manipulation for preparing
+the documentation.
+
+Note that the exceptions thrown in IndexFile and IndexFileScan
+are deleted to give students the freedom to throw their own
+exceptions when implementing BTIndexPage and BTLeafPage.
+
+Only the *.class files and IndexFile.java IndexFileScan.java
+are given out, acompanied with the javadoc documentation.

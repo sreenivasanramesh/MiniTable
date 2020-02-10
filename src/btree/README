@@ -1,0 +1,7 @@
+The javadoc and assign/src have to be provided with care
+since we don't have want to give out the secret.  Depending
+on what is to be assigned, this directory has to be moved
+around a bit while preparing the assignment.
+
+The code that is currently used to create the assignment
+is under btree_javadoc_src
