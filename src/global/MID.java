@@ -6,6 +6,22 @@ public class MID {
     private int slotNo;
     private PageId pageNo = new PageId();
 
+    public int getSlotNo() {
+        return slotNo;
+    }
+
+    public void setSlotNo(int slotNo) {
+        this.slotNo = slotNo;
+    }
+
+    public PageId getPageNo() {
+        return pageNo;
+    }
+
+    public void setPageNo(PageId pageNo) {
+        this.pageNo = pageNo;
+    }
+
     public MID(PageId pageNo, int slotNo) {
         this.slotNo = slotNo;
         this.pageNo = pageNo;
