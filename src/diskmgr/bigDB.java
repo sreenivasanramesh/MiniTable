@@ -1,13 +1,17 @@
-/* File DB.java */
+/* File bigDB.java */
 
 package diskmgr;
 
-import java.io.*;
+import global.Convert;
+import global.GlobalConst;
+import global.PageId;
+import global.SystemDefs;
 
-import bufmgr.*;
-import global.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 
-public class DB implements GlobalConst {
+public class bigDB implements GlobalConst {
 
 
     private static final int bits_per_page = MAX_SPACE * 8;
@@ -16,7 +20,7 @@ public class DB implements GlobalConst {
     /**
      * Open the database with the given name.
      *
-     * @param name DB_name
+     * @param fname DB_name
      * @throws IOException                I/O errors
      * @throws FileIOException            file I/O error
      * @throws InvalidPageNumberException invalid page number
@@ -74,7 +78,7 @@ public class DB implements GlobalConst {
             FileIOException,
             DiskMgrException {
 
-        name = new String(fname);
+        name = fname;
         num_pages = (num_pgs > 2) ? num_pgs : 2;
 
         File DBfile = new File(name);
@@ -85,7 +89,7 @@ public class DB implements GlobalConst {
         fp = new RandomAccessFile(fname, "rw");
 
         // Make the file num_pages pages long, filled with zeroes.
-        fp.seek((long) (num_pages * MINIBASE_PAGESIZE - 1));
+        fp.seek(num_pages * MINIBASE_PAGESIZE - 1);
         fp.writeByte(0);
 
         // Initialize space map and directory pages.
@@ -150,12 +154,13 @@ public class DB implements GlobalConst {
             throw new InvalidPageNumberException(null, "BAD_PAGE_NUMBER");
 
         // Seek to the correct page
-        fp.seek((long) (pageno.pid * MINIBASE_PAGESIZE));
+        fp.seek(pageno.pid * MINIBASE_PAGESIZE);
 
         // Read the appropriate number of bytes.
         byte[] buffer = apage.getpage();  //new byte[MINIBASE_PAGESIZE];
         try {
             fp.read(buffer);
+            pcounter.readIncrement();
         } catch (IOException e) {
             throw new FileIOException(e, "DB file I/O error");
         }
@@ -180,11 +185,12 @@ public class DB implements GlobalConst {
             throw new InvalidPageNumberException(null, "INVALID_PAGE_NUMBER");
 
         // Seek to the correct page
-        fp.seek((long) (pageno.pid * MINIBASE_PAGESIZE));
+        fp.seek(pageno.pid * MINIBASE_PAGESIZE);
 
         // Write the appropriate number of bytes.
         try {
             fp.write(apage.getpage());
+            pcounter.writeIncrement();
         } catch (IOException e) {
             throw new FileIOException(e, "DB file I/O error");
         }
@@ -335,7 +341,7 @@ public class DB implements GlobalConst {
      * with run size = 1
      *
      * @param start_page_num the start pageId to be deallocate
-     * @param run_size       the number of pages to be deallocated
+     * @param start_page_num the number of pages to be deallocated
      * @throws InvalidRunSizeException    invalid run size
      * @throws InvalidPageNumberException invalid page number
      * @throws FileIOException            file I/O error
@@ -792,7 +798,7 @@ public class DB implements GlobalConst {
         try {
             SystemDefs.JavabaseBM.pinPage(pageno, page, emptyPage);
         } catch (Exception e) {
-            throw new DiskMgrException(e, "DB.java: pinPage() failed");
+            throw new DiskMgrException(e, "bigDB.java: pinPage() failed");
         }
 
     } // end of pinPage
@@ -808,7 +814,7 @@ public class DB implements GlobalConst {
         try {
             SystemDefs.JavabaseBM.unpinPage(pageno, dirty);
         } catch (Exception e) {
-            throw new DiskMgrException(e, "DB.java: unpinPage() failed");
+            throw new DiskMgrException(e, "bigDB.java: unpinPage() failed");
         }
 
     } // end of unpinPage
