@@ -1243,6 +1243,64 @@ public class Heapfile implements Filetype, GlobalConst {
 
         return true;
     }
+    
+    /** Updates the specified record in the heapfile.
+     * @param mid: the record which needs update
+     * @param newMap: the new content of the record
+     *
+     * @exception InvalidSlotNumberException invalid slot number
+     * @exception InvalidUpdateException invalid update on record
+     * @exception InvalidTupleSizeException invalid tuple size
+     * @exception HFException heapfile exception
+     * @exception HFBufMgrException exception thrown from bufmgr layer
+     * @exception HFDiskMgrException exception thrown from diskmgr layer
+     * @exception Exception other exception
+     * @return ture:update success   false: can't find the record
+     */
+    public boolean updateMap(MID mid, Map newMap)
+            throws InvalidSlotNumberException,
+            InvalidUpdateException,
+            InvalidTupleSizeException,
+            HFException,
+            HFDiskMgrException,
+            HFBufMgrException,
+            Exception {
+        boolean status;
+        HFPage dirPage = new HFPage();
+        PageId currentDirPageId = new PageId();
+        HFPage dataPage = new HFPage();
+        PageId currentDataPageId = new PageId();
+        RID currentDataPageRid = new RID();
+        
+        status = _findDataPageMap(mid,
+                currentDirPageId, dirPage,
+                currentDataPageId, dataPage,
+                currentDataPageRid);
+        
+        if (status != true) return status;    // record not found
+        
+        Map amap = dataPage.returnMap(mid);
+        
+        // Assume update a record with a record whose length is equal to
+        // the original record
+        
+        if (newMap.getMapLength() != amap.getMapLength()) {
+            unpinPage(currentDataPageId, false /*undirty*/);
+            unpinPage(currentDirPageId, false /*undirty*/);
+            
+            throw new InvalidUpdateException(null, "invalid record update");
+            
+        }
+        
+        // new copy of this record fits in old space;
+        amap.copyMap(newMap);
+        unpinPage(currentDataPageId, true /* = DIRTY */);
+        
+        unpinPage(currentDirPageId, false /*undirty*/);
+        
+        
+        return true;
+    }
 
 
     /** Read record from file, returning pointer and length.
