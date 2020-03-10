@@ -1,5 +1,7 @@
 package BigT;
 
+import btree.BTreeFile;
+import btree.DeleteFashion;
 import btree.StringKey;
 import global.AttrType;
 import global.MID;
@@ -29,8 +31,9 @@ public class bigT {
     }
 
     public static void main(String[] args) throws Exception {
-        new SystemDefs("/Users/rakeshr/test.db", 10, NUMBUF, "Clock");
-
+        boolean isNewDb = false;
+        int numPages = isNewDb ? 10 : 0;
+        new SystemDefs("/Users/sumukhashwinkamath/test.db", numPages, NUMBUF, "LRU");
         bigT bigT = new bigT("test1", 2);
     }
 
@@ -78,7 +81,7 @@ public class bigT {
                     map1.setColumnLabel("b");
                     map1.setTimeStamp(6);
                     map1.setValue("d");
-                    Heapfile hf = new Heapfile("/Users/rakeshr/test1.db");
+                    Heapfile hf = new Heapfile(this.name + "3.heap");
 //                    MID mid = hf.insertMap(map.getMapByteArray());
 //                    MID mid2 = hf.insertMap(map1.getMapByteArray());
 //
@@ -92,8 +95,8 @@ public class bigT {
                     StringKey str = new StringKey("test1");
 //                    RID rid = new RID(mid.getPageNo(), mid.getSlotNo());
 //                    RID rid2 = new RID(mid.getPageNo(), mid.getSlotNo());
-                    MID mid = new MID(new PageId(3), 0);
-                    MID mid2 = new MID(new PageId(3), 1);
+                    MID mid = new MID(new PageId(7), 0);
+                    MID mid2 = new MID(new PageId(7), 1);
 //                    bTreeFile.insert(new StringKey("1"), rid);
 //                    bTreeFile.insert(new StringKey("a"), rid2);
 
