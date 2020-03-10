@@ -13,10 +13,11 @@ public class Map implements GlobalConst {
 
     public static final int MAX_SIZE = MINIBASE_PAGESIZE;
     private static final short OFFSET_INCREMENT = 4;
-    private static final short ROW_FIELD_NUMBER = 1;
-    private static final short COLUMN_FIELD_NUMBER = 2;
-    private static final short TIMESTAMP_FIELD_NUMBER = 3;
-    private static final short VALUE_FIELD_NUMBER = 4;
+    private static final short FIELD_LENGTH = 4;
+    private static final short ROW_POSITION = 0;
+    private static final short COLUMN_POSITION = 4;
+    private static final short TIMESTAMP_POSITION = 8;
+    private static final short VALUE_POSITION = 12;
     private byte[] data;
     private int mapOffset;
     private int mapLength;
@@ -90,10 +91,10 @@ public class Map implements GlobalConst {
     }
 
     public String getStringField(short fieldNumber) throws IOException, FieldNumberOutOfBoundException {
-        if (fieldNumber == ROW_FIELD_NUMBER || fieldNumber == COLUMN_FIELD_NUMBER || fieldNumber == VALUE_FIELD_NUMBER) {
-            return Convert.getStrValue(this.fieldOffset[fieldNumber - 1], this.data, this.fieldOffset[fieldNumber] - this.fieldOffset[fieldNumber - 1]);
+        if (fieldNumber == 3) {
+            throw new FieldNumberOutOfBoundException(null, "MAP: INVALID_FIELD PASSED");
         } else {
-            throw new FieldNumberOutOfBoundException(null, "MAP: MAP_FIELD_NUMBER_OUT_OF_BOUND");
+            return Convert.getStrValue(this.mapOffset + fieldNumber * FIELD_LENGTH, this.data, FIELD_LENGTH);
         }
     }
 
@@ -109,35 +110,35 @@ public class Map implements GlobalConst {
     }
 
     public String getRowLabel() throws IOException {
-        return Convert.getStrValue(this.fieldOffset[ROW_FIELD_NUMBER - 1], this.data, this.fieldOffset[ROW_FIELD_NUMBER] - this.fieldOffset[ROW_FIELD_NUMBER - 1]);
+        return Convert.getStrValue(this.mapOffset + ROW_POSITION, this.data, FIELD_LENGTH);
     }
 
     public void setRowLabel(String rowLabel) throws IOException {
-        Convert.setStrValue(rowLabel, this.fieldOffset[ROW_FIELD_NUMBER - 1], this.data);
+        Convert.setStrValue(rowLabel, this.mapOffset + ROW_POSITION, this.data);
     }
 
     public String getColumnLabel() throws IOException {
-        return Convert.getStrValue(this.fieldOffset[COLUMN_FIELD_NUMBER - 1], this.data, this.fieldOffset[COLUMN_FIELD_NUMBER] - this.fieldOffset[COLUMN_FIELD_NUMBER - 1]);
+        return Convert.getStrValue(this.mapOffset + COLUMN_POSITION, this.data, FIELD_LENGTH);
     }
 
     public void setColumnLabel(String columnLabel) throws IOException {
-        Convert.setStrValue(columnLabel, this.fieldOffset[COLUMN_FIELD_NUMBER - 1], this.data);
+        Convert.setStrValue(columnLabel, this.mapOffset + COLUMN_POSITION, this.data);
     }
 
     public int getTimeStamp() throws IOException {
-        return Convert.getIntValue(this.fieldOffset[TIMESTAMP_FIELD_NUMBER - 1], this.data);
+        return Convert.getIntValue(this.mapOffset + TIMESTAMP_POSITION, this.data);
     }
 
     public void setTimeStamp(int timeStamp) throws IOException {
-        Convert.setIntValue(timeStamp, this.fieldOffset[TIMESTAMP_FIELD_NUMBER - 1], this.data);
+        Convert.setIntValue(timeStamp, this.mapOffset + TIMESTAMP_POSITION, this.data);
     }
 
     public String getValue() throws IOException {
-        return Convert.getStrValue(this.fieldOffset[VALUE_FIELD_NUMBER - 1], this.data, this.fieldOffset[VALUE_FIELD_NUMBER] - this.fieldOffset[VALUE_FIELD_NUMBER - 1]);
+        return Convert.getStrValue(this.mapOffset + VALUE_POSITION, this.data, FIELD_LENGTH);
     }
 
     public void setValue(String value) throws IOException {
-        Convert.setStrValue(value, this.fieldOffset[VALUE_FIELD_NUMBER - 1], this.data);
+        Convert.setStrValue(value, this.mapOffset + VALUE_POSITION, this.data);
     }
 
     public byte[] getMapByteArray() {
@@ -170,6 +171,7 @@ public class Map implements GlobalConst {
 
     // TODO: This method needs to be altered to set a proper header
     public void setHeader(short numFields, AttrType[] types) throws InvalidMapSizeException, IOException, InvalidTypeException {
+
 
         if ((numFields + 2) * 2 > MAX_SIZE) {
             throw new InvalidMapSizeException(null, "MAP: MAP TOO BIG ERROR");

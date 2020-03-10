@@ -14,52 +14,67 @@ import global.AttrType;
 import BigT.Stream;
 
 import java.io.IOException;
+import java.io.File;
+import java.util.Arrays;
 
 public class bigT {
 
     private int type;
-    private Heapfile heapfile;
+    private String name;
+    private String indexNames[];
+    protected Heapfile heapfile;
 
 
 
     // Initialize the big table.typeis an integer be-tween 1 and 5 and the different types will correspond to different clustering and indexing strategies youwill use for the bigtable.
     void bigT(String name, int type) throws HFException, IOException, HFDiskMgrException, InvalidPageNumberException, DiskMgrException, FileIOException, HFBufMgrException {
         this.type = type;
-        Stream stream;
-        MID mid;
+        this.name = name;
 
         try {
-            PageId pageid = SystemDefs.JavabaseDB.get_file_entry(name + ".hfile");
-            if (pageid == null) {
-                throw new Exception("Heap file does not exist");
-            }
-            //create a new object fot the heap file
+
             this.heapfile = new Heapfile(name + ".hfile");
-
-            //TODO: this needs to be added in heap file to work with map representation
-            // ie it should return a stream object
-            stream = heapfile.openStream();
-            mid = new MID();
-            //TODO: get next with MID has to be added to Stream.java
-            Map header = stream.getNext(Mid mid);
-            //TODO: need to update setHeader
-
-            AttrType[] atype = new AttrType[] {new AttrType(0),
-                                               new AttrType(0),
-                                               new AttrType(1),
-                                               new AttrType(0)};
-            header.setHeader((short) 4, atype);
-
-
-
-
-
+            createIndex();
 
         }
-        catch (Exception e){
+        catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
+
+
+
+    private void createIndex() throws Exception {
+        switch (this.type) {
+            case 1:
+                this.indexNames = new String[]{};
+                break;
+            case 2:
+                this.indexNames = new String[]{this.name + "_row.idx"};
+                break;
+            case 3:
+                this.indexNames = new String[]{this.name + "_column.idx"};
+                break;
+            case 4:
+                this.indexNames = new String[]{this.name + "_column_row.idx", this.name + "_timestamp.idx"};
+                break;
+            case 5:
+                this.indexNames = new String[]{this.name + "_row_value.idx", this.name + "_timestamp.idx"};
+                break;
+            default:
+                throw new Exception("Invalid Type Passed");
+        }
+        for (String indexName : this.indexNames) {
+            File file = new File(indexName);
+            if (!file.exists()) {
+                String[] tempArray = indexName.substring(0, indexName.lastIndexOf('.')).split("_");
+                String[] indexArray = Arrays.copyOfRange(tempArray, 1, tempArray.length);
+                for (String index : indexArray) {
+                    // Btree Index to create Index
+                }
+            }
+        }
     }
 
     //Delete the bigtable from the database.
@@ -87,6 +102,36 @@ public class bigT {
     // TODO: insert and return MID
     MID insertMap(byte[] mapPtr) {
         return new MID();
+    }
+
+
+    public Stream openStream(int orderType, java.lang.String rowFilter, java.lang.String columnFilter, java.lang.String valueFilter){
+
+        try {
+            switch (orderType) {
+                case 1:
+                    //results are row, col, ts
+                    break;
+                case 2:
+                    //col, row, ts
+                    break;
+                case 3:
+                    //row and ts
+                    break;
+                case 4:
+                    //col, ts
+                    break;
+                case 5:
+                    //TS
+                    break;
+                default:
+                    throw new Exception("Invalid OrderType Passed");
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
 }

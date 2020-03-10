@@ -1,14 +1,13 @@
 package BigT;
 
+import diskmgr.Page;
 import global.GlobalConst;
 import global.MID;
 import global.PageId;
 import global.SystemDefs;
-import heap.HFBufMgrException;
-import heap.Heapfile;
-import heap.HFPage;
-
 import java.io.IOException;
+import heap.*;
+import bufmgr.*;
 
 public class Stream implements GlobalConst  {
 
@@ -16,45 +15,15 @@ public class Stream implements GlobalConst  {
 	Initialize a stream of maps on bigtable
 	*/
 
-    /**
-     * The heapfile we are using.
-     */
-    private Heapfile _hf;
 
-    /**
-     * PageId of current directory page (which is itself an HFPage)
-     */
+    private Heapfile heapfile;
+
     private PageId dirpageId = new PageId();
-
-    /**
-     * pointer to in-core data of dirpageId (page is pinned)
-     */
-    private HFPage dirpage = new HFPage();
-
-    /**
-     * Map ID of the DataPageInfo struct (in the directory page) which
-     * describes the data page where our current map is present.
-     */
-    private MID datapageMid = new MID();
-
-    /**
-     * the actual PageId of the data page with the current record
-     */
+    private HFPage dirpage = new HFPage(); //pointer to pinned dir page
+    private MID mid = new MID();
     private PageId datapageId = new PageId();
-
-    /**
-     * in-core copy (pinned) of the same
-     */
-    private HFPage datapage = new HFPage();
-
-    /**
-     * map ID of the current map (from the current data page)
-     */
+    private HFPage datapage = new HFPage(); //pointer to pinned data page
     private MID currentMid = new MID();
-
-    /**
-     * Status of next user status
-     */
     private boolean nextUserStatus;
 
 
@@ -65,10 +34,15 @@ public class Stream implements GlobalConst  {
         int rowCOunt = bigtable.getRowCnt();
         int columnCount = bigtable.getColumnCnt();
 
+        this.heapfile = bigtable.heapfile;
+
+
+
     }
     /*
     Closes the stream object.
     */
+
     public void closeStream() {
         reset();
     }
@@ -76,7 +50,7 @@ public class Stream implements GlobalConst  {
     /*
     Retrieve the next map in the stream
     */
-    public Map getNext(MID MID) throws Exception {
+    public Map getNext(MID mid) throws Exception {
 
         Map nextMap = null;
 
@@ -122,6 +96,96 @@ public class Stream implements GlobalConst  {
 
 
 
+    private boolean firstDataPage()
+            throws InvalidTupleSizeException,
+            IOException {
+
+
+        DataPageInfo dpinfo;
+        Map map = null;
+        Boolean bst;
+
+        /** copy data about first directory page */
+        dirpageId.pid = this.headerfile._firstDirPageId.pid;
+        nextUserStatus = true;
+
+        try{
+            dirpage = new HFPage();
+            pinPage(dirpageId, (Page) dirpage, false);
+            datapageRid = dirpage.firstRecord();
+
+            /** there is a datapage record on the first directory page: */
+            if (datapageRid != null) {
+                map = dirpage.getRecord(datapageRid);
+                //to set datapageId
+                dpinfo = new DataPageInfo(map);
+                datapageId.pid = dpinfo.pageId.pid;
+
+            }
+            else {
+                // the first directory page is the only one which can possibly remain empty
+                // we get the next directory page and check it, unless heapfile is empty
+                PageId nextDirPageId = new PageId();
+                nextDirPageId = dirpage.getNextPage();
+                if (nextDirPageId.pid != INVALID_PAGE) {
+
+                    unpinPage(dirpageId, false);
+                    dirpage = null;
+                    dirpage = new HFPage();
+                    pinPage(nextDirPageId, (Page) dirpage, false);
+
+
+                    /** now try again to read a data record: */
+                    try {
+                        datapageRid = dirpage.firstRecord();
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                        datapageId.pid = INVALID_PAGE;
+                    }
+
+                    if (datapageRid != null) {
+                        map = dirpage.getRecord(datapageRid);
+                        if (map.getLength() != DataPageInfo.size)
+                            return false;
+
+                        dpinfo = new DataPageInfo(map);
+                        datapageId.pid = dpinfo.pageId.pid;
+                    }
+                    else {
+                        // heapfile empty
+                        datapageId.pid = INVALID_PAGE;
+                    }
+                }
+                else {
+                    // heapfile empty
+                    datapageId.pid = INVALID_PAGE;
+                }
+            }
+
+            datapage = null;
+
+            nextDataPage();
+
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return true;
+
+        /** ASSERTIONS:
+         * - first directory page pinned
+         * - this->dirpageId has Id of first directory page
+         * - this->dirpage valid
+         * - if heapfile empty:
+         *    - this->datapage == NULL, this->datapageId==INVALID_PAGE
+         * - if heapfile nonempty:
+         *    - this->datapage == NULL, this->datapageId, this->datapageRid valid
+         *    - first datapage is not yet pinned
+         */
+
+    }
 
 
     /*
@@ -158,17 +222,28 @@ public class Stream implements GlobalConst  {
 
 
     /**
+     * short cut to access the pinPage function in bufmgr package.
+     */
+    private void pinPage(PageId pageno, Page page, boolean emptyPage)
+            throws HFBufMgrException {
+        try {
+            SystemDefs.JavabaseBM.pinPage(pageno, page, emptyPage);
+        } catch (Exception e) {
+            throw new HFBufMgrException(e, "Scan.java: pinPage() failed");
+        }
+    }
+
+    /**
      * short cut to access the unpinPage function in bufmgr package.
-     * //@see bufmgr.unpinPage
      */
     private void unpinPage(PageId pageno, boolean dirty)
             throws HFBufMgrException {
-
         try {
             SystemDefs.JavabaseBM.unpinPage(pageno, dirty);
         } catch (Exception e) {
             throw new HFBufMgrException(e, "Scan.java: unpinPage() failed");
         }
+    }
 
-    } // end of unpinPage
+
 }
