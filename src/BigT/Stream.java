@@ -10,9 +10,9 @@ import bufmgr.*;
 public class Stream extends Scan  {
 
     Heapfile heapfile;
-	/*
-	Initialize a stream of maps on bigtable
-	*/
+    /*
+    Initialize a stream of maps on bigtable
+    */
 
 
     /* Pending */
