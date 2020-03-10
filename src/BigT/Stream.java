@@ -9,10 +9,13 @@ import bufmgr.*;
 
 public class Stream extends Scan  {
 
-    Heapfile heapfile;
     /*
     Initialize a stream of maps on bigtable
     */
+    Heapfile heapfile;
+    String rowFilter;
+    String columnFilter;
+    String valueFilter;
 
 
     /* Pending */
@@ -24,9 +27,20 @@ public class Stream extends Scan  {
         int rowCount = bigtable.getRowCnt();
         int columnCount = bigtable.getColumnCnt();
         this.heapfile = bigtable.heapfile;
+        this.rowFilter = rowFilter;
+        this.columnFilter = columnFilter;
+        this.valueFilter = valueFilter;
+        String star_filter = new String("*");
+        Heapfile heapfile = bigtable.heapfile;
 
+        if (star_filter.equals(rowFilter)) {
+            if (star_filter.equals(columnFilter)) {
+                if(star_filter.equals(valueFilter)) {
+                    // row, col, val = *, * , * - so sequential scan on all elements
+                    super.ScanInit(bigtable.heapfile);
+                }
 
-
+            }
     }
 
 
