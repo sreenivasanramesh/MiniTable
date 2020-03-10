@@ -370,7 +370,7 @@ public class Scan implements GlobalConst {
      * @return true if successful
      *			false if unsuccessful
      */
-    private boolean nextDataPage()
+    protected boolean nextDataPage()
             throws InvalidTupleSizeException,
             IOException {
         DataPageInfo dpinfo;
@@ -608,6 +608,26 @@ public class Scan implements GlobalConst {
         }
 
     } // end of unpinPage
+
+    public boolean getNextUserStatus(){
+        return nextUserStatus;
+    }
+
+    public void setNextUserStatus(boolean userStatus){
+        nextUserStatus = userStatus;
+    }
+
+    public HFPage getDataPage(){
+        return datapage;
+    }
+
+    public RID getUserId(){
+        return userrid;
+    }
+
+    public void setUserId(RID rid){
+        userrid = rid;
+    }
 
 
 }

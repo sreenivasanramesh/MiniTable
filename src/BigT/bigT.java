@@ -1,49 +1,23 @@
 package BigT;
 
-import diskmgr.DiskMgrException;
-import diskmgr.FileIOException;
-import diskmgr.InvalidPageNumberException;
-import global.SystemDefs;
-import heap.HFBufMgrException;
-import heap.HFDiskMgrException;
-import heap.HFException;
-import heap.Heapfile;
-import global.PageId;
 import global.MID;
-import global.AttrType;
-import BigT.Stream;
 
-import java.io.IOException;
 import java.io.File;
 import java.util.Arrays;
 
 public class bigT {
 
-    private int type;
-    private String name;
-    private String indexNames[];
-    protected Heapfile heapfile;
-
+    int type;
+    String name;
+    String indexNames[];
 
 
     // Initialize the big table.typeis an integer be-tween 1 and 5 and the different types will correspond to different clustering and indexing strategies youwill use for the bigtable.
-    void bigT(String name, int type) throws HFException, IOException, HFDiskMgrException, InvalidPageNumberException, DiskMgrException, FileIOException, HFBufMgrException {
+    public void bigT(String name, int type) throws Exception {
         this.type = type;
         this.name = name;
-
-        try {
-
-            this.heapfile = new Heapfile(name + ".hfile");
-            createIndex();
-
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
+        createIndex();
     }
-
-
-
 
     private void createIndex() throws Exception {
         switch (this.type) {
@@ -104,9 +78,7 @@ public class bigT {
         return new MID();
     }
 
-
     public Stream openStream(int orderType, java.lang.String rowFilter, java.lang.String columnFilter, java.lang.String valueFilter){
-
         try {
             switch (orderType) {
                 case 1:
