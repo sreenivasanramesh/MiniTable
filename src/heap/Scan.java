@@ -11,6 +11,7 @@ package heap;
 
 import java.io.*;
 
+import BigT.Map;
 import global.*;
 import bufmgr.*;
 import diskmgr.*;
@@ -106,10 +107,38 @@ public class Scan implements GlobalConst {
         }
 
         userrid = datapage.nextRecord(rid);
-        if (userrid == null) nextUserStatus = false;
-        else nextUserStatus = true;
+        nextUserStatus = userrid != null;
 
         return recptrtuple;
+    }
+
+    /** Retrieves next map based on current MID - sequential
+     *
+     * @param mid
+     * @return map object to corresponding mid.
+     */
+    public Map getNext(MID mid) throws InvalidTupleSizeException, IOException, Exception {
+        Map mapObj = null;
+        if (!nextUserStatus) {
+            nextDataPage();
+        }
+
+        if (datapage == null ) return null;
+
+        mid = new MID(userrid.pageNo, userrid.slotNo);
+        try {
+            mapObj = datapage.getMap(mid);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        MID nextMapId = datapage.nextMap(mid);
+        if (nextMapId == null ) {
+            nextUserStatus = false;
+        } else {
+            nextUserStatus = true;
+            userrid = new RID(nextMapId.getPageNo(), nextMapId.getSlotNo());
+        }
+        return mapObj;
     }
 
 

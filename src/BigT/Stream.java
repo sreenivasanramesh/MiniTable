@@ -21,7 +21,7 @@ public class Stream extends Scan  {
         super(bigtable.heapfile);
 
         int mapCount = bigtable.getMapCnt();
-        int rowCOunt = bigtable.getRowCnt();
+        int rowCount = bigtable.getRowCnt();
         int columnCount = bigtable.getColumnCnt();
         this.heapfile = bigtable.heapfile;
 
@@ -38,9 +38,7 @@ public class Stream extends Scan  {
     Retrieve the next map in the stream
     */
     public Map getNext(MID mid) throws Exception {
-        Tuple tuple = super.getNext(new RID(mid.getPageNo(), mid.getSlotNo()));
-        System.out.println(tuple);
-        return null;
+        return super.getNext(mid);
     }
 
     public Tuple getNext(RID rid)
