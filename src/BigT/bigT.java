@@ -1,11 +1,9 @@
 package BigT;
 
-import btree.BTreeFile;
-import btree.DeleteFashion;
 import btree.StringKey;
 import global.AttrType;
 import global.MID;
-import global.RID;
+import global.PageId;
 import global.SystemDefs;
 import heap.Heapfile;
 
@@ -80,27 +78,28 @@ public class bigT {
                     map1.setColumnLabel("b");
                     map1.setTimeStamp(6);
                     map1.setValue("d");
-                    Heapfile hf = new Heapfile("/Users/rakeshr/test.db");
-                    MID mid = hf.insertMap(map.getMapByteArray());
-                    MID mid2 = hf.insertMap(map1.getMapByteArray());
-
-                    System.out.println("mid = " + mid);
-                    System.out.println("mid = " + mid.getPageNo());
-                    System.out.println("mid = " + mid.getSlotNo());
-                    System.out.println("mid2 = " + mid2);
-                    System.out.println("mid2 = " + mid2.getPageNo());
-                    System.out.println("mid2 = " + mid2.getSlotNo());
-                    BTreeFile bTreeFile = new BTreeFile("/Users/rakeshr/" + indexFileName, AttrType.attrString, 4, DeleteFashion.NAIVE_DELETE);
+                    Heapfile hf = new Heapfile("/Users/rakeshr/test1.db");
+//                    MID mid = hf.insertMap(map.getMapByteArray());
+//                    MID mid2 = hf.insertMap(map1.getMapByteArray());
+//
+//                    System.out.println("mid = " + mid);
+//                    System.out.println("mid = " + mid.getPageNo());
+//                    System.out.println("mid = " + mid.getSlotNo());
+//                    System.out.println("mid2 = " + mid2);
+//                    System.out.println("mid2 = " + mid2.getPageNo());
+//                    System.out.println("mid2 = " + mid2.getSlotNo());
+//                    BTreeFile bTreeFile = new BTreeFile("/Users/rakeshr/" + indexFileName, AttrType.attrString, 4, DeleteFashion.NAIVE_DELETE);
                     StringKey str = new StringKey("test1");
-                    RID rid = new RID(mid.getPageNo(), mid.getSlotNo());
-                    RID rid2 = new RID(mid.getPageNo(), mid.getSlotNo());
-//                    MID mid = new MID(new PageId(3), 0);
-//                    MID mid2 = new MID(new PageId(3), 1);
-                    bTreeFile.insert(new StringKey("1"), rid);
-                    bTreeFile.insert(new StringKey("a"), rid2);
+//                    RID rid = new RID(mid.getPageNo(), mid.getSlotNo());
+//                    RID rid2 = new RID(mid.getPageNo(), mid.getSlotNo());
+                    MID mid = new MID(new PageId(3), 0);
+                    MID mid2 = new MID(new PageId(3), 1);
+//                    bTreeFile.insert(new StringKey("1"), rid);
+//                    bTreeFile.insert(new StringKey("a"), rid2);
 
-
+                    System.out.println("hf.getRecCnt() = " + hf.getRecCnt());
                     System.out.println("MAPAPAPPAA = " + hf.getMap(mid));
+
                     Map la = hf.getMap(mid);
                     Map la2 = hf.getMap(mid2);
 
