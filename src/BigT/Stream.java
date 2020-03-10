@@ -3,10 +3,14 @@ package BigT;
 import global.GlobalConst;
 import global.MID;
 import global.PageId;
-import heap.HFPage;
+import global.SystemDefs;
+import heap.HFBufMgrException;
 import heap.Heapfile;
+import heap.HFPage;
 
-public class Stream implements GlobalConst {
+import java.io.IOException;
+
+public class Stream implements GlobalConst  {
 
 	/*
 	Initialize a stream of maps on bigtable
@@ -62,7 +66,6 @@ public class Stream implements GlobalConst {
         int columnCount = bigtable.getColumnCnt();
 
     }
-
     /*
     Closes the stream object.
     */
@@ -121,9 +124,6 @@ public class Stream implements GlobalConst {
 
 
 
-
-
-
     /*
     Reset is fine - need to add scan methods import
     */
@@ -155,4 +155,20 @@ public class Stream implements GlobalConst {
         nextUserStatus = true;
 
     }
+
+
+    /**
+     * short cut to access the unpinPage function in bufmgr package.
+     * //@see bufmgr.unpinPage
+     */
+    private void unpinPage(PageId pageno, boolean dirty)
+            throws HFBufMgrException {
+
+        try {
+            SystemDefs.JavabaseBM.unpinPage(pageno, dirty);
+        } catch (Exception e) {
+            throw new HFBufMgrException(e, "Scan.java: unpinPage() failed");
+        }
+
+    } // end of unpinPage
 }
