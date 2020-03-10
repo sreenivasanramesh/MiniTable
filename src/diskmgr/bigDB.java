@@ -56,7 +56,7 @@ public class bigDB implements GlobalConst {
     /**
      * default constructor.
      */
-    public DB() {
+    public bigDB() {
     }
 
 
