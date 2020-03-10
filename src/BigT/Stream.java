@@ -32,12 +32,21 @@ public class Stream extends Scan  {
         this.valueFilter = valueFilter;
         String star_filter = new String("*");
         Heapfile heapfile = bigtable.heapfile;
+        String rangeRegex = new String("\\[\\d+, \\d+\\]");
+        if (rowFilter.matches(rangeRegex)) {
+
+        }
+        else {
+            // should match single element.
+        }
+
+        }
 
         if (star_filter.equals(rowFilter)) {
             if (star_filter.equals(columnFilter)) {
                 if(star_filter.equals(valueFilter)) {
                     // row, col, val = *, * , * - so sequential scan on all elements
-                    super.ScanInit(bigtable.heapfile);
+                    //no changes required, scan already pointing to first mid.
                 }
 
             }
