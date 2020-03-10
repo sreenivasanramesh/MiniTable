@@ -4,6 +4,7 @@ import btree.BTreeFile;
 import btree.DeleteFashion;
 import btree.StringKey;
 import global.*;
+import heap.Heapfile;
 
 import java.io.File;
 
@@ -16,7 +17,7 @@ public class bigT {
     int type;
     String name;
     String[] indexNames;
-
+    Heapfile heapfile;
 
     // Initialize the big table.typeis an integer be-tween 1 and 5 and the different types will correspond to different clustering and indexing strategies youwill use for the bigtable.
     public bigT(String name, int type) throws Exception {
