@@ -1,54 +1,35 @@
 package BigT;
 
-import global.MID;
+import btree.BTreeFile;
+import btree.DeleteFashion;
+import btree.StringKey;
+import global.*;
 
 import java.io.File;
-import java.util.Arrays;
+
+import static global.GlobalConst.NUMBUF;
+
+//import static BigT.InstrumentationAgent.getObjectSize;
 
 public class bigT {
 
     int type;
     String name;
-    String indexNames[];
+    String[] indexNames;
 
 
     // Initialize the big table.typeis an integer be-tween 1 and 5 and the different types will correspond to different clustering and indexing strategies youwill use for the bigtable.
-    public void bigT(String name, int type) throws Exception {
+    public bigT(String name, int type) throws Exception {
         this.type = type;
         this.name = name;
+        System.out.println("Calling Create Index");
         createIndex();
     }
 
-    private void createIndex() throws Exception {
-        switch (this.type) {
-            case 1:
-                this.indexNames = new String[]{};
-                break;
-            case 2:
-                this.indexNames = new String[]{this.name + "_row.idx"};
-                break;
-            case 3:
-                this.indexNames = new String[]{this.name + "_column.idx"};
-                break;
-            case 4:
-                this.indexNames = new String[]{this.name + "_column_row.idx", this.name + "_timestamp.idx"};
-                break;
-            case 5:
-                this.indexNames = new String[]{this.name + "_row_value.idx", this.name + "_timestamp.idx"};
-                break;
-            default:
-                throw new Exception("Invalid Type Passed");
-        }
-        for (String indexName : this.indexNames) {
-            File file = new File(indexName);
-            if (!file.exists()) {
-                String[] tempArray = indexName.substring(0, indexName.lastIndexOf('.')).split("_");
-                String[] indexArray = Arrays.copyOfRange(tempArray, 1, tempArray.length);
-                for (String index : indexArray) {
-                    // Btree Index to create Index
-                }
-            }
-        }
+    public static void main(String[] args) throws Exception {
+        new SystemDefs("/Users/rakeshr/test.db", 10, NUMBUF, "Clock");
+
+        bigT bigT = new bigT("test1", 2);
     }
 
     //Delete the bigtable from the database.
@@ -58,7 +39,6 @@ public class bigT {
 
     // Return number of maps in the bigtable.
     int getMapCnt() {
-
         return 0;
     }
 
@@ -73,8 +53,50 @@ public class bigT {
         return 0;
     }
 
+    private void createIndex() throws Exception {
+        switch (this.type) {
+            case 1:
+                this.indexNames = new String[]{};
+                break;
+            case 2:
+                String indexFileName = this.name + "_row.idx";
+                File indexFile = new File(indexFileName);
+                if (!indexFile.exists()) {
+
+                    BTreeFile bTreeFile = new BTreeFile("/Users/rakeshr/" + indexFileName, AttrType.attrString, 4, DeleteFashion.NAIVE_DELETE);
+                    StringKey str = new StringKey("test1");
+                    bTreeFile.insert(new StringKey("t"), new RID(new PageId(1), 0));
+                }
+                this.indexNames = new String[]{this.name + "_row.idx"};
+                break;
+            case 3:
+                this.indexNames = new String[]{this.name + "_column.idx"};
+                break;
+            case 4:
+                this.indexNames = new String[]{this.name + "_column_row.idx", this.name + "_timestamp.idx"};
+                break;
+            case 5:
+                this.indexNames = new String[]{this.name + "_row_value.idx", this.name + "_timestamp.idx"};
+                break;
+            default:
+                throw new Exception("Invalid Type Passed");
+        }
+//        for (String indexName : this.indexNames) {
+//            File file = new File(indexName);
+//            if (!file.exists()) {
+//                String[] tempArray = indexName.substring(0, indexName.lastIndexOf('.')).split("_");
+//                String[] indexArray = Arrays.copyOfRange(tempArray, 1, tempArray.length);
+//                BTreeFile bTreeFile = new BTreeFile(indexName);
+//                for (String index : indexArray) {
+//                    // Btree Index to create Index
+//                }
+//            }
+//        }
+    }
+
     // TODO: insert and return MID
     MID insertMap(byte[] mapPtr) {
+
         return new MID();
     }
 

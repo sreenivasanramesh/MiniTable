@@ -103,7 +103,7 @@ public class Stream implements GlobalConst {
         }
 
         // check next map entry exists
-        currentMid = datapage.nextMap(MID);
+//        currentMid = datapage.nextMap(MID);
 
         nextUserStatus = currentMid != null;
 
@@ -132,7 +132,7 @@ public class Stream implements GlobalConst {
         if (datapage != null) {
 
             try {
-                unpinPage(datapageId, false);
+//                unpinPage(datapageId, false);
             } catch (Exception e) {
                 // 	System.err.println("SCAN: Error in Scan" + e);
                 e.printStackTrace();
@@ -144,7 +144,7 @@ public class Stream implements GlobalConst {
         if (dirpage != null) {
 
             try {
-                unpinPage(dirpageId, false);
+//                unpinPage(dirpageId, false);
             } catch (Exception e) {
                 //     System.err.println("SCAN: Error in Scan: " + e);
                 e.printStackTrace();
