@@ -13,7 +13,7 @@ public class bigT {
 
 
     // Initialize the big table.typeis an integer be-tween 1 and 5 and the different types will correspond to different clustering and indexing strategies youwill use for the bigtable.
-    public void bigT(String name, int type) throws Exception {
+    public bigT(String name, int type) throws Exception {
         this.type = type;
         this.name = name;
         createIndex();
