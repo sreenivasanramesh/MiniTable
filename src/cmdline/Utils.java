@@ -12,52 +12,23 @@ import diskmgr.pcounter;
 import java.io.*;
 import static global.GlobalConst.NUMBUF;
 
-public class BatchInsert {
+class Utils {
 
     private static final int NUM_PAGES = 5000;
 
-
-    public static void main(String[] args) throws Exception{
-
-        /*8 Maybe use one CLI for batchinsert and querying?
-        //BIGTABLENAME TYPE ORDERTYPE ROWFILTER COLUMNFILTER VALUEFILTER NUMBUF
-        //Integer type = Integer.parseInt(args[1]);
-        //Integer orderType = Integer.parseInt(args[2]);
-        //String rowFilter = args[3];
-        //String colFilter = args[4];
-        //String valFilter = args[5];
-        //Integer NUMBUF = Integer.parseInt(args[6]);
-         */
-
-        //batchinsert DATAFILENAME TYPE BIGTABLENAME
-        String dataFile = args[1];
-        Integer type = Integer.parseInt(args[2]);
-        String tableName = args[3];
-
-
+    static void batchInsert(String dataFile, String tableName, int type) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException
+    {
         String dbpath =  "~/" + tableName + "-db";
         File f = new File(dbpath);
         //If DB exists use it, else create a new DB with NUM_PAGES pages
         Integer numPages = !f.exists() ? NUM_PAGES : 0;
         SystemDefs sysdef = new SystemDefs(dbpath, numPages, NUMBUF, "Clock");
 
-        //batch insert
-        commandLine(dataFile, tableName, type);
-
-        SystemDefs.JavabaseBM.flushAllPages();
-        SystemDefs.JavabaseDB.closeDB();
-        System.out.println("Reads: " + pcounter.rcounter);
-        System.out.println("Writes: " + pcounter.wcounter);
-    }
-
-
-    private static void commandLine(String dataFile, String tableName, int type) throws IOException
-    {
         FileInputStream fileStream = null;
         BufferedReader br = null;
         try
         {
-            bigT bigTable = new bigT(tableName, type);
+            //bigT bigTable = new bigT(tableName, type);
             fileStream = new FileInputStream(dataFile);
             br = new BufferedReader(new InputStreamReader(fileStream));
             String inputStr;
@@ -73,15 +44,17 @@ public class BatchInsert {
                 AttrType[] attrType = new AttrType[] {new AttrType(0), new AttrType(1), new AttrType(1)};
 
                 //set map
-                map.setHeader(attrType, strSizes1); //have to pull changes from devil
+                //map.setHeader(attrType, strSizes1); //TODO: have to pull changes from devil
+                //map.setHeader((short)strSizes1, attrType); //have to pull changes from devil); //have to pull changes from devil
                 map.setRowLabel(input[0]);
                 map.setColumnLabel(input[1]);
                 map.setTimeStamp(Integer.parseInt(input[2]));
                 map.setValue(input[3]);
 
-                Heapfile hf = new Heapfile("/Users/rakeshr/test.db");
-                //TODO replace with bigT.insertMap()
-                MID mid = hf.insertMap(map.getMapByteArray());
+                Heapfile heapfile = new Heapfile("/Users/rakeshr/test.db");
+                //
+                // TODO replace with bigT.insertMap()
+                //MID mid = heapfile.insertMap(map.getMapByteArray());
                 mapCount++;
             }
             System.out.println(mapCount + " tuples inserted...\n");
@@ -94,5 +67,12 @@ public class BatchInsert {
             fileStream.close();
             br.close();
         }
+
+        SystemDefs.JavabaseBM.flushAllPages();
+        SystemDefs.JavabaseDB.closeDB();
+        System.out.println("Reads:  " + pcounter.rcounter);
+        System.out.println("Writes: " + pcounter.wcounter);
+
+
     }
 }
