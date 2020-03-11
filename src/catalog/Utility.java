@@ -6,13 +6,13 @@
 
 package catalog;
 
-import java.io.*;
-
-import bufmgr.*;
+import btree.BTreeFile;
+import btree.IntegerKey;
+import btree.KeyClass;
+import btree.StringKey;
 import global.*;
-import heap.*;
-import diskmgr.*;
-import btree.*;
+import heap.Heapfile;
+import heap.Tuple;
 
 public class Utility implements Catalogglobal {
 
@@ -20,40 +20,20 @@ public class Utility implements Catalogglobal {
     void deleteRecordUT(String relation, attrNode item) {
     }
 
-    ;
-
     // DELETES RECORDS
     void deleteRecUT(String relation, attrNode item) {
     }
-
-    ;
 
     // DELETES INDEX ENRIES FOR RECORDS
     void deleteRecIndexesUT(String relation, RID rid, Tuple tuple) {
     }
 
-    ;
-
     // WRAPS INSERT UTILITY  IN TX
     public static void insertRecordUT(String relation, int attrCnt, attrNode[] attrList)
-            throws Catalogmissparam,
-            Catalogrelexists,
-            Catalogdupattrs,
-            Catalognomem,
-            IOException,
-            Catalogioerror,
-            Cataloghferror,
-            Catalogrelnotfound,
-            Catalogindexnotfound,
-            Catalogattrnotfound,
-            Catalogbadattrcount,
-            Catalogattrexists,
-            Catalogbadtype,
+            throws
             Exception {
         insertRecUT(relation, attrCnt, attrList);
     }
-
-    ;
 
 
 //---------------------------------------------------
@@ -70,19 +50,7 @@ public class Utility implements Catalogglobal {
 //---------------------------------------------------
 
     public static void insertRecUT(String relation, int attrCnt, attrNode[] attrList)
-            throws Catalogmissparam,
-            Catalogrelexists,
-            Catalogdupattrs,
-            Catalognomem,
-            IOException,
-            Catalogioerror,
-            Cataloghferror,
-            Catalogrelnotfound,
-            Catalogindexnotfound,
-            Catalogattrnotfound,
-            Catalogbadattrcount,
-            Catalogattrexists,
-            Catalogbadtype,
+            throws
             Exception {
         RelDesc relRec = null;
         RID rid = null;
@@ -272,28 +240,20 @@ public class Utility implements Catalogglobal {
         } // end for loop - errors break out of loop
     }
 
-    ;
-
     // WRAPS LOAD UTILITY IN TX
     void loadUT(String relation, String fileName) {
     }
-
-    ;
 
     // LOADS RECORDS
     void loadRecordsUT(String relation, String fileName) {
     }
 
-    ;
-
     // LOADS INDEXES
-    void loadIndexesUT(Tuple tuple, int attrCnt, int indexCnt,
-                       AttrDesc[] attrs, IndexDesc[] indexes, void[] iFiles, RID rid) {
-    }
+//    void loadIndexesUT(Tuple tuple, int attrCnt, int indexCnt,
+//                       AttrDesc[] attrs, IndexDesc[] indexes, void[] iFiles, RID rid) {
+//    }
 
-    ;
-
-//-------------------------------
+    //-------------------------------
 // TYPECHECK INTS
 //--------------------------------
 

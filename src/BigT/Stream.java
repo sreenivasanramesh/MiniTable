@@ -1,83 +1,158 @@
 package BigT;
 
-import diskmgr.Page;
-import global.*;
+import global.GlobalConst;
+import global.MID;
+import global.PageId;
+import heap.HFPage;
+import heap.Heapfile;
 
-import java.io.IOException;
-import heap.*;
-import bufmgr.*;
+public class Stream implements GlobalConst {
 
-public class Stream extends Scan  {
-
-    Heapfile heapfile;
 	/*
 	Initialize a stream of maps on bigtable
 	*/
 
+    /**
+     * The heapfile we are using.
+     */
+    private Heapfile _hf;
+
+    /**
+     * PageId of current directory page (which is itself an HFPage)
+     */
+    private PageId dirpageId = new PageId();
+
+    /**
+     * pointer to in-core data of dirpageId (page is pinned)
+     */
+    private HFPage dirpage = new HFPage();
+
+    /**
+     * Map ID of the DataPageInfo struct (in the directory page) which
+     * describes the data page where our current map is present.
+     */
+    private MID datapageMid = new MID();
+
+    /**
+     * the actual PageId of the data page with the current record
+     */
+    private PageId datapageId = new PageId();
+
+    /**
+     * in-core copy (pinned) of the same
+     */
+    private HFPage datapage = new HFPage();
+
+    /**
+     * map ID of the current map (from the current data page)
+     */
+    private MID currentMid = new MID();
+
+    /**
+     * Status of next user status
+     */
+    private boolean nextUserStatus;
+
 
     /* Pending */
-    public Stream(bigT bigtable, int orderType, String rowFilter, String columnFilter, String valueFilter) throws InvalidTupleSizeException, IOException {
+    public Stream(bigT bigtable, int orderType, String rowFilter, String columnFilter, String valueFilter) {
         /* constructor */
-        super(bigtable.heapfile);
-
         int mapCount = bigtable.getMapCnt();
         int rowCOunt = bigtable.getRowCnt();
         int columnCount = bigtable.getColumnCnt();
-        this.heapfile = bigtable.heapfile;
-
-
 
     }
 
-
+    /*
+    Closes the stream object.
+    */
     public void closeStream() {
-        super.closescan();
+        reset();
     }
 
     /*
     Retrieve the next map in the stream
     */
-    public Map getNext(MID mid) throws Exception {
-        Tuple tuple = super.getNext(new RID(mid.getPageNo(), mid.getSlotNo()));
-        System.out.println(tuple);
-        return null;
-    }
+    public Map getNext(MID MID) throws Exception {
 
-    public Tuple getNext(RID rid)
-            throws InvalidTupleSizeException,
-            IOException {
-        Tuple recptrtuple = null;
+        Map nextMap = null;
 
-        boolean nextUserStatus = super.getNextUserStatus();
-        HFPage datapage = super.getDataPage();
-        RID userrid = super.getUserId();
+        /* nextUserStatus defined in class */
 
-        if (nextUserStatus != true) {
-            super.nextDataPage();
+        if (!nextUserStatus) {
+            /* TODO: modify next data page according to map instead of tuple */
+//            nextDataPage();
         }
 
-        if (datapage == null)
+        /* heap file page - defined in class */
+        if (datapage == null) {
             return null;
+        }
 
-        rid.pageNo.pid = userrid.pageNo.pid;
-        rid.slotNo = userrid.slotNo;
+
+        /* CurrentMid is declared in class
+         not sure why copied, need tobe verified
+         */
+        MID.copyMid(currentMid);
 
         try {
-            recptrtuple = datapage.getRecord(rid);
+            // get next map similar to recptrtuple = datapage.getRecord(MID);
+            nextMap = datapage.getMap(MID);
         } catch (Exception e) {
-            //System.err.println("SCAN: Error in Scan" + e);
             e.printStackTrace();
         }
 
-        super.setUserId(datapage.nextRecord(rid));
-        if (userrid == null) super.setNextUserStatus(false);
-        else super.setNextUserStatus(true);
+        // check next map entry exists
+//        currentMid = datapage.nextMap(MID);
 
-        return recptrtuple;
+        nextUserStatus = currentMid != null;
+
+        return nextMap;
     }
 
+    /**
+     * to be implemented
+     * - datapage.nextMap(mid); - added
+     * - datapage.getMap(mid); - added but need to verify functionality
+     * - nextDataPage(); to be modified to work for map instead of tuple
+     */
 
 
 
 
+
+
+
+
+    /*
+    Reset is fine - need to add scan methods import
+    */
+    private void reset() {
+
+        if (datapage != null) {
+
+            try {
+//                unpinPage(datapageId, false);
+            } catch (Exception e) {
+                // 	System.err.println("SCAN: Error in Scan" + e);
+                e.printStackTrace();
+            }
+        }
+        datapageId.pid = 0;
+        datapage = null;
+
+        if (dirpage != null) {
+
+            try {
+//                unpinPage(dirpageId, false);
+            } catch (Exception e) {
+                //     System.err.println("SCAN: Error in Scan: " + e);
+                e.printStackTrace();
+            }
+        }
+        dirpage = null;
+
+        nextUserStatus = true;
+
+    }
 }
