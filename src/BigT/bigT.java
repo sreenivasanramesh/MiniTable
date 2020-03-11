@@ -97,6 +97,12 @@ public class bigT {
 //                    bTreeFile.insert(new StringKey("1"), rid);
 //                    bTreeFile.insert(new StringKey("a"), rid2);
 
+                    //TODO: Set Header Do not set Manually
+                    //TODO: Make Btree Return MID instead of RID
+                    //TODO: Indexing Types 2, 3, 4, 5
+                    //TODO: Insert Map
+                    //TODO: Composite Index <value1>$<value2>
+
 
                     BTFileScan btFileScan = bTreeFile.new_scan(new StringKey("1"), new StringKey("9"));
                     printMap(btFileScan.get_next(), hf, strSizes);
