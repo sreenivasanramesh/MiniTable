@@ -1,11 +1,9 @@
 package BigT;
 
-import btree.BTreeFile;
-import btree.DeleteFashion;
-import btree.StringKey;
+import btree.*;
 import global.AttrType;
 import global.MID;
-import global.PageId;
+import global.RID;
 import global.SystemDefs;
 import heap.Heapfile;
 
@@ -33,7 +31,7 @@ public class bigT {
     public static void main(String[] args) throws Exception {
         boolean isNewDb = false;
         int numPages = isNewDb ? 10 : 0;
-        new SystemDefs("/Users/sumukhashwinkamath/test.db", numPages, NUMBUF, "LRU");
+        new SystemDefs("/Users/rakeshr/test.db", numPages, NUMBUF, "Clock");
         bigT bigT = new bigT("test1", 2);
     }
 
@@ -84,34 +82,30 @@ public class bigT {
                     Heapfile hf = new Heapfile(this.name + "3.heap");
 //                    MID mid = hf.insertMap(map.getMapByteArray());
 //                    MID mid2 = hf.insertMap(map1.getMapByteArray());
-//
 //                    System.out.println("mid = " + mid);
 //                    System.out.println("mid = " + mid.getPageNo());
 //                    System.out.println("mid = " + mid.getSlotNo());
 //                    System.out.println("mid2 = " + mid2);
 //                    System.out.println("mid2 = " + mid2.getPageNo());
 //                    System.out.println("mid2 = " + mid2.getSlotNo());
+
+
 //                    BTreeFile bTreeFile = new BTreeFile("/Users/rakeshr/" + indexFileName, AttrType.attrString, 4, DeleteFashion.NAIVE_DELETE);
-                    StringKey str = new StringKey("test1");
+                    BTreeFile bTreeFile = new BTreeFile("/Users/rakeshr/" + indexFileName);
 //                    RID rid = new RID(mid.getPageNo(), mid.getSlotNo());
-//                    RID rid2 = new RID(mid.getPageNo(), mid.getSlotNo());
-                    MID mid = new MID(new PageId(7), 0);
-                    MID mid2 = new MID(new PageId(7), 1);
+//                    RID rid2 = new RID(mid2.getPageNo(), mid2.getSlotNo());
 //                    bTreeFile.insert(new StringKey("1"), rid);
 //                    bTreeFile.insert(new StringKey("a"), rid2);
 
-                    System.out.println("hf.getRecCnt() = " + hf.getRecCnt());
-                    System.out.println("MAPAPAPPAA = " + hf.getMap(mid));
 
-                    Map la = hf.getMap(mid);
-                    Map la2 = hf.getMap(mid2);
+                    BTFileScan btFileScan = bTreeFile.new_scan(new StringKey("1"), new StringKey("9"));
+                    printMap(btFileScan.get_next(), hf, strSizes);
+                    System.out.println("btreefilescan = " + btFileScan.get_next());
+                    printMap(btFileScan.get_next(), hf, strSizes);
+                    System.out.println("btreefilescan = " + btFileScan.get_next());
 
-                    la.setHeader(new AttrType[]{new AttrType(0), new AttrType(0), new AttrType(1), new AttrType(0)}, strSizes);
-
-                    la2.setHeader(new AttrType[]{new AttrType(0), new AttrType(0), new AttrType(1), new AttrType(0)}, strSizes1);
-                    la.print();
-                    la2.print();
-                    SystemDefs.JavabaseBM.flushAllPages();
+                    bTreeFile.close();
+//                    SystemDefs.JavabaseBM.flushAllPages();
                     SystemDefs.JavabaseDB.closeDB();
 
                 }
@@ -142,13 +136,26 @@ public class bigT {
 //        }
     }
 
+    private void printMap(KeyDataEntry keyDataEntry, Heapfile hf, short[] strSizes) throws Exception {
+        LeafData dataClass = (LeafData) keyDataEntry.data;
+        RID rra = dataClass.getData();
+        MID midi = new MID();
+        System.out.println("rra.pageNo = " + rra.pageNo);
+        System.out.println("rra.slotNo = " + rra.slotNo);
+        midi.setPageNo(rra.pageNo);
+        midi.setSlotNo(rra.slotNo);
+        Map mappa = hf.getMap(midi);
+        mappa.setHeader(new AttrType[]{new AttrType(0), new AttrType(0), new AttrType(1), new AttrType(0)}, strSizes);
+        mappa.print();
+    }
+
     // TODO: insert and return MID
     MID insertMap(byte[] mapPtr) {
 
         return new MID();
     }
 
-    public Stream openStream(int orderType, java.lang.String rowFilter, java.lang.String columnFilter, java.lang.String valueFilter){
+    public Stream openStream(int orderType, java.lang.String rowFilter, java.lang.String columnFilter, java.lang.String valueFilter) {
         try {
             switch (orderType) {
                 case 1:
