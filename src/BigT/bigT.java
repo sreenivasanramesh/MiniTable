@@ -31,8 +31,9 @@ public class bigT {
     }
 
     public static void main(String[] args) throws Exception {
-        new SystemDefs("/Users/rakeshr/test.db", 10, NUMBUF, "Clock");
-
+        boolean isNewDb = false;
+        int numPages = isNewDb ? 10 : 0;
+        new SystemDefs("/Users/sumukhashwinkamath/test.db", numPages, NUMBUF, "LRU");
         bigT bigT = new bigT("test1", 2);
     }
 
@@ -80,25 +81,28 @@ public class bigT {
                     map1.setColumnLabel("b");
                     map1.setTimeStamp(6);
                     map1.setValue("d");
-                    Heapfile hf = new Heapfile("/Users/rakeshr/test.db");
+                    Heapfile hf = new Heapfile(this.name + "3.heap");
 //                    MID mid = hf.insertMap(map.getMapByteArray());
 //                    MID mid2 = hf.insertMap(map1.getMapByteArray());
-
+//
 //                    System.out.println("mid = " + mid);
 //                    System.out.println("mid = " + mid.getPageNo());
 //                    System.out.println("mid = " + mid.getSlotNo());
 //                    System.out.println("mid2 = " + mid2);
 //                    System.out.println("mid2 = " + mid2.getPageNo());
 //                    System.out.println("mid2 = " + mid2.getSlotNo());
-                    BTreeFile bTreeFile = new BTreeFile("/Users/rakeshr/" + indexFileName, AttrType.attrString, 4, DeleteFashion.NAIVE_DELETE);
+//                    BTreeFile bTreeFile = new BTreeFile("/Users/rakeshr/" + indexFileName, AttrType.attrString, 4, DeleteFashion.NAIVE_DELETE);
                     StringKey str = new StringKey("test1");
 //                    RID rid = new RID(mid.getPageNo(), mid.getSlotNo());
 //                    RID rid2 = new RID(mid.getPageNo(), mid.getSlotNo());
-                    MID mid = new MID(new PageId(3), 0);
-                    MID mid2 = new MID(new PageId(3), 1);
+                    MID mid = new MID(new PageId(7), 0);
+                    MID mid2 = new MID(new PageId(7), 1);
 //                    bTreeFile.insert(new StringKey("1"), rid);
 //                    bTreeFile.insert(new StringKey("a"), rid2);
+
+                    System.out.println("hf.getRecCnt() = " + hf.getRecCnt());
                     System.out.println("MAPAPAPPAA = " + hf.getMap(mid));
+
                     Map la = hf.getMap(mid);
                     Map la2 = hf.getMap(mid2);
 
@@ -107,6 +111,8 @@ public class bigT {
                     la2.setHeader(new AttrType[]{new AttrType(0), new AttrType(0), new AttrType(1), new AttrType(0)}, strSizes1);
                     la.print();
                     la2.print();
+                    SystemDefs.JavabaseBM.flushAllPages();
+                    SystemDefs.JavabaseDB.closeDB();
 
                 }
                 this.indexNames = new String[]{this.name + "_row.idx"};
