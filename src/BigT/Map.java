@@ -173,10 +173,9 @@ public class Map implements GlobalConst {
     public void setFieldOffsetFromData() throws IOException {
         int position = this.mapOffset + 2;
         this.fieldOffset = new short[NUM_FIELDS + 1];
-        int arr[] = {ROW_NUMBER, COLUMN_NUMBER, TIMESTAMP_NUMBER, VALUE_NUMBER, NUM_FIELDS+1};
 
         for (int i=0; i <= NUM_FIELDS; i++){
-            this.fieldOffset[arr[i] - 1] = Convert.getShortValue(position, this.data);
+            this.fieldOffset[i] = Convert.getShortValue(position, this.data);
             position += 2;
         }
     }

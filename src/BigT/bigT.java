@@ -98,8 +98,8 @@ public class bigT {
 //                    bTreeFile.insert(new StringKey("a"), rid2);
                     
                     //TODO: Make Btree Return MID instead of RID
-                    //TODO: Indexing Types 2, 3, 4, 5
-                    //TODO: Insert Map
+                    //TODO: Indexing Types 2, 3, 4, 5 (Working on this)
+                    //TODO: Insert Map (Working on this)
                     //TODO: Composite Index <value1>$<value2>
 
 
