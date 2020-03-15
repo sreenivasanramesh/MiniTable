@@ -29,15 +29,17 @@ public class Map implements GlobalConst {
         this.mapLength = MAX_SIZE;
     }
 
-    public Map(byte[] amap, int offset) {
+    public Map(byte[] amap, int offset) throws IOException {
         this.data = amap;
         this.mapOffset = offset;
+        setFieldOffsetFromData();
     }
 
-    public Map(byte[] amap, int offset, int mapLength) {
+    public Map(byte[] amap, int offset, int mapLength) throws IOException {
         this.data = amap;
         this.mapOffset = offset;
         this.mapLength = mapLength;
+        setFieldOffsetFromData();
     }
 
     public Map(Map fromMap) {
@@ -168,6 +170,17 @@ public class Map implements GlobalConst {
         this.mapOffset = 0;
     }
 
+    public void setFieldOffsetFromData() throws IOException {
+        int position = this.mapOffset + 2;
+        this.fieldOffset = new short[NUM_FIELDS + 1];
+        int arr[] = {ROW_NUMBER, COLUMN_NUMBER, TIMESTAMP_NUMBER, VALUE_NUMBER, NUM_FIELDS+1};
+
+        for (int i=0; i <= NUM_FIELDS; i++){
+            this.fieldOffset[arr[i] - 1] = Convert.getShortValue(position, this.data);
+            position += 2;
+        }
+    }
+    
     public void setHeader(AttrType[] types, short[] stringSizes) throws InvalidMapSizeException, IOException, InvalidTypeException, InvalidStringSizeArrayException {
 
         if (stringSizes.length != 3) {

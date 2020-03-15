@@ -31,7 +31,7 @@ public class bigT {
     public static void main(String[] args) throws Exception {
         boolean isNewDb = false;
         int numPages = isNewDb ? 10 : 0;
-        new SystemDefs("/Users/rakeshr/test.db", numPages, NUMBUF, "Clock");
+        new SystemDefs("/Users/sumukhashwinkamath/test.db", numPages, NUMBUF, "Clock");
         bigT bigT = new bigT("test1", 2);
     }
 
@@ -90,28 +90,26 @@ public class bigT {
 //                    System.out.println("mid2 = " + mid2.getSlotNo());
 
 
-//                    BTreeFile bTreeFile = new BTreeFile("/Users/rakeshr/" + indexFileName, AttrType.attrString, 4, DeleteFashion.NAIVE_DELETE);
-                    BTreeFile bTreeFile = new BTreeFile("/Users/rakeshr/" + indexFileName);
+//                    BTreeFile bTreeFile = new BTreeFile("/Users/sumukhashwinkamath/" + indexFileName, AttrType.attrString, 4, DeleteFashion.NAIVE_DELETE);
+                    BTreeFile bTreeFile = new BTreeFile("/Users/sumukhashwinkamath/" + indexFileName);
 //                    RID rid = new RID(mid.getPageNo(), mid.getSlotNo());
 //                    RID rid2 = new RID(mid2.getPageNo(), mid2.getSlotNo());
 //                    bTreeFile.insert(new StringKey("1"), rid);
 //                    bTreeFile.insert(new StringKey("a"), rid2);
-
-                    //TODO: Set Header Do not set Manually
+                    
                     //TODO: Make Btree Return MID instead of RID
                     //TODO: Indexing Types 2, 3, 4, 5
                     //TODO: Insert Map
                     //TODO: Composite Index <value1>$<value2>
 
 
-                    BTFileScan btFileScan = bTreeFile.new_scan(new StringKey("1"), new StringKey("9"));
+                    BTFileScan btFileScan = bTreeFile.new_scan(new StringKey("1"), new StringKey("a"));
                     printMap(btFileScan.get_next(), hf, strSizes);
-                    System.out.println("btreefilescan = " + btFileScan.get_next());
                     printMap(btFileScan.get_next(), hf, strSizes);
                     System.out.println("btreefilescan = " + btFileScan.get_next());
 
                     bTreeFile.close();
-//                    SystemDefs.JavabaseBM.flushAllPages();
+                    SystemDefs.JavabaseBM.flushAllPages();
                     SystemDefs.JavabaseDB.closeDB();
 
                 }
@@ -151,7 +149,6 @@ public class bigT {
         midi.setPageNo(rra.pageNo);
         midi.setSlotNo(rra.slotNo);
         Map mappa = hf.getMap(midi);
-        mappa.setHeader(new AttrType[]{new AttrType(0), new AttrType(0), new AttrType(1), new AttrType(0)}, strSizes);
         mappa.print();
     }
 
