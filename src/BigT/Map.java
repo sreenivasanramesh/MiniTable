@@ -55,8 +55,9 @@ public class Map implements GlobalConst {
         return data;
     }
 
-    public void setData(byte[] data) {
+    public void setData(byte[] data) throws IOException {
         this.data = data;
+        setFieldOffsetFromData();
     }
 
     public int getMapOffset() {
@@ -170,7 +171,7 @@ public class Map implements GlobalConst {
         this.mapOffset = 0;
     }
 
-    public void setFieldOffsetFromData() throws IOException {
+    private void setFieldOffsetFromData() throws IOException {
         int position = this.mapOffset + 2;
         this.fieldOffset = new short[NUM_FIELDS + 1];
 

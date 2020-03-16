@@ -3,8 +3,9 @@ package BigT;
 import global.GlobalConst;
 import global.MID;
 import global.PageId;
-import heap.HFPage;
-import heap.Heapfile;
+import heap.*;
+
+import java.io.IOException;
 
 public class Stream implements GlobalConst {
 
@@ -55,12 +56,11 @@ public class Stream implements GlobalConst {
 
 
     /* Pending */
-    public Stream(bigT bigtable, int orderType, String rowFilter, String columnFilter, String valueFilter) {
+    public Stream(bigT bigtable, int orderType, String rowFilter, String columnFilter, String valueFilter) throws InvalidTupleSizeException, HFDiskMgrException, HFBufMgrException, InvalidSlotNumberException, IOException {
         /* constructor */
         int mapCount = bigtable.getMapCnt();
         int rowCOunt = bigtable.getRowCnt();
         int columnCount = bigtable.getColumnCnt();
-
     }
 
     /*
