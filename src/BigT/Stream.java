@@ -294,19 +294,19 @@ public class Stream extends Scan {
             e.printStackTrace();
         }
 
-        Map t = null;
+        Map tempObj = null;
         do {
             try {
                 assert iScan != null;
                 Tuple temp = iScan.get_next();
-                t = new Map();
-                t.setData(temp.getTupleByteArray());
+                tempObj = new Map();
+                tempObj.setData(temp.getTupleByteArray());
                 // should return map
-                t.print();
+                tempObj.print();
             } catch (Exception e) {
                 e.printStackTrace();
             }
             System.err.println("------------------- index scan completed ---------------------\n");
-        }while (t != null);
+        }while (tempObj != null);
     }
 }
