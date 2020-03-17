@@ -207,4 +207,16 @@ public class Map implements GlobalConst {
 
     }
 
+    public String getGenericValue(String field) throws Exception {
+        if (field.matches(".*row.*")) {
+            return this.getRowLabel();
+        } else if (field.matches(".*column.*")) {
+            return this.getRowLabel();
+        } else if (field.matches(".*value.*")) {
+            return this.getValue();
+        } else {
+            throw new Exception("Invalid field type.");
+        }
+    }
+
 }
