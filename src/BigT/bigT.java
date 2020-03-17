@@ -11,6 +11,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+
 import static global.GlobalConst.*;
 
 
@@ -89,18 +92,28 @@ public class bigT {
             bigT = new bigT("test1");
         }
         
-        bigT.getRecords();
         Map map = bigT.formMap("1", "2", 3, "4");
         bigT.insertMap(map.getMapByteArray());
 
         map = bigT.formMap("a", "b", 6, "d");
         bigT.insertMap(map.getMapByteArray());
 
-        map = bigT.formMap("a", "b", 9, "4");
+        map = bigT.formMap("a", "c", 9, "4");
+        bigT.insertMap(map.getMapByteArray());
+    
+        map = bigT.formMap("a", "d", 10, "6");
         bigT.insertMap(map.getMapByteArray());
         
+        int rowCnt = bigT.getRowCnt();
+        System.out.println("rowCnt = " + rowCnt);
+    
+        int colCnt = bigT.getColumnCnt();
+        System.out.println("colCnt = " + colCnt);
+    
         int mapCount = bigT.getMapCnt();
         System.out.println("mapCount = " + mapCount);
+        
+        bigT.getRecords();
         bigT.close();
     }
     
@@ -124,7 +137,6 @@ public class bigT {
             }
             printMap(kde);
         }
-        System.out.println("btreefilescan = " + btFileScan.get_next());
     }
     
     //Delete the bigtable from the database.
@@ -139,13 +151,16 @@ public class bigT {
     
     // Return number of distinct row labels in the bigtable.
     int getRowCnt() {
-        return 0;
+        Set<String> distinctRow = new HashSet<>();
+        mapVersion.keySet().forEach(key -> distinctRow.add(key.split("\\$")[0]));
+        return distinctRow.size();
     }
     
     //    Return number of distinct column labels in the bigtable.
     int getColumnCnt() {
-        
-        return 0;
+        Set<String> distinctCol = new HashSet<>();
+        mapVersion.keySet().forEach(key -> distinctCol.add(key.split("\\$")[1]));
+        return distinctCol.size();
     }
     
     private void setIndexFiles() throws Exception {
@@ -214,9 +229,23 @@ public class bigT {
     MID insertMap(byte[] mapPtr) throws Exception {
         MID mid = this.heapfile.insertMap(mapPtr);
         RID rid = MapUtils.ridFromMid(mid);
-        String key;
         Map map = new Map();
         map.setData(mapPtr);
+        
+        String key;
+    
+        String mapVersionKey = map.getRowLabel() + "$" + map.getColumnLabel();
+        ArrayList<MID> list = mapVersion.get(mapVersionKey);
+        if (list == null){
+            list = new ArrayList<>();
+        }
+        else{
+            // Add logic to keep only 3 records
+            
+        }
+        list.add(mid);
+        mapVersion.put(mapVersionKey, list);
+        
         switch (this.type) {
             case 1:
                 key = null;
@@ -239,17 +268,8 @@ public class bigT {
                 throw new Exception("Invalid Index Type");
         }
         if (key != null) {
-            System.out.println("key = " + key);
             this.indexFile.insert(new StringKey(key), rid);
         }
-    
-        String mapVersionKey = map.getRowLabel() + "$" + map.getColumnLabel();
-        ArrayList<MID> list = mapVersion.get(mapVersionKey);
-        if (list == null){
-            list = new ArrayList<>();
-        }
-        list.add(mid);
-        mapVersion.put(mapVersionKey, list);
         return mid;
     }
     

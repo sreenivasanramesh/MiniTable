@@ -368,9 +368,6 @@ public class BTreeFile extends IndexFile
             InsertException,
             IOException {
         KeyDataEntry newRootEntry;
-        System.out.println("KEY : " + key);
-        System.out.println(BT.getKeyLength(key));
-        System.out.println(headerPage.get_maxKeySize());
         if (BT.getKeyLength(key) > headerPage.get_maxKeySize())
             throw new KeyTooLongException(null, "");
 
