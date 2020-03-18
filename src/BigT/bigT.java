@@ -33,7 +33,7 @@ public class bigT {
     public static void main(String[] args) throws Exception {
         boolean isNewDb = false;
         int numPages = isNewDb ? 10 : 0;
-        new SystemDefs("/Users/sumukhashwinkamath/test.db", numPages, NUMBUF, "LRU");
+        new SystemDefs("/Users/vasan/test.db", numPages, NUMBUF, "LRU");
         bigT bigT = new bigT("test1", 2);
     }
 

@@ -10,6 +10,7 @@ import BigT.*;
 import diskmgr.pcounter;
 import iterator.CondExpr;
 import iterator.FldSpec;
+import iterator.Iterator;
 import iterator.RelSpec;
 
 import java.io.*;
@@ -21,13 +22,13 @@ class Utils {
 
     static void batchInsert(String dataFile, String tableName, int type) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException
     {
-        String dbpath =  "/Users/vasan/" + tableName + ".db";
-        System.out.println(dbpath);
-        File f = new File(dbpath);
+        String dbPath =  getDBPath(tableName);
+        System.out.println(dbPath);
+        File f = new File(dbPath);
         //If DB exists use it, else create a new DB with NUM_PAGES pages
         Integer numPages = !f.exists() ? NUM_PAGES : 0;
         //SystemDefs sysdef = new SystemDefs(dbpath, numPages, NUMBUF, "LRU");
-        new SystemDefs(dbpath, numPages, NUMBUF, "Clock");
+        new SystemDefs(dbPath, numPages, NUMBUF, "Clock");
 
         FileInputStream fileStream = null;
         BufferedReader br = null;
@@ -43,7 +44,6 @@ class Utils {
             while ((inputStr = br.readLine()) != null)
             {
                 String[] input = inputStr.split(",");
-
                 //set the map
                 Map map = new Map();
                 short[] strSizes1 = new short[]{(short) input[0].getBytes().length,  //rowValue
@@ -76,14 +76,55 @@ class Utils {
 
         SystemDefs.JavabaseBM.flushAllPages();
         SystemDefs.JavabaseDB.closeDB();
-        System.out.println("Reads:  " + pcounter.rcounter);
+        System.out.println("Reads : " + pcounter.rcounter);
         System.out.println("Writes: " + pcounter.wcounter);
     }
 
-    static void query(String tableName, Integer type, Integer orderType, String rowFilter, String colFilter, String valFilter, Integer NUMBUF) {
 
 
+
+    static void query(String tableName, Integer type, Integer orderType, String rowFilter, String colFilter, String valFilter, Integer NUMBUF) throws Exception {
+        String dbPath =  getDBPath(tableName);
+        new SystemDefs(dbPath, 0, NUMBUF, "Clock");
+        int resultCount = 0;
+
+        try {
+            //TODO: query logic
+            bigT bigTable = new bigT(tableName, type);
+            Stream mapStream = bigTable.openStream(orderType, rowFilter, colFilter, valFilter);
+
+            MID mapId = null;
+
+            while (true) {
+                //TODO: I'm not really sure about the mapId, have to check how to do this
+                Map mapObj = mapStream.getNext(mapId);
+                if (mapObj == null)
+                    break;
+                mapObj.print();
+                resultCount++;
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        SystemDefs.JavabaseBM.flushAllPages();
+        SystemDefs.JavabaseDB.closeDB();
+
+        System.out.println("Matched Records: " + resultCount);
+        System.out.println("Reads : " + pcounter.rcounter);
+        System.out.println("Writes: " + pcounter.wcounter);
     }
+
+
+
+
+    public static String getDBPath(String tableName){
+        return "/Users/vasan/" + tableName + ".db";
+    }
+
+
+
 
     static CondExpr[] getCondExpr(String filter){
         if (filter.equals("*")){
