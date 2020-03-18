@@ -1,5 +1,6 @@
 package iterator;
 
+import BigT.Map;
 import global.*;
 import bufmgr.*;
 import diskmgr.*;
@@ -19,6 +20,7 @@ public class pnode {
      * the tuple reference
      */
     public Tuple tuple;
+    public Map mapObj;
 
     /**
      * class constructor, sets <code>run_num</code> to 0 and <code>tuple</code>
@@ -40,5 +42,9 @@ public class pnode {
         tuple = t;
     }
 
+    public pnode(int runNum, Map mapObj) {
+        run_num = runNum;
+        mapObj = mapObj;
+    }
 }
 
