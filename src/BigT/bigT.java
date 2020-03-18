@@ -25,46 +25,79 @@ import static global.GlobalConst.*;
 
 public class bigT {
     public static final int MAX_SIZE = MINIBASE_PAGESIZE;
+    
+    // Indexing type
     int type;
+    
+    // Name of the BigT file
     String name;
+    
+    // Btree Index file: row, col, col-row, row-value
     BTreeFile indexFile;
+    
+    // Btree Index file on timestamp when index type is 4 or 5
     BTreeFile timestampIndexFile;
+    
+    // Heap file which stores maps
     Heapfile heapfile;
+    
+    // HashMap used for maintaining map versions
     HashMap<String, ArrayList<MID>> mapVersion;
     
+    // Open an existing BigT file
     public bigT(String name) {
+        
         this.name = name;
         try {
             PageId heapFileId = SystemDefs.JavabaseDB.get_file_entry(name + ".meta");
             if (heapFileId == null) {
                 throw new Exception("BigT File with name: " + name + " doesn't exist");
             }
+            
+            // Load the metadata from .meta heapfile
             Heapfile metadataFile = new Heapfile(name + ".meta");
             Scan metascan = metadataFile.openScan();
             Tuple metadata = metascan.getNext(new RID());
-            metascan.closescan();
             metadata.setHdr((short) 1, new AttrType[]{new AttrType(AttrType.attrInteger)}, null);
+            metascan.closescan();
             this.type = metadata.getIntFld(1);
             System.out.println("type = " + type);
-            this.heapfile = new Heapfile(name + ".heap");
+            
+            // Set the Indexfile names from the type
             setIndexFiles();
+            
+            // Open the Heap file which is used for storing the maps
+            this.heapfile = new Heapfile(name + ".heap");
+            
+            // Load the mapVersion HashMap from the disk
+            
+            
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
     
     // Initialize the big table.typeis an integer be-tween 1 and 5 and the different types will correspond to different clustering and indexing strategies youwill use for the bigtable.
+    // Create a new BigT file
     public bigT(String name, int type) throws Exception {
         try {
             this.type = type;
             this.name = name;
+            
+            // Create a new heap file name + .meta for storing the metadata of the table
             Heapfile metadataFile = new Heapfile(name + ".meta");
             Tuple metadata = new Tuple();
             metadata.setHdr((short) 1, new AttrType[]{new AttrType(AttrType.attrInteger)}, null);
             metadata.setIntFld(1, this.type);
             metadataFile.insertRecord(metadata.getTupleByteArray());
+            
+            // Create the heap file for storing the Maps
             this.heapfile = new Heapfile(name + ".heap");
+            
+            // Initialize the HashMap used for maintaining versions
             this.mapVersion = new HashMap<>();
+            
+            //
             createIndex();
         } catch (Exception e) {
             e.printStackTrace();
@@ -75,59 +108,18 @@ public class bigT {
         if (this.indexFile != null) this.indexFile.close();
         if (this.timestampIndexFile != null) this.timestampIndexFile.close();
         System.out.println("HashMap ->");
-        printHashMap();
+        printMapVersion();
+        
+        // Add logic to store the HashMap to Metadata heap file
+        
+        
         SystemDefs.JavabaseBM.flushAllPages();
         SystemDefs.JavabaseDB.closeDB();
-        System.out.println("Closing BigT File");
+        System.out.println("Successfully closed the BigT File");
     }
     
-    public static void main(String[] args) throws Exception {
-        boolean isNewDb = true;
-        int numPages = isNewDb ? MINIBASE_DB_SIZE : 0;
-        new SystemDefs("/Users/sumukhashwinkamath/test.db", numPages, NUMBUF, "Clock");
-        bigT bigT;
-        if (isNewDb) {
-            bigT = new bigT("test1", 3);
-        } else {
-            bigT = new bigT("test1");
-        }
-        
-        Map map = bigT.formMap("1", "2", 3, "4");
-        bigT.insertMap(map.getMapByteArray());
-
-        map = bigT.formMap("a", "b", 6, "d");
-        bigT.insertMap(map.getMapByteArray());
-
-        map = bigT.formMap("a", "c", 9, "4");
-        bigT.insertMap(map.getMapByteArray());
     
-        map = bigT.formMap("a", "d", 10, "6");
-        bigT.insertMap(map.getMapByteArray());
-        
-        int rowCnt = bigT.getRowCnt();
-        System.out.println("rowCnt = " + rowCnt);
-    
-        int colCnt = bigT.getColumnCnt();
-        System.out.println("colCnt = " + colCnt);
-    
-        int mapCount = bigT.getMapCnt();
-        System.out.println("mapCount = " + mapCount);
-        
-        bigT.getRecords();
-        bigT.close();
-    }
-    
-    private Map formMap(String row, String col, int timestamp, String value) throws IOException, InvalidMapSizeException, InvalidStringSizeArrayException, InvalidTypeException {
-        Map map = new Map();
-        short[] strSizes = new short[]{(short) row.getBytes().length, (short) col.getBytes().length, (short) value.getBytes().length};
-        map.setHeader(new AttrType[]{new AttrType(AttrType.attrString), new AttrType(AttrType.attrString), new AttrType(AttrType.attrInteger), new AttrType(AttrType.attrString)}, strSizes);
-        map.setRowLabel(row);
-        map.setColumnLabel(col);
-        map.setTimeStamp(timestamp);
-        map.setValue(value);
-        return map;
-    }
-    
+    // This method is temporary. Should Ideally use Stream class to get the records
     public void getRecords() throws Exception {
         BTFileScan btFileScan = this.indexFile.new_scan(new StringKey("2"), new StringKey("c"));
         while(true){
@@ -137,6 +129,15 @@ public class bigT {
             }
             printMap(kde);
         }
+    }
+    
+    // This should ideally be removed. This functionality should be a part of Stream class
+    private void printMap(KeyDataEntry keyDataEntry) throws Exception {
+        LeafData dataClass = (LeafData) keyDataEntry.data;
+        RID rra = dataClass.getData();
+        MID midi = MapUtils.midFromRid(rra);
+        Map mappa = this.heapfile.getMap(midi);
+        mappa.print();
     }
     
     //Delete the bigtable from the database.
@@ -156,13 +157,15 @@ public class bigT {
         return distinctRow.size();
     }
     
-    //    Return number of distinct column labels in the bigtable.
+    // Return number of distinct column labels in the bigtable.
     int getColumnCnt() {
         Set<String> distinctCol = new HashSet<>();
         mapVersion.keySet().forEach(key -> distinctCol.add(key.split("\\$")[1]));
         return distinctCol.size();
     }
     
+    
+    // Opens the Btree index files based on type and stores it in instance variable indexFile and timestampIndex file
     private void setIndexFiles() throws Exception {
         switch (this.type) {
             case 1:
@@ -187,6 +190,8 @@ public class bigT {
         }
     }
     
+    
+    // Creates the required btree index filed based on type and stores it in the instance variable indexFile and timestampIndex file
     private void createIndex() throws Exception {
         switch (this.type) {
             case 1:
@@ -211,15 +216,8 @@ public class bigT {
         }
     }
     
-    private void printMap(KeyDataEntry keyDataEntry) throws Exception {
-        LeafData dataClass = (LeafData) keyDataEntry.data;
-        RID rra = dataClass.getData();
-        MID midi = MapUtils.midFromRid(rra);
-        Map mappa = this.heapfile.getMap(midi);
-        mappa.print();
-    }
-    
-    private void printHashMap(){
+    // Prints the mapVersion HashMap
+    private void printMapVersion(){
         mapVersion.entrySet().forEach(entry->{ System.out.println(entry.getKey() + ":" + entry.getValue().toString());});
     }
     
