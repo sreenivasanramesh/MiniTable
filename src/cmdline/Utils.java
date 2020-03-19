@@ -22,7 +22,7 @@ class Utils {
 
     static void batchInsert(String dataFile, String tableName, int type) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException
     {
-        String dbPath =  getDBPath(tableName);
+        String dbPath =  getDBPath(tableName, type);
         System.out.println(dbPath);
         File f = new File(dbPath);
         //If DB exists use it, else create a new DB with NUM_PAGES pages
@@ -84,7 +84,7 @@ class Utils {
 
 
     static void query(String tableName, Integer type, Integer orderType, String rowFilter, String colFilter, String valFilter, Integer NUMBUF) throws Exception {
-        String dbPath =  getDBPath(tableName);
+        String dbPath =  getDBPath(tableName, type);
         new SystemDefs(dbPath, 0, NUMBUF, "Clock");
         int resultCount = 0;
 
@@ -119,8 +119,8 @@ class Utils {
 
 
 
-    public static String getDBPath(String tableName){
-        return "/Users/vasan/" + tableName + ".db";
+    public static String getDBPath(String tableName, Integer type){
+        return "/Users/vasan/" + tableName + "." + type + ".db";
     }
 
 
