@@ -103,7 +103,8 @@ public class bigT {
             e.printStackTrace();
         }
     }
-    
+
+
     public void close() throws PageUnpinnedException, PagePinnedException, PageNotFoundException, HashOperationException, BufMgrException, IOException, HashEntryNotFoundException, InvalidFrameNumberException, ReplacerException {
         if (this.indexFile != null) this.indexFile.close();
         if (this.timestampIndexFile != null) this.timestampIndexFile.close();
