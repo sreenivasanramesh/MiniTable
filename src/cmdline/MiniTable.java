@@ -3,6 +3,7 @@ package cmdline;
 import bufmgr.*;
 import diskmgr.pcounter;
 import global.SystemDefs;
+import iterator.CondExpr;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,21 +27,27 @@ public class MiniTable {
             try {
                 if (inputStr[0].equalsIgnoreCase("exit"))
                     break;
-                else if (inputStr[0].equalsIgnoreCase("batchinsert")) {
+                else if (inputStr[0].equalsIgnoreCase("batchinsert"))
+                {
+                    //batchinsert DATAFILENAME TYPE BIGTABLENAME
                     String dataFile = inputStr[1];
                     Integer type = Integer.parseInt(inputStr[2]);
                     String tableName = inputStr[3];
                     Utils.batchInsert(dataFile, tableName, type);
-                } else if (inputStr[0].equalsIgnoreCase("query")) {
-                /*
-                //BIGTABLENAME TYPE ORDERTYPE ROWFILTER COLUMNFILTER VALUEFILTER NUMBUF
-                //Integer type = Integer.parseInt(args[1]);
-                //Integer orderType = Integer.parseInt(args[2]);
-                //String rowFilter = args[3];
-                //String colFilter = args[4];
-                //String valFilter = args[5];
-                //Integer NUMBUF = Integer.parseInt(args[6]);
-                */
+                }
+                else if (inputStr[0].equalsIgnoreCase("query"))
+                {
+                    //query BIGTABLENAME TYPE ORDERTYPE ROWFILTER COLUMNFILTER VALUEFILTER NUMBUF
+                    String tableName = args[1].trim();
+                    Integer type = Integer.parseInt(args[2]);
+                    Integer orderType = Integer.parseInt(args[3]);
+                    String rowFilter = args[5].trim();
+                    String colFilter = args[5].trim();
+                    String valFilter = args[6].trim();
+                    //String filter = rowFilter + ";" + colFilter + ";" + valFilter;
+                    Integer NUMBUF = Integer.parseInt(args[7]);
+                    //CondExpr filters[] = Utils.getCondExpr(filter);
+                    Utils.query(tableName, type, orderType, rowFilter, colFilter, valFilter, NUMBUF);
                 }
                 else
                     System.out.println("Invalid input. Type exit to quit.\n\n");
