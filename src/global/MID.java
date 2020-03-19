@@ -1,8 +1,11 @@
 package global;
 
 import java.io.IOException;
+import java.io.Serializable;
 
-public class MID {
+public class MID implements Serializable {
+    private static final long serialVersionUID = -1L;
+
     private int slotNo;
     private PageId pageNo = new PageId();
 

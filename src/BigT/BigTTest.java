@@ -11,44 +11,53 @@ import static global.GlobalConst.MINIBASE_DB_SIZE;
 import static global.GlobalConst.NUMBUF;
 
 public class BigTTest {
-    
+
     public static void main(String[] args) throws Exception {
-        boolean isNewDb = true;
+        boolean isNewDb = false;
         int numPages = isNewDb ? MINIBASE_DB_SIZE : 0;
-        new SystemDefs("/Users/sumukhashwinkamath/test.db", numPages, NUMBUF, "Clock");
+        new SystemDefs("/Users/rakeshr/test.db", numPages, NUMBUF, "Clock");
         bigT bigT;
         if (isNewDb) {
-            bigT = new bigT("test1", 3);
+            bigT = new bigT("test1", 4);
         } else {
             bigT = new bigT("test1");
         }
-        
-        BigTTest bigTTest = new BigTTest();
-        Map map = bigTTest.formMap("1", "2", 3, "4");
-        bigT.insertMap(map.getMapByteArray());
-        
-        map = bigTTest.formMap("a", "b", 6, "d");
-        bigT.insertMap(map.getMapByteArray());
-        
-        map = bigTTest.formMap("a", "c", 9, "4");
-        bigT.insertMap(map.getMapByteArray());
-        
-        map = bigTTest.formMap("a", "d", 10, "6");
-        bigT.insertMap(map.getMapByteArray());
-        
+
+//        BigTTest bigTTest = new BigTTest();
+//        Map map = bigTTest.formMap("1", "2", 3, "4");
+//        bigT.insertMap(map.getMapByteArray());
+//
+//        map = bigTTest.formMap("1", "2", 4, "4");
+//        bigT.insertMap(map.getMapByteArray());
+//
+//        map = bigTTest.formMap("1", "2", 5, "4");
+//        bigT.insertMap(map.getMapByteArray());
+//
+//        map = bigTTest.formMap("1", "2", 6, "4");
+//        bigT.insertMap(map.getMapByteArray());
+//
+//        map = bigTTest.formMap("a", "b", 6, "d");
+//        bigT.insertMap(map.getMapByteArray());
+//
+//        map = bigTTest.formMap("a", "c", 9, "4");
+//        bigT.insertMap(map.getMapByteArray());
+//
+//        map = bigTTest.formMap("a", "d", 10, "6");
+//        bigT.insertMap(map.getMapByteArray());
+
         int rowCnt = bigT.getRowCnt();
         System.out.println("rowCnt = " + rowCnt);
-        
+
         int colCnt = bigT.getColumnCnt();
         System.out.println("colCnt = " + colCnt);
-        
+
         int mapCount = bigT.getMapCnt();
         System.out.println("mapCount = " + mapCount);
-        
+
         bigT.getRecords();
         bigT.close();
     }
-    
+
     private Map formMap(String row, String col, int timestamp, String value) throws IOException, InvalidMapSizeException, InvalidStringSizeArrayException, InvalidTypeException {
         Map map = new Map();
         short[] strSizes = new short[]{(short) row.getBytes().length, (short) col.getBytes().length, (short) value.getBytes().length};
