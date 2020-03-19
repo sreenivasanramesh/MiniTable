@@ -43,5 +43,8 @@ public class MID {
     public boolean equals(MID mid) {
         return this.pageNo.pid == mid.pageNo.pid && this.slotNo == mid.slotNo;
     }
-
+    
+    public String toString(){
+        return "{'PageNo':" + this.pageNo.pid + ", 'SlotNo:'" + this.slotNo + "}";
+    }
 }

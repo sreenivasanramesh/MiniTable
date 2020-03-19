@@ -206,12 +206,10 @@ public class BTreeFile extends IndexFile
 
 
         headerPageId = get_file_entry(filename);
-        System.out.println("HEADERPAGEGEGEG : " + headerPageId);
         if (headerPageId == null) //file not exist
         {
             headerPage = new BTreeHeaderPage();
             headerPageId = headerPage.getPageId();
-            System.out.println("headerPageId = " + headerPageId);
             add_file_entry(filename, headerPageId);
             headerPage.set_magic0(MAGIC0);
             headerPage.set_rootId(new PageId(INVALID_PAGE));
@@ -219,7 +217,6 @@ public class BTreeFile extends IndexFile
             headerPage.set_maxKeySize(keysize);
             headerPage.set_deleteFashion(delete_fashion);
             headerPage.setType(NodeType.BTHEAD);
-            System.out.println("HEADER PAGE : : : : :" + headerPage);
         } else {
             headerPage = new BTreeHeaderPage(headerPageId);
         }
@@ -371,9 +368,6 @@ public class BTreeFile extends IndexFile
             InsertException,
             IOException {
         KeyDataEntry newRootEntry;
-        System.out.println("KEY : " + key);
-        System.out.println(BT.getKeyLength(key));
-        System.out.println(headerPage.get_maxKeySize());
         if (BT.getKeyLength(key) > headerPage.get_maxKeySize())
             throw new KeyTooLongException(null, "");
 
