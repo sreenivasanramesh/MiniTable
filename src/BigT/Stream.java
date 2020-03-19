@@ -4,9 +4,7 @@ import btree.IndexFileScan;
 import global.*;
 
 import heap.*;
-import iterator.CondExpr;
-import iterator.FldSpec;
-import iterator.RelSpec;
+import iterator.*;
 
 
 public class Stream extends Scan {
@@ -15,12 +13,13 @@ public class Stream extends Scan {
      * Initialize a stream of maps on big-table
      */
     Heapfile heapfile;
-    String rowFilter;
-    String columnFilter;
-    String valueFilter;
+    CondExpr[] rowFilter;
+    CondExpr[] columnFilter;
+    CondExpr[] valueFilter;
     bigT bigTable;
     int orderType;
     int type;
+    Iterator iterator;
     MID mid = null;
     String starFilter = new String("*");
     String rangeRegex = new String("\\[\\d+, \\d+\\]");
@@ -28,28 +27,31 @@ public class Stream extends Scan {
 
 
     /* Pending */
-    public Stream(bigT bigtable, int orderType, String rowFilter, String columnFilter, String valueFilter, int type) throws Exception {
-        super(bigtable.heapfile);
+    public Stream(bigT bigTable, int orderType, String rowFilter, String columnFilter, String valueFilter, int type) throws Exception {
+        super(bigTable.heapfile);
 
-        int mapCount = bigtable.getMapCnt();
-        int rowCount = bigtable.getRowCnt();
-        int columnCount = bigtable.getColumnCnt();
-        this.bigTable = bigtable;
+        this.bigTable = bigTable;
         this.orderType = orderType;
-        this.heapfile = bigtable.heapfile;
-        this.rowFilter = rowFilter;
-        this.columnFilter = columnFilter;
-        this.valueFilter = valueFilter;
+        this.heapfile = bigTable.heapfile;
+        this.rowFilter = getCondExpr(rowFilter);
+        this.columnFilter = getCondExpr(columnFilter);
+        this.valueFilter = getCondExpr(valueFilter);
         this.type = type;
+
+        //do something and create an iterator object
 
     }
 
 
-    /**
-     * Closes open stream. Same as Heap.Scan.closeScan.
-     */
+    //Closes open stream. Same as Heap.Scan.closeScan
     public void closeStream() {
         super.closescan();
+    }
+
+
+    public Map getNext() throws Exception {
+
+        return null;
     }
 
 
