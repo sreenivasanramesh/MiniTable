@@ -97,7 +97,8 @@ class Utils {
 
             while (true) {
                 //TODO: I'm not really sure about the mapId, have to check how to do this
-                Map mapObj = mapStream.getNext(mapId);
+//                Map mapObj = mapStream.getNext(mapId);
+                Map mapObj = null;
                 if (mapObj == null)
                     break;
                 mapObj.print();

@@ -15,7 +15,7 @@ public class BigTTest {
     public static void main(String[] args) throws Exception {
         boolean isNewDb = false;
         int numPages = isNewDb ? MINIBASE_DB_SIZE : 0;
-        new SystemDefs("/Users/rakeshr/test.db", numPages, NUMBUF, "Clock");
+        new SystemDefs("/Users/sumukhashwinkamath/test.db", numPages, NUMBUF, "Clock");
         bigT bigT;
         if (isNewDb) {
             bigT = new bigT("test1", 4);
@@ -44,6 +44,8 @@ public class BigTTest {
 //
 //        map = bigTTest.formMap("a", "d", 10, "6");
 //        bigT.insertMap(map.getMapByteArray());
+//        bigT.printFullScan();
+//
 
         int rowCnt = bigT.getRowCnt();
         System.out.println("rowCnt = " + rowCnt);
