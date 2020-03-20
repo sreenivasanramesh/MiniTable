@@ -330,12 +330,10 @@ public class bigT {
     public void printFullScan() throws InvalidTupleSizeException, IOException {
         MapScan mapScan = this.heapfile.openMapScan();
         MID mid = new MID();
-        while(true){
-            Map map = mapScan.getNext(mid);
-            if (map == null){
-                break;
-            }
+        Map map = mapScan.getNext(mid);
+        while(map != null){
             map.print();
+            map = mapScan.getNext(mid);
         }
     }
 

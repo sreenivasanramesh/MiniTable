@@ -44,7 +44,7 @@ public class BigTTest {
 //
 //        map = bigTTest.formMap("a", "d", 10, "6");
 //        bigT.insertMap(map.getMapByteArray());
-//        bigT.printFullScan();
+        bigT.printFullScan();
 //
 
         int rowCnt = bigT.getRowCnt();
