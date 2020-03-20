@@ -1419,6 +1419,18 @@ public class Heapfile implements Filetype, GlobalConst {
         Scan newscan = new Scan(this);
         return newscan;
     }
+    
+    /** Initiate a sequential map scan.
+     * @exception InvalidTupleSizeException Invalid tuple size
+     * @exception IOException I/O errors
+     *
+     */
+    public MapScan openMapScan()
+            throws InvalidTupleSizeException,
+            IOException {
+        MapScan newscan = new MapScan(this);
+        return newscan;
+    }
 
 
     /** Delete the file from the database.

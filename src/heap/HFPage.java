@@ -605,6 +605,39 @@ public class HFPage extends Page
 
         return rid;
     }
+    
+    /**
+     * @return MID of first map on page, null if page contains no records.
+     * @throws IOException I/O errors
+     *                     in C++ Status firstRecord(RID& firstRid)
+     */
+    public MID firstMap()
+            throws IOException {
+        MID mid = new MID();
+        // find the first non-empty slot
+        
+        
+        slotCnt = Convert.getShortValue(SLOT_CNT, data);
+        
+        int i;
+        short length;
+        for (i = 0; i < slotCnt; i++) {
+            length = getSlotLength(i);
+            if (length != EMPTY_SLOT)
+                break;
+        }
+        
+        if (i == slotCnt)
+            return null;
+        
+        // found a non-empty slot
+        
+        mid.setSlotNo(i);
+        curPage.pid = Convert.getIntValue(CUR_PAGE, data);
+        mid.setPageNo(curPage);
+        
+        return mid;
+    }
 
     /**
      * @param curRid current record ID

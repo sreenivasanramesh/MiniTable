@@ -68,7 +68,7 @@ public class bigT {
             this.heapfile = new Heapfile(name + ".heap");
 
             // Load the mapVersion HashMap from the disk
-            try (ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream("/Users/rakeshr/" + this.name + ".hashmap.ser"))) {
+            try (ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream("/Users/sumukhashwinkamath/" + this.name + ".hashmap.ser"))) {
                 this.type = objectInputStream.readByte();
                 this.mapVersion = (HashMap<String, ArrayList<MID>>) objectInputStream.readObject();
             } catch (IOException e) {
@@ -115,7 +115,7 @@ public class bigT {
 //        printMapVersion();
 
 
-        try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream("/Users/rakeshr/" + this.name + ".hashmap.ser"))) {
+        try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream("/Users/sumukhashwinkamath/" + this.name + ".hashmap.ser"))) {
             objectOutputStream.writeByte(type);
             objectOutputStream.writeObject(mapVersion);
         } catch (IOException e) {
@@ -258,7 +258,7 @@ public class bigT {
                     }
                 }
             }
-            System.out.println("list SIZE = " + list.size());
+            
             if (list.size() > 3) {
                 throw new IOException("Metadata file is corrupted, please delete it");
             }
@@ -323,6 +323,20 @@ public class bigT {
             this.indexFile.insert(new StringKey(key), rid);
         }
         return mid;
+    }
+    
+    // TODO: This method needs to be removed
+    // Just a method to test Map Scan. to be removed
+    public void printFullScan() throws InvalidTupleSizeException, IOException {
+        MapScan mapScan = this.heapfile.openMapScan();
+        MID mid = new MID();
+        while(true){
+            Map map = mapScan.getNext(mid);
+            if (map == null){
+                break;
+            }
+            map.print();
+        }
     }
 
     public Stream openStream(int orderType, java.lang.String rowFilter, java.lang.String columnFilter, java.
