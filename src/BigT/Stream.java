@@ -3,7 +3,12 @@ package BigT;
 import btree.*;
 import diskmgr.bigDB;
 import global.MID;
+import global.RID;
+import global.TupleOrder;
 import heap.*;
+import iterator.FileScan;
+import iterator.FldSpec;
+import iterator.RelSpec;
 import iterator.Sort;
 
 import java.io.IOException;
@@ -16,11 +21,16 @@ public class Stream {
     private final String columnFilter;
     private final String valueFilter;
     private bigT bigtable;
-    private Scan bigtScanner; // similar to heap scan @ashwin
     private boolean scanAll = false;
-    String starFilter = new String("*");
-    String rangeRegex = new String("\\[\\d+, \\d+\\]");
+    private String starFilter = new String("*");
+    private String rangeRegex = new String("\\[\\d+, \\d+\\]");
     private BTFileScan btreeScanner, dummyScanner;
+    public Heapfile tempHeapFile;
+    private MID midList[];
+    private int midCounter;
+    private Sort sortObj;
+    private boolean versionEnabled = true;
+    private MapScan mapScan;
 
     public Stream(bigT bigTable, int orderType, String rowFilter, String columnFilter, String valueFilter) throws Exception {
 
@@ -135,12 +145,143 @@ public class Stream {
         dummyScanner = bigtable.indexFile.new_scan(null, null);
     }
 
-    public void sortData() throws IOException, HFException, HFBufMgrException, HFDiskMgrException {
-        Heapfile tempHeapFile = new Heapfile("query_temp_heap_file");
-
-        if(scanAll) {
+    public void sortData(int orderType) throws Exception {
+        tempHeapFile = new Heapfile("query_temp_heap_file");
+        MID midObj = new MID();
+        if (scanAll) {
             //scanning whole bigt file.
-            Map mapObj = bigtScanner.getNext(new MID()); // should be modified for mid.
+            mapScan = bigtable.heapfile.openMapScan();
+            //bigtable.heapfile.openMapScan();
+            //mapObj.setHeader();
+            Map mapObj = null;
+
+            do {
+                mapObj = mapScan.getNext(midObj);
+                // TODO: not sure if need to set header
+                boolean set_filter = setFilter(mapObj, rowFilter, columnFilter, valueFilter);
+                if (set_filter) {
+                    if (orderType == 6 && midCounter < 3) {
+                        MID tempMid = new MID(midObj.getPageNo(), midObj.getSlotNo());
+                        midList[midCounter++] = tempMid;
+                    }
+                }
+            }while (mapObj != null) ;
+        } else {
+            KeyDataEntry entry = btreeScanner.get_next();
+            while (entry != null) {
+                RID rid = ((LeafData) entry.data).getData();
+                if (rid != null) {
+                    MID midFromRid = new MID(rid.pageNo, rid.slotNo);
+                    Map map = bigtable.heapfile.getMap(midFromRid);
+                    if(this.type == 5){
+                        if((!rowFilter.matches(rangeRegex)) && rowFilter.compareTo(map.getRowLabel()) != 0){
+                            break;
+                        } else if (rowFilter.matches(rangeRegex)) {
+                            String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
+                            if((map.getRowLabel().compareTo(rowRange[0]) < 0)
+                                    || (map.getRowLabel().compareTo(rowRange[1]) > 0)){
+                                break;
+                            }
+                        }
+                    }
+                    boolean set_filter = setFilter(map, rowFilter, columnFilter, valueFilter);
+                    if (set_filter) {
+                        if (orderType == 6 && midCounter < 3) {
+                            MID tempMid = new MID(midObj.getPageNo(), midObj.getSlotNo());
+                            midList[midCounter++] = tempMid;
+                        }
+                    }
+                }
+                entry = btreeScanner.get_next();
+            }
+        }
+
+        if (versionEnabled) {
+            FldSpec[] projection = new FldSpec[4];
+            RelSpec rel = new RelSpec(RelSpec.outer);
+            projection[0] = new FldSpec(rel, 1);
+            projection[1] = new FldSpec(rel, 2);
+            projection[2] = new FldSpec(rel, 3);
+            projection[3] = new FldSpec(rel, 4);
+
+            FileScan fscan = null;
+
+            try {
+                // TODO : set attribute types and attribute sizes
+                fscan = new FileScan("query_temp_heap_file", Minibase.getInstance().getAttrTypes(),
+                        Minibase.getInstance().getAttrSizes(), (short) 4, 4, projection, null);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            int sortField, maxLength = -1;
+            // TODO: set max length.
+            switch (orderType) {
+                case 1:
+                case 3:
+                    sortField = 1;
+                    maxLength = Minibase.getInstance().getMaxRowKeyLength();
+                    break;
+                case 2:
+                case 4:
+                    sortField = 2;
+                    maxLength = Minibase.getInstance().getMaxColumnKeyLength();
+                    break;
+                case 6:
+                    sortField = 3;
+                    maxLength = Minibase.getInstance().getMaxTimeStampLength();
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected value: " + orderType);
+            }
+            try {
+                sortObj = new Sort(Minibase.getInstance().getAttrTypes(), (short) 4, Minibase.getInstance().getAttrSizes()
+                        , fscan, sortField, new TupleOrder(TupleOrder.Ascending), maxLength, 10);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    public boolean setFilter(Map map, String rowFilter, String columnFilter, String valueFilter) throws IOException {
+
+        boolean ret_val = true;
+
+        if (rowFilter.matches(rangeRegex)) {
+            String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
+            if (map.getRowLabel().compareTo(rowRange[0]) < 0 || map.getRowLabel().compareTo(rowRange[1]) > 0) ret_val = false;
+        } else {
+            if ( (rowFilter.matches(starFilter))  && (map.getRowLabel().compareTo(rowFilter)!=0)) ret_val = false;
+        }
+
+        if (columnFilter.matches(rangeRegex)) {
+            String[] columnRange = columnFilter.replaceAll("[\\[ \\]]", "").split(",");
+            if (map.getRowLabel().compareTo(columnRange[0]) < 0 || map.getRowLabel().compareTo(columnRange[1]) > 0)
+                ret_val = false;
+        } else {
+            if ( (columnFilter.matches(starFilter))  && (map.getRowLabel().compareTo(columnFilter)!=0)) ret_val = false;
+        }
+
+        if (valueFilter.matches(rangeRegex)) {
+            String[] valueRange = valueFilter.replaceAll("[\\[ \\]]", "").split(",");
+            if (map.getRowLabel().compareTo(valueRange[0]) < 0 || map.getRowLabel().compareTo(valueRange[1]) > 0)
+                ret_val = false;
+        } else {
+            if ( (valueFilter.matches(starFilter))  && (map.getRowLabel().compareTo(valueFilter)!=0)) ret_val = false;
+        }
+        return ret_val;
+    }
+
+
+    public void closeStream() throws Exception {
+        if (sortObj != null) {
+            sortObj.close();
+        }
+        if (mapScan != null) {
+            mapScan.closescan();
+        }
+        if (btreeScanner != null) {
+            btreeScanner.DestroyBTreeFileScan();
         }
     }
 }
