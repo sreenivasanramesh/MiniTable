@@ -2,10 +2,11 @@ package iterator;
 
 import BigT.InvalidStringSizeArrayException;
 import BigT.Map;
+import global.AttrOperator;
+import global.AttrType;
 import heap.*;
-import global.*;
 
-import java.io.*;
+import java.io.IOException;
 
 public class PredEval {
     /**
@@ -25,8 +26,8 @@ public class PredEval {
      * @throws FieldNumberOutOfBoundException field number exceeds limit
      * @throws PredEvalException              exception from this method
      */
-    public static boolean Eval(CondExpr p[], Tuple t1, Tuple t2, AttrType in1[],
-                               AttrType in2[])
+    public static boolean Eval(CondExpr[] p, Tuple t1, Tuple t2, AttrType[] in1,
+                               AttrType[] in2)
             throws IOException,
             UnknowAttrType,
             InvalidTupleSizeException,
@@ -175,8 +176,8 @@ public class PredEval {
     }
 
 
-    public static boolean Eval(CondExpr p[], Map m1, Map m2, AttrType in1[],
-                               AttrType in2[])
+    public static boolean Eval(CondExpr[] p, Map m1, Map m2, AttrType[] in1,
+                               AttrType[] in2)
             throws IOException,
             UnknowAttrType,
             InvalidTupleSizeException,
@@ -184,9 +185,9 @@ public class PredEval {
             FieldNumberOutOfBoundException,
             PredEvalException, InvalidMapSizeException, InvalidStringSizeArrayException {
         CondExpr temp_ptr;
-        int       i = 0;
-        Map    map1 = null, map2 = null;
-        int      fld1, fld2;
+        int i = 0;
+        Map map1 = null, map2 = null;
+        int fld1, fld2;
         Map    value =   new Map();
         short[]     str_size = new short[1];
         AttrType[]  val_type = new AttrType[1];
@@ -334,5 +335,5 @@ public class PredEval {
 
     }
 }
-}
+
 
