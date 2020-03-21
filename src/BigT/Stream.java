@@ -25,16 +25,11 @@ public class Stream {
     private BTFileScan btreeScanner, dummyScanner;
     public Heapfile tempHeapFile;
     private MID midList[];
-    private int midCounter;
+    private int midCounter = 0;
     private MapSort sortObj;
     private boolean versionEnabled = true;
     private MapScan mapScan;
     private int type, orderType;
-
-    private static short REC_LEN1 = 32;
-    private static short REC_LEN2 = 160;
-    private AttrType[] attrType = new AttrType[4];
-    short[] attrSize = new short[4];
 
 
     public Stream(bigT bigTable, int orderType, String rowFilter, String columnFilter, String valueFilter) throws Exception {
@@ -45,16 +40,6 @@ public class Stream {
         this.valueFilter = valueFilter;
         this.type = bigTable.type;
         this.orderType = orderType;
-
-        this.attrType[0] = new AttrType(AttrType.attrString);
-        this.attrType[1] = new AttrType(AttrType.attrString);
-        this.attrType[2] = new AttrType(AttrType.attrString);
-        this.attrType[3] = new AttrType(AttrType.attrInteger); // TODO: string/int???
-
-        this.attrSize[0] = REC_LEN1;
-        this.attrSize[1] = REC_LEN1;
-        this.attrSize[2] = REC_LEN1;
-        this.attrSize[3] = REC_LEN1;
 
         queryConditions();
     }
@@ -174,22 +159,22 @@ public class Stream {
         · 4, then results are first ordered in column label, then time stamp
         · 6, then results are ordered in time stamp
         * */
-        tempHeapFile = new Heapfile("query_temp_heap_file");
+        tempHeapFile = new Heapfile("temp_heap_file");
         MID midObj = new MID();
         if (scanAll) {
             //scanning whole bigt file.
             mapScan = bigtable.heapfile.openMapScan();
-            //bigtable.heapfile.openMapScan();
             //mapObj.setHeader();
             Map mapObj = null;
 
             do {
                 mapObj = mapScan.getNext(midObj);
                 // TODO: not sure if need to set header
-                boolean set_filter = setFilter(mapObj, rowFilter, columnFilter, valueFilter);
-                if (set_filter) {
-                    if (orderType == 6 && midCounter < 3) {
-                        MID tempMid = new MID(midObj.getPageNo(), midObj.getSlotNo());
+                boolean filterIsSet = setFilter(mapObj, rowFilter, columnFilter, valueFilter);
+                if (filterIsSet) {
+                    if (orderType == 5 && midCounter < 3) {
+                        MID tempMid = new MID();
+                        tempMid.copyMid(midObj);
                         midList[midCounter++] = tempMid;
                     }
                 }
@@ -236,7 +221,7 @@ public class Stream {
 
             try {
                 // TODO : set attribute types and attribute sizes - done
-                fscan = new FileScan("query_temp_heap_file", attrType, attrSize, (short) 4, 4, projection, null);
+                fscan = new FileScan("temp_heap_file", bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES, (short) 4, 4, projection, null);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -261,7 +246,8 @@ public class Stream {
                     throw new IllegalStateException("Unexpected value: " + orderType);
             }
             try {
-                sortObj = new MapSort(attrType,attrSize, fscan, sortField, new TupleOrder(TupleOrder.Ascending), maxLength);
+                this.sortObj = new MapSort(bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES, fscan, sortField, new TupleOrder(TupleOrder.Ascending), maxLength);
+                System.out.println("Came till here!!!");
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -300,8 +286,8 @@ public class Stream {
 
 
     public void closeStream() throws Exception {
-        if (sortObj != null) {
-            sortObj.close();
+        if (this.sortObj != null) {
+            this.sortObj.close();
         }
         if (mapScan != null) {
             mapScan.closescan();
@@ -312,13 +298,13 @@ public class Stream {
     }
 
     public Map getNext() throws Exception {
-        if (sortObj == null) {
+        if (this.sortObj == null) {
             System.out.println("something is wrong, might be check versions flag is enabled");
             return null;
         }
         Map m = null;
         try {
-            m = sortObj.get_next();
+            m = this.sortObj.get_next();
         } catch (OutOfSpaceException e) {
             closeStream();
         }

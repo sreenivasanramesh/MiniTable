@@ -84,7 +84,7 @@ class Utils {
 
         try {
             //TODO: query logic
-            bigT bigTable = new bigT(tableName, type);
+            bigT bigTable = new bigT(tableName);
             Stream mapStream = bigTable.openStream(orderType, rowFilter, colFilter, valFilter);
 
             MID mapId = null;
