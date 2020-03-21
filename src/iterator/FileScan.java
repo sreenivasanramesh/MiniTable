@@ -14,7 +14,7 @@ import java.io.*;
  * open a heapfile and according to the condition expression to get
  * output file, call get_next to get all tuples
  */
-public class FileScan extends Iterator {
+public class FileScan extends MapIterator {
     private AttrType[] _in1;
     private short in1_len;
     private short[] s_sizes;

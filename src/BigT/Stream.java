@@ -1,16 +1,14 @@
 package BigT;
 
 import btree.*;
+import diskmgr.OutOfSpaceException;
 import diskmgr.bigDB;
 import global.AttrType;
 import global.MID;
 import global.RID;
 import global.TupleOrder;
 import heap.*;
-import iterator.FileScan;
-import iterator.FldSpec;
-import iterator.RelSpec;
-import iterator.Sort;
+import iterator.*;
 
 import java.io.IOException;
 
@@ -29,15 +27,15 @@ public class Stream {
     public Heapfile tempHeapFile;
     private MID midList[];
     private int midCounter;
-    private Sort sortObj;
+    private MapSort sortObj;
     private boolean versionEnabled = true;
     private MapScan mapScan;
     private int type;
 
     private static short REC_LEN1 = 32;
     private static short REC_LEN2 = 160;
-    private AttrType[] attrType = new AttrType[2];
-    short[] attrSize = new short[2];
+    private AttrType[] attrType = new AttrType[4];
+    short[] attrSize = new short[4];
 
 
     public Stream(bigT bigTable, int orderType, String rowFilter, String columnFilter, String valueFilter) throws Exception {
@@ -51,9 +49,13 @@ public class Stream {
 
         this.attrType[0] = new AttrType(AttrType.attrString);
         this.attrType[1] = new AttrType(AttrType.attrString);
+        this.attrType[2] = new AttrType(AttrType.attrString);
+        this.attrType[3] = new AttrType(AttrType.attrInteger); // TODO: string/int???
 
         this.attrSize[0] = REC_LEN1;
-        this.attrSize[1] = REC_LEN2;
+        this.attrSize[1] = REC_LEN1;
+        this.attrSize[2] = REC_LEN1;
+        this.attrSize[3] = REC_LEN1;
 
         queryConditions();
     }
@@ -249,7 +251,7 @@ public class Stream {
                     throw new IllegalStateException("Unexpected value: " + orderType);
             }
             try {
-                sortObj = new Sort(attrType, (short) 4, attrSize, fscan, sortField, new TupleOrder(TupleOrder.Ascending), maxLength, 10);
+                sortObj = new MapSort(attrType,attrSize, fscan, sortField, new TupleOrder(TupleOrder.Ascending), maxLength);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -297,5 +299,25 @@ public class Stream {
         if (btreeScanner != null) {
             btreeScanner.DestroyBTreeFileScan();
         }
+    }
+
+    public Map getNext() throws Exception {
+        if (sortObj == null) {
+            System.out.println("something is wrong, might be check versions flag is enabled");
+            return null;
+        }
+        Map m = null;
+        try {
+            m = sortObj.get_next();
+        } catch (OutOfSpaceException e) {
+            closeStream();
+        }
+        if (m == null) {
+            System.out.println("Deleting temp file used for sorting");
+            tempHeapFile.deleteFile();
+            closeStream();
+            return null;
+        }
+        return m;
     }
 }
