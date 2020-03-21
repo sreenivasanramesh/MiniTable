@@ -22,7 +22,7 @@ public class MiniTable {
             input = br.readLine();
             if (input.equals(""))
                 continue;
-            inputStr = input.split("\\s+");
+            inputStr = input.trim().split("\\s+");
 
             try {
                 if (inputStr[0].equalsIgnoreCase("exit"))
@@ -38,14 +38,15 @@ public class MiniTable {
                 else if (inputStr[0].equalsIgnoreCase("query"))
                 {
                     //query BIGTABLENAME TYPE ORDERTYPE ROWFILTER COLUMNFILTER VALUEFILTER NUMBUF
-                    String tableName = args[1].trim();
-                    Integer type = Integer.parseInt(args[2]);
-                    Integer orderType = Integer.parseInt(args[3]);
-                    String rowFilter = args[5].trim();
-                    String colFilter = args[5].trim();
-                    String valFilter = args[6].trim();
+                    //ystem.out.println(args[0] + args[1] + args[2] + args[3]);
+                    String tableName = inputStr[1].trim();
+                    Integer type = Integer.parseInt(inputStr[2]);
+                    Integer orderType = Integer.parseInt(inputStr[3]);
+                    String rowFilter = inputStr[4].trim();
+                    String colFilter = inputStr[5].trim();
+                    String valFilter = inputStr[6].trim();
                     //String filter = rowFilter + ";" + colFilter + ";" + valFilter;
-                    Integer NUMBUF = Integer.parseInt(args[7]);
+                    Integer NUMBUF = Integer.parseInt(inputStr[7]);
                     //CondExpr filters[] = Utils.getCondExpr(filter);
                     Utils.query(tableName, type, orderType, rowFilter, colFilter, valFilter, NUMBUF);
                 }
@@ -54,6 +55,7 @@ public class MiniTable {
             }
             catch (Exception e){
                 System.out.println("Invalid parameters. Try again.\n\n");
+                e.printStackTrace();
             }
 
 
