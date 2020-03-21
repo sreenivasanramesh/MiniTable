@@ -232,4 +232,64 @@ public class Map implements GlobalConst {
         }
     }
 
+    public Map setIntFld(int fldNo, int val)
+            throws IOException, FieldNumberOutOfBoundException {
+        if ((fldNo > 0) && (fldNo <= fieldCount)) {
+            Convert.setIntValue(val, fieldOffset[fldNo - 1], data);
+            return this;
+        } else
+            throw new FieldNumberOutOfBoundException(null, "Map:Map_FLDNO_OUT_OF_BOUND");
+    }
+
+    public Map setFloFld(int fldNo, float val)
+            throws IOException, FieldNumberOutOfBoundException {
+        if ((fldNo > 0) && (fldNo <= fieldCount)) {
+            Convert.setFloValue(val, fieldOffset[fldNo - 1], data);
+            return this;
+        } else
+            throw new FieldNumberOutOfBoundException(null, "Map:Map_FLDNO_OUT_OF_BOUND");
+
+    }
+
+    public Map setStrFld(int fldNo, String val)
+            throws IOException, FieldNumberOutOfBoundException {
+        if ((fldNo > 0) && (fldNo <= fieldCount)) {
+            Convert.setStrValue(val, fieldOffset[fldNo - 1], data);
+            return this;
+        } else
+            throw new FieldNumberOutOfBoundException(null, "Map:Map_FLDNO_OUT_OF_BOUND");
+    }
+
+    public int getIntFld(int fldNo)
+            throws IOException, FieldNumberOutOfBoundException {
+        int val;
+        if ((fldNo > 0) && (fldNo <= fieldCount)) {
+            val = Convert.getIntValue(fieldOffset[fldNo - 1], data);
+            return val;
+        } else
+            throw new FieldNumberOutOfBoundException(null, "Map:Map_FLDNO_OUT_OF_BOUND");
+    }
+
+    public float getFloFld(int fldNo)
+            throws IOException, FieldNumberOutOfBoundException {
+        float val;
+        if ((fldNo > 0) && (fldNo <= fieldCount)) {
+            val = Convert.getFloValue(fieldOffset[fldNo - 1], data);
+            return val;
+        } else
+            throw new FieldNumberOutOfBoundException(null, "Map:Map_FLDNO_OUT_OF_BOUND");
+    }
+
+    public String getStrFld(int fldNo)
+            throws IOException, FieldNumberOutOfBoundException {
+        String val;
+        if ((fldNo > 0) && (fldNo <= fieldCount)) {
+            val = Convert.getStrValue(fieldOffset[fldNo - 1], data,
+                    fieldOffset[fldNo] - fieldOffset[fldNo - 1]); //strlen+2
+            return val;
+        } else
+            throw new FieldNumberOutOfBoundException(null, "Map:Map_FLDNO_OUT_OF_BOUND");
+    }
+
+
 }
