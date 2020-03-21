@@ -173,6 +173,12 @@ public class bigT {
         return distinctCol.size();
     }
 
+    // Return number of distinct ts labels in the bigtable.
+    int getTimeStampCnt() {
+        Set<String> distinctTS = new HashSet<>();
+        mapVersion.keySet().forEach(key -> distinctTS.add(key.split("\\$")[3]));
+        return distinctTS.size();
+    }
 
     // Opens the Btree index files based on type and stores it in instance variable indexFile and timestampIndex file
     private void setIndexFiles() throws Exception {

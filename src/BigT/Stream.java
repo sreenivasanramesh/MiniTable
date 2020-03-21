@@ -2,6 +2,7 @@ package BigT;
 
 import btree.*;
 import diskmgr.bigDB;
+import global.AttrType;
 import global.MID;
 import global.RID;
 import global.TupleOrder;
@@ -31,6 +32,13 @@ public class Stream {
     private Sort sortObj;
     private boolean versionEnabled = true;
     private MapScan mapScan;
+    private int type;
+
+    private static short REC_LEN1 = 32;
+    private static short REC_LEN2 = 160;
+    private AttrType[] attrType = new AttrType[2];
+    short[] attrSize = new short[2];
+
 
     public Stream(bigT bigTable, int orderType, String rowFilter, String columnFilter, String valueFilter) throws Exception {
 
@@ -38,15 +46,23 @@ public class Stream {
         this.rowFilter = rowFilter;
         this.columnFilter = columnFilter;
         this.valueFilter = valueFilter;
-        int type = 1;// this is the query type.
-        queryConditions(type);
+        this.type = bigTable.type;
+
+
+        this.attrType[0] = new AttrType(AttrType.attrString);
+        this.attrType[1] = new AttrType(AttrType.attrString);
+
+        this.attrSize[0] = REC_LEN1;
+        this.attrSize[1] = REC_LEN2;
+
+        queryConditions();
     }
 
-    public void queryConditions(int type) throws PinPageException, KeyNotMatchException, IteratorException, IOException, ConstructPageException, UnpinPageException {
+    public void queryConditions() throws PinPageException, KeyNotMatchException, IteratorException, IOException, ConstructPageException, UnpinPageException {
 
         StringKey start = null, end = null;
 
-        switch(type) {
+        switch(this.type) {
             case 1:
             default:
                 // same as case 1
@@ -207,9 +223,8 @@ public class Stream {
             FileScan fscan = null;
 
             try {
-                // TODO : set attribute types and attribute sizes
-                fscan = new FileScan("query_temp_heap_file", Minibase.getInstance().getAttrTypes(),
-                        Minibase.getInstance().getAttrSizes(), (short) 4, 4, projection, null);
+                // TODO : set attribute types and attribute sizes - done
+                fscan = new FileScan("query_temp_heap_file", attrType, attrSize, (short) 4, 4, projection, null);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -219,23 +234,22 @@ public class Stream {
                 case 1:
                 case 3:
                     sortField = 1;
-                    maxLength = Minibase.getInstance().getMaxRowKeyLength();
+                    maxLength = this.bigtable.getRowCnt();
                     break;
                 case 2:
                 case 4:
                     sortField = 2;
-                    maxLength = Minibase.getInstance().getMaxColumnKeyLength();
+                    maxLength = this.bigtable.getColumnCnt();
                     break;
                 case 6:
                     sortField = 3;
-                    maxLength = Minibase.getInstance().getMaxTimeStampLength();
+                    maxLength = this.bigtable.getTimeStampCnt();
                     break;
                 default:
                     throw new IllegalStateException("Unexpected value: " + orderType);
             }
             try {
-                sortObj = new Sort(Minibase.getInstance().getAttrTypes(), (short) 4, Minibase.getInstance().getAttrSizes()
-                        , fscan, sortField, new TupleOrder(TupleOrder.Ascending), maxLength, 10);
+                sortObj = new Sort(attrType, (short) 4, attrSize, fscan, sortField, new TupleOrder(TupleOrder.Ascending), maxLength, 10);
             } catch (Exception e) {
                 e.printStackTrace();
             }
