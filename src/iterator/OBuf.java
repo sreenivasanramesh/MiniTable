@@ -4,6 +4,7 @@ import BigT.Map;
 import global.GlobalConst;
 import global.MID;
 import heap.Heapfile;
+import heap.Tuple;
 
 import java.io.IOException;
 
@@ -81,6 +82,44 @@ public class OBuf implements GlobalConst{
         }
 
         return map_ptr;
+    }
+
+
+    /**
+     * Writes a tuple to the output buffer
+     *
+     * @param buf the tuple written to buffer
+     * @return the position of tuple which is in buffer
+     * @throws IOException some I/O fault
+     * @throws Exception   other exceptions
+     */
+    public Tuple Put(Tuple buf)
+            throws IOException,
+            Exception {
+
+        byte[] copybuf;
+        copybuf = buf.getTupleByteArray();
+        System.arraycopy(copybuf, 0, _bufs[curr_page], t_wr_to_pg * t_size, t_size);
+        Tuple tuple_ptr = new Tuple(_bufs[curr_page], t_wr_to_pg * t_size, t_size);
+
+        t_written++;
+        t_wr_to_pg++;
+        t_wr_to_buf++;
+        dirty = true;
+
+        if (t_wr_to_buf == t_in_buf)                // Buffer full?
+        {
+            flush();                                // Flush it
+
+            t_wr_to_pg = 0;
+            t_wr_to_buf = 0;        // Initialize page info
+            curr_page = 0;
+        } else if (t_wr_to_pg == t_per_pg) {
+            t_wr_to_pg = 0;
+            curr_page++;
+        }
+
+        return tuple_ptr;
     }
 
     /**
