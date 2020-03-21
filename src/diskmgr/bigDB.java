@@ -34,7 +34,6 @@ public class bigDB implements GlobalConst {
 
         name = fname;
 
-        pcounter.initialize(); // initialize the counters for disk accesses
 
         // Creaat a random access file
         fp = new RandomAccessFile(fname, "rw");

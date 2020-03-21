@@ -38,7 +38,6 @@ public class MiniTable {
                 else if (inputStr[0].equalsIgnoreCase("query"))
                 {
                     //query BIGTABLENAME TYPE ORDERTYPE ROWFILTER COLUMNFILTER VALUEFILTER NUMBUF
-                    //ystem.out.println(args[0] + args[1] + args[2] + args[3]);
                     String tableName = inputStr[1].trim();
                     Integer type = Integer.parseInt(inputStr[2]);
                     Integer orderType = Integer.parseInt(inputStr[3]);
@@ -62,10 +61,6 @@ public class MiniTable {
         }
 
         System.out.print("exiting...");
-        //SystemDefs.JavabaseBM.flushAllPages();
-        //SystemDefs.JavabaseDB.closeDB();
-        //System.out.println("Reads: " + pcounter.rcounter);
-        //System.out.println("Writes: " + pcounter.wcounter);
     }
 
 }

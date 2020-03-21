@@ -29,6 +29,7 @@ class Utils {
         Integer numPages = !f.exists() ? NUM_PAGES : 0;
         //SystemDefs sysdef = new SystemDefs(dbpath, numPages, NUMBUF, "LRU");
         new SystemDefs(dbPath, numPages, NUMBUF, "Clock");
+        pcounter.initialize();
 
         FileInputStream fileStream = null;
         BufferedReader br = null;
@@ -86,6 +87,7 @@ class Utils {
     static void query(String tableName, Integer type, Integer orderType, String rowFilter, String colFilter, String valFilter, Integer NUMBUF) throws Exception {
         String dbPath =  getDBPath(tableName, type);
         new SystemDefs(dbPath, 0, NUMBUF, "Clock");
+        pcounter.initialize();
         int resultCount = 0;
 
         try {
