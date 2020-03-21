@@ -15,7 +15,7 @@ import iterator.Sort;
 import java.io.IOException;
 
 /**
-Initialize a stream of maps on bigtable.
+ Initialize a stream of maps on bigtable.
  */
 public class Stream {
     private final String rowFilter;
@@ -102,7 +102,7 @@ public class Stream {
                     scanAll = true;
                 } else {
 
-                        // check if both range
+                    // check if both range
                     if ((rowFilter.matches(rangeRegex)) && (columnFilter.matches(rangeRegex))) {
 
                         String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");

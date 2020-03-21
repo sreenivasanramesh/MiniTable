@@ -11,8 +11,8 @@ package heap;
 
 import java.io.*;
 
+import BigT.Map;
 import global.*;
-import bufmgr.*;
 import diskmgr.*;
 
 
@@ -50,13 +50,13 @@ public class Scan implements GlobalConst {
     private PageId datapageId = new PageId();
 
     /** in-core copy (pinned) of the same */
-    private HFPage datapage = new HFPage();
+    public HFPage datapage = new HFPage();
 
     /** record ID of the current record (from the current data page) */
-    private RID userrid = new RID();
+    public RID nextRid = new RID();
 
     /** Status of next user status */
-    private boolean nextUserStatus;
+    public boolean nextRecordExists;
 
 
     /** The constructor pins the first directory page in the file
@@ -88,15 +88,15 @@ public class Scan implements GlobalConst {
             IOException {
         Tuple recptrtuple = null;
 
-        if (nextUserStatus != true) {
+        if (nextRecordExists != true) {
             nextDataPage();
         }
 
         if (datapage == null)
             return null;
 
-        rid.pageNo.pid = userrid.pageNo.pid;
-        rid.slotNo = userrid.slotNo;
+        rid.pageNo.pid = nextRid.pageNo.pid;
+        rid.slotNo = nextRid.slotNo;
 
         try {
             recptrtuple = datapage.getRecord(rid);
@@ -105,13 +105,42 @@ public class Scan implements GlobalConst {
             e.printStackTrace();
         }
 
-        userrid = datapage.nextRecord(rid);
-        if (userrid == null) nextUserStatus = false;
-        else nextUserStatus = true;
+        nextRid = datapage.nextRecord(rid);
+        nextRecordExists = nextRid != null;
 
         return recptrtuple;
     }
 
+    /** Retrieves next map based on current MID - sequential
+     *
+     * @param mid
+     * @return map object to corresponding mid.
+     */
+    /*
+    public Map getNext(MID mid) throws InvalidTupleSizeException, IOException, Exception {
+        Map mapObj = null;
+        if (!nextRecordExists) {
+            nextDataPage();
+        }
+
+        if (datapage == null ) return null;
+
+        mid = new MID(nextRid.pageNo, nextRid.slotNo);
+        try {
+            mapObj = datapage.getMap(mid);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        MID nextMapId = datapage.nextMap(mid);
+        if (nextMapId == null ) {
+            nextRecordExists = false;
+        } else {
+            nextRecordExists = true;
+            nextRid = new RID(nextMapId.getPageNo(), nextMapId.getSlotNo());
+        }
+        return mapObj;
+    }
+     */
 
     /** Position the scan cursor to the record with the given rid.
      *
@@ -156,13 +185,13 @@ public class Scan implements GlobalConst {
         // Now we are on the correct page.
 
         try {
-            userrid = datapage.firstRecord();
+            nextRid = datapage.firstRecord();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
 
-        if (userrid == null) {
+        if (nextRid == null) {
             bst = false;
             return bst;
         }
@@ -224,7 +253,7 @@ public class Scan implements GlobalConst {
         }
         dirpage = null;
 
-        nextUserStatus = true;
+        nextRecordExists = true;
 
     }
 
@@ -245,7 +274,7 @@ public class Scan implements GlobalConst {
         /** copy data about first directory page */
 
         dirpageId.pid = _hf._firstDirPageId.pid;
-        nextUserStatus = true;
+        nextRecordExists = true;
 
         /** get first directory page and pin it */
         try {
@@ -420,7 +449,7 @@ public class Scan implements GlobalConst {
                 }
 
                 try {
-                    userrid = datapage.firstRecord();
+                    nextRid = datapage.firstRecord();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -528,10 +557,10 @@ public class Scan implements GlobalConst {
         // - this->dirpageId, this->dirpage correct
         // - this->datapageId, this->datapage, this->datapageRid correct
 
-        userrid = datapage.firstRecord();
+        nextRid = datapage.firstRecord();
 
-        if (userrid == null) {
-            nextUserStatus = false;
+        if (nextRid == null) {
+            nextRecordExists = false;
             return false;
         }
 
@@ -541,8 +570,8 @@ public class Scan implements GlobalConst {
 
     private boolean peekNext(RID rid) {
 
-        rid.pageNo.pid = userrid.pageNo.pid;
-        rid.slotNo = userrid.slotNo;
+        rid.pageNo.pid = nextRid.pageNo.pid;
+        rid.slotNo = nextRid.slotNo;
         return true;
 
     }
@@ -563,16 +592,16 @@ public class Scan implements GlobalConst {
         nextrid = datapage.nextRecord(rid);
 
         if (nextrid != null) {
-            userrid.pageNo.pid = nextrid.pageNo.pid;
-            userrid.slotNo = nextrid.slotNo;
+            nextRid.pageNo.pid = nextrid.pageNo.pid;
+            nextRid.slotNo = nextrid.slotNo;
             return true;
         } else {
 
             status = nextDataPage();
 
             if (status == true) {
-                rid.pageNo.pid = userrid.pageNo.pid;
-                rid.slotNo = userrid.slotNo;
+                rid.pageNo.pid = nextRid.pageNo.pid;
+                rid.slotNo = nextRid.slotNo;
             }
 
         }
@@ -609,12 +638,12 @@ public class Scan implements GlobalConst {
 
     } // end of unpinPage
 
-    public boolean getNextUserStatus(){
-        return nextUserStatus;
+    public boolean getNextRecordExists(){
+        return nextRecordExists;
     }
 
-    public void setNextUserStatus(boolean userStatus){
-        nextUserStatus = userStatus;
+    public void setNextRecordExists(boolean userStatus){
+        nextRecordExists = userStatus;
     }
 
     public HFPage getDataPage(){
@@ -622,11 +651,11 @@ public class Scan implements GlobalConst {
     }
 
     public RID getUserId(){
-        return userrid;
+        return nextRid;
     }
 
     public void setUserId(RID rid){
-        userrid = rid;
+        nextRid = rid;
     }
 
 

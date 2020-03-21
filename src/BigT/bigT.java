@@ -264,7 +264,7 @@ public class bigT {
                     }
                 }
             }
-            
+
             if (list.size() > 3) {
                 throw new IOException("Metadata file is corrupted, please delete it");
             }
@@ -330,7 +330,7 @@ public class bigT {
         }
         return mid;
     }
-    
+
     // TODO: This method needs to be removed
     // Just a method to test Map Scan. to be removed
     public void printFullScan() throws InvalidTupleSizeException, IOException {

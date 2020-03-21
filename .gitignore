@@ -1,5 +1,6 @@
+.class
+outputs/
 .idea
 .DS_Store
 *.class
 *.iml
-outputs/

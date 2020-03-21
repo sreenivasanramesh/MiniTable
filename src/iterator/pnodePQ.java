@@ -70,7 +70,7 @@ public abstract class pnodePQ {
      * @throws TupleUtilsException error in tuple compare routines
      */
     abstract public void enq(pnode item)
-            throws IOException, UnknowAttrType, TupleUtilsException;
+            throws IOException, UnknowAttrType, TupleUtilsException, InvalidFieldNo;
 
     /**
      * removes the minimum (Ascending) or maximum (Descending) element
@@ -95,9 +95,14 @@ public abstract class pnodePQ {
      * @throws TupleUtilsException error in tuple compare routines
      */
     public int pnodeCMP(pnode a, pnode b)
-            throws IOException, UnknowAttrType, TupleUtilsException {
-        int ans = TupleUtils.CompareTupleWithTuple(fld_type, a.tuple, fld_no, b.tuple, fld_no);
-        return ans;
+            throws IOException, UnknowAttrType, TupleUtilsException, InvalidFieldNo {
+        if (a.map != null ) {
+            int ans = MapUtils.CompareMapWithMap(a.map, b.map, fld_no);
+            return ans;
+        } else {
+            int ans = TupleUtils.CompareTupleWithTuple(fld_type, a.tuple, fld_no, b.tuple, fld_no);
+            return ans;
+        }
     }
 
     /**
@@ -112,7 +117,7 @@ public abstract class pnodePQ {
      *                             <code>attrNull</code> encountered
      * @throws TupleUtilsException error in tuple compare routines
      */
-    public boolean pnodeEQ(pnode a, pnode b) throws IOException, UnknowAttrType, TupleUtilsException {
+    public boolean pnodeEQ(pnode a, pnode b) throws IOException, UnknowAttrType, TupleUtilsException, InvalidFieldNo {
         return pnodeCMP(a, b) == 0;
     }
 
