@@ -1,9 +1,6 @@
 package cmdline;
 
 import bufmgr.*;
-import diskmgr.pcounter;
-import global.SystemDefs;
-import iterator.CondExpr;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,7 +30,8 @@ public class MiniTable {
                     String dataFile = inputStr[1];
                     Integer type = Integer.parseInt(inputStr[2]);
                     String tableName = inputStr[3];
-                    Utils.batchInsert(dataFile, tableName, type);
+                    boolean useMetadata = Boolean.parseBoolean(inputStr[4]);
+                    Utils.batchInsert(dataFile, tableName, type, useMetadata);
                 }
                 else if (inputStr[0].equalsIgnoreCase("query"))
                 {
