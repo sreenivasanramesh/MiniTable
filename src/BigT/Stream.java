@@ -2,7 +2,6 @@ package BigT;
 
 import btree.*;
 import diskmgr.OutOfSpaceException;
-import diskmgr.bigDB;
 import global.AttrType;
 import global.MID;
 import global.RID;
@@ -30,7 +29,7 @@ public class Stream {
     private MapSort sortObj;
     private boolean versionEnabled = true;
     private MapScan mapScan;
-    private int type;
+    private int type, orderType;
 
     private static short REC_LEN1 = 32;
     private static short REC_LEN2 = 160;
@@ -45,7 +44,7 @@ public class Stream {
         this.columnFilter = columnFilter;
         this.valueFilter = valueFilter;
         this.type = bigTable.type;
-
+        this.orderType = orderType;
 
         this.attrType[0] = new AttrType(AttrType.attrString);
         this.attrType[1] = new AttrType(AttrType.attrString);
@@ -60,10 +59,13 @@ public class Stream {
         queryConditions();
     }
 
-    public void queryConditions() throws PinPageException, KeyNotMatchException, IteratorException, IOException, ConstructPageException, UnpinPageException {
+    public void queryConditions() throws Exception {
 
         StringKey start = null, end = null;
 
+        /*
+        type is an integer denoting the different clustering and indexing strategies you will use for the graph database.
+         */
         switch(this.type) {
             case 1:
             default:
@@ -159,11 +161,19 @@ public class Stream {
                 break;
         }
 
-        btreeScanner = bigtable.indexFile.new_scan(start, end);
+        this.btreeScanner = bigtable.indexFile.new_scan(start, end);
         dummyScanner = bigtable.indexFile.new_scan(null, null);
+        filterAndSortData(this.orderType);
     }
 
-    public void sortData(int orderType) throws Exception {
+    public void filterAndSortData(int orderType) throws Exception {
+        /* orderType is for ordering by
+        · 1, then results are first ordered in row label, then column label, then time stamp
+        · 2, then results are first ordered in column label, then row label, then time stamp
+        · 3, then results are first ordered in row label, then time stamp
+        · 4, then results are first ordered in column label, then time stamp
+        · 6, then results are ordered in time stamp
+        * */
         tempHeapFile = new Heapfile("query_temp_heap_file");
         MID midObj = new MID();
         if (scanAll) {
