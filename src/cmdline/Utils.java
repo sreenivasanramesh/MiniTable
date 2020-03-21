@@ -1,57 +1,53 @@
 package cmdline;
 
+import BigT.Map;
+import BigT.Stream;
+import BigT.bigT;
+import bufmgr.*;
+import diskmgr.pcounter;
+import global.AttrOperator;
+import global.AttrType;
 import global.MID;
 import global.SystemDefs;
-import heap.Heapfile;
-import heap.Tuple;
-import bufmgr.*;
-import global.*;
-import BigT.*;
-import diskmgr.pcounter;
 import iterator.CondExpr;
 import iterator.FldSpec;
-import iterator.Iterator;
 import iterator.RelSpec;
 
 import java.io.*;
+
+import static BigT.bigT.BIGT_ATTR_TYPES;
+import static BigT.bigT.BIGT_STR_SIZES;
 import static global.GlobalConst.NUMBUF;
 
 class Utils {
 
     private static final int NUM_PAGES = 10000;
 
-    static void batchInsert(String dataFile, String tableName, int type) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException
-    {
-        String dbPath =  getDBPath(tableName, type);
+    static void batchInsert(String dataFile, String tableName, int type, boolean useMetaData) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException {
+        String dbPath = getDBPath(tableName, type);
         System.out.println(dbPath);
         File f = new File(dbPath);
         //If DB exists use it, else create a new DB with NUM_PAGES pages
         Integer numPages = !f.exists() ? NUM_PAGES : 0;
         //SystemDefs sysdef = new SystemDefs(dbpath, numPages, NUMBUF, "LRU");
+//        new SystemDefs(dbPath, numPages, NUMBUF, "Clock");
         new SystemDefs(dbPath, numPages, NUMBUF, "Clock");
         pcounter.initialize();
 
         FileInputStream fileStream = null;
         BufferedReader br = null;
-        try
-        {
+        try {
             bigT bigTable = new bigT(tableName, type);
-            Heapfile heapfile = new Heapfile(tableName + ".heap");
             fileStream = new FileInputStream(dataFile);
             br = new BufferedReader(new InputStreamReader(fileStream));
             String inputStr;
             int mapCount = 0;
 
-            while ((inputStr = br.readLine()) != null)
-            {
+            while ((inputStr = br.readLine()) != null) {
                 String[] input = inputStr.split(",");
                 //set the map
                 Map map = new Map();
-                short[] strSizes1 = new short[]{(short) 32,  //rowValue
-                                                (short) 32,  //colValue
-                                                (short) 32}; //keyValue
-                AttrType[] attrType = new AttrType[] {new AttrType(0), new AttrType(0), new AttrType(1), new AttrType(0)};
-                map.setHeader(attrType, strSizes1);
+                map.setHeader(BIGT_ATTR_TYPES, BIGT_STR_SIZES);
                 map.setRowLabel(input[0]);
                 map.setColumnLabel(input[1]);
                 map.setTimeStamp(Integer.parseInt(input[2]));
@@ -59,18 +55,16 @@ class Utils {
 
                 //
                 // TODO replace with bigT.insertMap()
-                MID mid = heapfile.insertMap(map.getMapByteArray());
+                MID mid = bigTable.insertMap(map.getMapByteArray(), useMetaData);
                 mapCount++;
             }
             System.out.println(mapCount + " tuples inserted...\n");
             System.out.println("tuple count: " + bigTable.getMapCnt());
 
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             fileStream.close();
             br.close();
         }
@@ -82,10 +76,8 @@ class Utils {
     }
 
 
-
-
     static void query(String tableName, Integer type, Integer orderType, String rowFilter, String colFilter, String valFilter, Integer NUMBUF) throws Exception {
-        String dbPath =  getDBPath(tableName, type);
+        String dbPath = getDBPath(tableName, type);
         new SystemDefs(dbPath, 0, NUMBUF, "Clock");
         pcounter.initialize();
         int resultCount = 0;
@@ -106,8 +98,7 @@ class Utils {
                 mapObj.print();
                 resultCount++;
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -120,20 +111,15 @@ class Utils {
     }
 
 
-
-
-    public static String getDBPath(String tableName, Integer type){
-        return "/Users/vasan/" + tableName + "." + type + ".db";
+    public static String getDBPath(String tableName, Integer type) {
+        return "/tmp/" + tableName + "." + type + ".db";
     }
 
 
-
-
-    static CondExpr[] getCondExpr(String filter){
-        if (filter.equals("*")){
+    static CondExpr[] getCondExpr(String filter) {
+        if (filter.equals("*")) {
             return null;
-        }
-        else if (filter.contains(",")){
+        } else if (filter.contains(",")) {
             String[] range = filter.replaceAll("[\\[ \\]]", "").split(",");
             //cond expr of size 3 for range searches
             CondExpr[] expr = new CondExpr[3];
@@ -153,8 +139,7 @@ class Utils {
             expr[1].next = null;
             expr[2] = null;
             return expr;
-        }
-        else{
+        } else {
             //equality search
             CondExpr[] expr = new CondExpr[2];
             expr[0] = new CondExpr();

@@ -16,14 +16,16 @@ import static global.GlobalConst.MINIBASE_PAGESIZE;
 
 
 //TODO: Make Btree Return MID instead of RID
-//TODO: Indexing Types 2, 3, 4, 5 (Working on this)
 //TODO: Insert Map (Working on this)
 //TODO: Get Row Count and Column Count and Map count
 //TODO: Flag variable for meta data
-//TODO: Composite Index <value1>$<value2>
 
 public class bigT {
     public static final int MAX_SIZE = MINIBASE_PAGESIZE;
+    public static final short[] BIGT_STR_SIZES = new short[]{(short) 32,  //rowValue
+            (short) 32,  //colValue
+            (short) 32}; //keyValue
+    public static final AttrType[] BIGT_ATTR_TYPES = new AttrType[]{new AttrType(0), new AttrType(0), new AttrType(1), new AttrType(0)};
 
     // Indexing type
     int type;
@@ -68,7 +70,7 @@ public class bigT {
             this.heapfile = new Heapfile(name + ".heap");
 
             // Load the mapVersion HashMap from the disk
-            try (ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream("/Users/sumukhashwinkamath/" + this.name + ".hashmap.ser"))) {
+            try (ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream("/tmp/" + this.name + ".hashmap.ser"))) {
                 this.type = objectInputStream.readByte();
                 this.mapVersion = (HashMap<String, ArrayList<MID>>) objectInputStream.readObject();
             } catch (IOException e) {
@@ -115,7 +117,7 @@ public class bigT {
 //        printMapVersion();
 
 
-        try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream("/Users/sumukhashwinkamath/" + this.name + ".hashmap.ser"))) {
+        try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream("/tmp/" + this.name + ".hashmap.ser"))) {
             objectOutputStream.writeByte(type);
             objectOutputStream.writeObject(mapVersion);
         } catch (IOException e) {
@@ -239,9 +241,8 @@ public class bigT {
     }
 
 
-    // TODO: insert and return MID
     // This has to be modified to take care of storing 3 versions of a map at any point in time
-    public MID insertMap(byte[] mapPtr) throws Exception {
+    public MID insertMap(byte[] mapPtr, boolean useMetadata) throws Exception {
         Map map = new Map();
         map.setData(mapPtr);
 
@@ -253,16 +254,21 @@ public class bigT {
         } else {
             int oldestTimestamp = Integer.MAX_VALUE;
             MID oldestMID = null;
-            for (MID mid1 : list) {
-                Map map1 = heapfile.getMap(mid1);
-                if (MapUtils.Equal(map1, map)) {
-                    return mid1;
-                } else {
-                    if (map1.getTimeStamp() < oldestTimestamp) {
-                        oldestTimestamp = map1.getTimeStamp();
-                        oldestMID = mid1;
+            if (!useMetadata) {
+                // find record
+            } else {
+                for (MID mid1 : list) {
+                    Map map1 = heapfile.getMap(mid1);
+                    if (MapUtils.Equal(map1, map)) {
+                        return mid1;
+                    } else {
+                        if (map1.getTimeStamp() < oldestTimestamp) {
+                            oldestTimestamp = map1.getTimeStamp();
+                            oldestMID = mid1;
+                        }
                     }
                 }
+
             }
 
             if (list.size() > 3) {
@@ -337,7 +343,7 @@ public class bigT {
         MapScan mapScan = this.heapfile.openMapScan();
         MID mid = new MID();
         Map map = mapScan.getNext(mid);
-        while(map != null){
+        while (map != null) {
             map.print();
             map = mapScan.getNext(mid);
         }
