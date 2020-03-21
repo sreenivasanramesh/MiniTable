@@ -155,19 +155,19 @@ public class bigT {
     }
 
     // Return number of maps in the bigtable.
-    int getMapCnt() throws HFBufMgrException, IOException, HFDiskMgrException, InvalidSlotNumberException, InvalidTupleSizeException {
+    public int getMapCnt() throws HFBufMgrException, IOException, HFDiskMgrException, InvalidSlotNumberException, InvalidTupleSizeException {
         return this.heapfile.getRecCnt();
     }
 
     // Return number of distinct row labels in the bigtable.
-    int getRowCnt() {
+    public int getRowCnt() {
         Set<String> distinctRow = new HashSet<>();
         mapVersion.keySet().forEach(key -> distinctRow.add(key.split("\\$")[0]));
         return distinctRow.size();
     }
 
     // Return number of distinct column labels in the bigtable.
-    int getColumnCnt() {
+    public int getColumnCnt() {
         Set<String> distinctCol = new HashSet<>();
         mapVersion.keySet().forEach(key -> distinctCol.add(key.split("\\$")[1]));
         return distinctCol.size();
@@ -235,7 +235,7 @@ public class bigT {
 
     // TODO: insert and return MID
     // This has to be modified to take care of storing 3 versions of a map at any point in time
-    MID insertMap(byte[] mapPtr) throws Exception {
+    public MID insertMap(byte[] mapPtr) throws Exception {
         Map map = new Map();
         map.setData(mapPtr);
 

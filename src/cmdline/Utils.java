@@ -34,7 +34,7 @@ class Utils {
         BufferedReader br = null;
         try
         {
-            //bigT bigTable = new bigT(tableName, type);
+            bigT bigTable = new bigT(tableName, type);
             Heapfile heapfile = new Heapfile(tableName + ".heap");
             fileStream = new FileInputStream(dataFile);
             br = new BufferedReader(new InputStreamReader(fileStream));
@@ -58,11 +58,11 @@ class Utils {
 
                 //
                 // TODO replace with bigT.insertMap()
-                MID mid = heapfile.insertMap(map.getMapByteArray());
+                MID mid = bigTable.insertMap(map.getMapByteArray());
                 mapCount++;
             }
             System.out.println(mapCount + " tuples inserted...\n");
-            System.out.println("tuple count: " + heapfile.getRecCnt());
+            System.out.println("tuple count: " + bigTable.getMapCnt());
 
 
         }
