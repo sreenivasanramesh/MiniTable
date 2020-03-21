@@ -28,13 +28,11 @@ public class MapSort extends MapIterator implements GlobalConst {
     private boolean first_time = true;
     private Heapfile[] temp_files;
     private int n_tempfiles;
-    private Tuple output_tuple;
     private OBuf o_buf;
     private int max_elems_in_heap;
     private int sortFldLen;
     private pnodeSplayPQ queue;
-    private Map op_map_buf;
-    private Tuple op_tuple_buffer;
+    private Map op_map_buf, output_map;
     AttrType[] mapAttributes = new AttrType[4];
     private SpoofIbuf[] i_buf;
 
@@ -50,7 +48,7 @@ public class MapSort extends MapIterator implements GlobalConst {
      * @param n_pages        amount of memory (attrTypes pages) available for sorting
      * @throws SortException something went wrong attrTypes the lower layer.
      */
-    public MapSort(AttrType[] attrTypes, short[] field_sizes, Iterator am, int sort_fld, TupleOrder sort_order, int n_pages) throws SortException {
+    public MapSort(AttrType[] attrTypes, short[] field_sizes, MapIterator am, int sort_fld, TupleOrder sort_order, int n_pages) throws SortException {
 
 
         int str_att_count = 0; // number of string field in maps
@@ -159,9 +157,9 @@ public class MapSort extends MapIterator implements GlobalConst {
             return null;
         }
 
-        output_tuple = delete_min();
-        if (output_tuple != null) {
-            op_tuple_buffer.tupleCopy(output_tuple);
+        output_map = delete_min();
+        if (output_map != null) {
+            op_map_buf.copyMap(output_map);
             // now convert tuple op_tuple_buffer to map
             return op_map_buf;
         } else
@@ -183,7 +181,6 @@ public class MapSort extends MapIterator implements GlobalConst {
      * @throws JoinsException from <code>Iterator.get_next()</code>
      */
     private int generate_runs(int max_elems, AttrType sortFldType, int sortFldLen) throws Exception {
-        Tuple tuple;
         Map map;
         pnode cur_node;
         pnodeSplayPQ Q1 = new pnodeSplayPQ(_sort_fld, sortFldType, sortOrder);
@@ -255,8 +252,9 @@ public class MapSort extends MapIterator implements GlobalConst {
             if (cur_node == null) break;
             p_elems_curr_Q--;
 
-            //comp_res = TupleUtils.CompareTupleWithValue(sortFldType, cur_node.tuple, _sort_fld, lastElem);  // need tuple_utils.java
-            comp_res = MapUtils.CompareMapWithValue(cur_node.map, _sort_fld, lastElem);
+            // comp_res = TupleUtils.CompareTupleWithValue(sortFldType, cur_node.tuple, _sort_fld, lastElem);  // need tuple_utils.java
+            // comp_res = MapUtils.CompareMapWithValue(cur_node.map, _sort_fld, lastElem);
+            comp_res = MapUtils.CompareMapWithMap(cur_node.map, lastElem, _sort_fld);
 
             if ((comp_res < 0 && sortOrder.tupleOrder == TupleOrder.Ascending) || (comp_res > 0 && sortOrder.tupleOrder == TupleOrder.Descending)) {
                 // doesn't fit in current run, put into the other queue
@@ -572,7 +570,7 @@ public class MapSort extends MapIterator implements GlobalConst {
      * @throws IOException    from lower layers
      * @throws UnknowAttrType attrSymbol or attrNull encountered
      */
-    private void MIN_VAL(Tuple lastElem, AttrType sortFldType)
+    private void MIN_VAL(Map lastElem, AttrType sortFldType)
             throws IOException,
             FieldNumberOutOfBoundException,
             UnknowAttrType {
@@ -581,21 +579,22 @@ public class MapSort extends MapIterator implements GlobalConst {
         //    AttrType[] junk = new AttrType[1];
         //    junk[0] = new AttrType(sortFldType.attrType);
         char[] c = new char[1];
+        c[0] = Character.MIN_VALUE;
         String s = new String(c);
         //    short fld_no = 1;
 
         switch (sortFldType.attrType) {
             case AttrType.attrInteger:
                 //      lastElem.setHdr(fld_no, junk, null);
-                lastElem.setIntFld(_sort_fld, Integer.MIN_VALUE);
-                break;
-            case AttrType.attrReal:
-                //      lastElem.setHdr(fld-no, junk, null);
-                lastElem.setFloFld(_sort_fld, Float.MIN_VALUE);
+                lastElem.setTimeStamp(Integer.MIN_VALUE);
                 break;
             case AttrType.attrString:
-                //      lastElem.setHdr(fld_no, junk, s_size);
-                lastElem.setStrFld(_sort_fld, s);
+                if (_sort_fld == 1)
+                    lastElem.setRowLabel(s);
+                else if (_sort_fld == 2)
+                    lastElem.setColumnLabel(s);
+                else if (_sort_fld == 4)
+                    lastElem.setValue(s);
                 break;
             default:
                 // don't know how to handle attrSymbol, attrNull
@@ -603,6 +602,7 @@ public class MapSort extends MapIterator implements GlobalConst {
                 throw new UnknowAttrType("Sort.java: don't know how to handle attrSymbol, attrNull");
         }
 
+        return;
     }
 
     /**
@@ -613,7 +613,7 @@ public class MapSort extends MapIterator implements GlobalConst {
      * @throws IOException    from lower layers
      * @throws UnknowAttrType attrSymbol or attrNull encountered
      */
-    private void MAX_VAL(Tuple lastElem, AttrType sortFldType)
+    private void MAX_VAL(Map lastElem, AttrType sortFldType)
             throws IOException,
             FieldNumberOutOfBoundException,
             UnknowAttrType {
@@ -628,16 +628,15 @@ public class MapSort extends MapIterator implements GlobalConst {
 
         switch (sortFldType.attrType) {
             case AttrType.attrInteger:
-                //      lastElem.setHdr(fld_no, junk, null);
-                lastElem.setIntFld(_sort_fld, Integer.MAX_VALUE);
-                break;
-            case AttrType.attrReal:
-                //      lastElem.setHdr(fld_no, junk, null);
-                lastElem.setFloFld(_sort_fld, Float.MAX_VALUE);
+                lastElem.setTimeStamp(Integer.MIN_VALUE);
                 break;
             case AttrType.attrString:
-                //      lastElem.setHdr(fld_no, junk, s_size);
-                lastElem.setStrFld(_sort_fld, s);
+                if (_sort_fld == 1)
+                    lastElem.setRowLabel(s);
+                else if (_sort_fld == 2)
+                    lastElem.setColumnLabel(s);
+                else if (_sort_fld == 4)
+                    lastElem.setValue(s);
                 break;
             default:
                 // don't know how to handle attrSymbol, attrNull
@@ -645,7 +644,9 @@ public class MapSort extends MapIterator implements GlobalConst {
                 throw new UnknowAttrType("Sort.java: don't know how to handle attrSymbol, attrNull");
         }
 
+        return;
     }
+
 
     @Override
     public void close() throws SortException {

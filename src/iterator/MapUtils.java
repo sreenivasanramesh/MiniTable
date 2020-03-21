@@ -1,6 +1,7 @@
 package iterator;
 
 import BigT.Map;
+import global.AttrType;
 import global.MID;
 import global.RID;
 
@@ -34,11 +35,46 @@ public class MapUtils {
                 throw new InvalidFieldNo("Field Number should be in the range (0,3)");
         }
     }
-    
+
+    public static void SetValue(Map m1, Map m2, int map_fld_no, AttrType fldType)
+            throws IOException,
+            UnknowAttrType,
+            TupleUtilsException {
+        String m1_s, m2_s;
+        int m1_i, m2_i;
+        switch (map_fld_no) {
+            case 1:
+                m1.setRowLabel(m2.getRowLabel());
+                break;
+            case 2:
+                m1.setColumnLabel(m2.getColumnLabel());
+            case 3:
+                m1.setTimeStamp(m2.getTimeStamp());
+            case 4:
+                m1.setValue(m2.getValue());
+        }
+    }
+
+    public static int CompareMapWithValue( Map m1, int fieldNo, String value)
+            throws IOException,
+            UnknowAttrType,
+            TupleUtilsException, InvalidFieldNo {
+        Map m2 = new Map();
+        switch (fieldNo) {
+            case 1:
+                m2.setRowLabel(value);
+            case 2:
+                m2.setColumnLabel(value);
+            case 3:
+                m2.setValue(value);
+        }
+        return CompareMapWithMap(m1, m2, fieldNo);
+    }
+
     public static boolean Equal(Map map1, Map map2)
             throws IOException,
             InvalidFieldNo {
-        
+
         for (int i = 0; i <= 3; i++) {
             if (CompareMapWithMap(map1, map2, i) != 0)
                 return false;
