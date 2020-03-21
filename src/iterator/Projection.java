@@ -1,5 +1,6 @@
 package iterator;
 
+import BigT.Map;
 import heap.*;
 import global.*;
 
@@ -117,6 +118,47 @@ public class Projection {
                             break;
                         case AttrType.attrString:
                             Jtuple.setStrFld(i + 1, t1.getStrFld(perm_mat[i].offset));
+                            break;
+                        default:
+
+                            throw new UnknowAttrType("Don't know how to handle attrSymbol, attrNull");
+
+                    }
+                    break;
+
+                default:
+
+                    throw new WrongPermat("something is wrong in perm_mat");
+
+            }
+        }
+        return;
+    }
+
+
+
+    //overloading with maps, cause I don't want to remove the older project and break some internal feature
+    public static void Project(Map mapObj, AttrType type1[],
+                               Map JMap, FldSpec perm_mat[]
+    )
+            throws UnknowAttrType,
+            WrongPermat,
+            FieldNumberOutOfBoundException,
+            IOException {
+
+
+        for (int i = 0; i < 4; i++) {
+            switch (perm_mat[i].relation.key) {
+                case RelSpec.outer:      // Field of outer (t1)
+                    switch (type1[perm_mat[i].offset - 1].attrType) {
+                        case AttrType.attrInteger:
+                            JMap.setIntFld(i + 1, mapObj.getIntFld(perm_mat[i].offset));
+                            break;
+                        //case AttrType.attrReal:
+                        //    JMap.setFloFld(i + 1, mapObj.getFloFld(perm_mat[i].offset));
+                        //    break;
+                        case AttrType.attrString:
+                            JMap.setStrFld(i + 1, mapObj.getStrFld(perm_mat[i].offset));
                             break;
                         default:
 

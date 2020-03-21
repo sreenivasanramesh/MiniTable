@@ -1,6 +1,8 @@
 package iterator;
 
 
+import BigT.InvalidStringSizeArrayException;
+import BigT.Map;
 import heap.*;
 import global.*;
 import bufmgr.*;
@@ -19,9 +21,12 @@ public class FileScan extends MapIterator {
     private short in1_len;
     private short[] s_sizes;
     private Heapfile f;
-    private Scan scan;
-    private Tuple tuple1;
-    private Tuple Jtuple;
+    private MapScan scan;
+    //private Scan scan;
+    //private Tuple tuple1;
+    private Map mapObj;
+    private Map tempMap;
+    //private Tuple Jtuple;
     private int t1_size;
     private int nOutFlds;
     private CondExpr[] OutputFilter;
@@ -59,22 +64,27 @@ public class FileScan extends MapIterator {
         in1_len = len_in1;
         s_sizes = s1_sizes;
 
-        Jtuple = new Tuple();
+        mapObj = new Map();
         AttrType[] Jtypes = new AttrType[n_out_flds];
         short[] ts_size;
-        ts_size = TupleUtils.setup_op_tuple(Jtuple, Jtypes, in1, len_in1, s1_sizes, proj_list, n_out_flds);
+        ts_size = MapUtils.setup_op_tuple(mapObj, Jtypes, in1, len_in1, s1_sizes, proj_list, n_out_flds);
 
         OutputFilter = outFilter;
         perm_mat = proj_list;
         nOutFlds = n_out_flds;
-        tuple1 = new Tuple();
+        tempMap = new Map();
 
         try {
-            tuple1.setHdr(in1_len, _in1, s1_sizes);
+
+            short[] strSizes1 = new short[]{(short) 32,  //rowValue
+                    (short) 32,  //colValue
+                    (short) 32}; //keyValue
+            AttrType[] attrType = new AttrType[] {new AttrType(0), new AttrType(0), new AttrType(1), new AttrType(0)};
+            tempMap.setHeader(attrType, strSizes1); //TODO: temporary, fix these values somewhere
         } catch (Exception e) {
             throw new FileScanException(e, "setHdr() failed");
         }
-        t1_size = tuple1.size();
+        t1_size = tempMap.size();
 
         try {
             f = new Heapfile(file_name);
@@ -84,7 +94,7 @@ public class FileScan extends MapIterator {
         }
 
         try {
-            scan = f.openScan();
+            scan = f.openMapScan();
         } catch (Exception e) {
             throw new FileScanException(e, "openScan() failed");
         }
@@ -109,7 +119,7 @@ public class FileScan extends MapIterator {
      * @throws FieldNumberOutOfBoundException array out of bounds
      * @throws WrongPermat                    exception for wrong FldSpec argument
      */
-    public Tuple get_next()
+    public Map get_next()
             throws JoinsException,
             IOException,
             InvalidTupleSizeException,
@@ -118,19 +128,23 @@ public class FileScan extends MapIterator {
             PredEvalException,
             UnknowAttrType,
             FieldNumberOutOfBoundException,
-            WrongPermat {
-        RID rid = new RID();
-        ;
+            WrongPermat, InvalidMapSizeException, InvalidStringSizeArrayException {
+        MID mid = new MID();
 
         while (true) {
-            if ((tuple1 = scan.getNext(rid)) == null) {
+            if ((tempMap = scan.getNext(mid)) == null) {
                 return null;
             }
 
-            tuple1.setHdr(in1_len, _in1, s_sizes);
-            if (PredEval.Eval(OutputFilter, tuple1, null, _in1, null) == true) {
-                Projection.Project(tuple1, _in1, Jtuple, perm_mat, nOutFlds);
-                return Jtuple;
+            short[] strSizes1 = new short[]{(short) 32,  //rowValue
+                    (short) 32,  //colValue
+                    (short) 32}; //keyValue
+            AttrType[] attrType = new AttrType[] {new AttrType(0), new AttrType(0), new AttrType(1), new AttrType(0)};
+            tempMap.setHeader(attrType, strSizes1); //TODO: temporary, fix these values somewhere
+
+            if (PredEval.Eval(OutputFilter, tempMap, null, _in1, null)) { //TODO ganesh is doing this
+                Projection.Project(tempMap, _in1, mapObj, perm_mat); //TODO - vasan is doing
+                return mapObj;
             }
         }
     }

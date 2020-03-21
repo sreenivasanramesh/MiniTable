@@ -46,9 +46,9 @@ class Utils {
                 String[] input = inputStr.split(",");
                 //set the map
                 Map map = new Map();
-                short[] strSizes1 = new short[]{(short) input[0].getBytes().length,  //rowValue
-                                                (short) input[1].getBytes().length,  //colValue
-                                                (short) input[3].getBytes().length}; //keyValue
+                short[] strSizes1 = new short[]{(short) 32,  //rowValue
+                                                (short) 32,  //colValue
+                                                (short) 32}; //keyValue
                 AttrType[] attrType = new AttrType[] {new AttrType(0), new AttrType(0), new AttrType(1), new AttrType(0)};
                 map.setHeader(attrType, strSizes1);
                 map.setRowLabel(input[0]);
@@ -58,7 +58,7 @@ class Utils {
 
                 //
                 // TODO replace with bigT.insertMap()
-                MID mid = bigTable.insertMap(map.getMapByteArray());
+                MID mid = heapfile.insertMap(map.getMapByteArray());
                 mapCount++;
             }
             System.out.println(mapCount + " tuples inserted...\n");
@@ -97,8 +97,8 @@ class Utils {
 
             while (true) {
                 //TODO: I'm not really sure about the mapId, have to check how to do this
-//                Map mapObj = mapStream.getNext(mapId);
-                Map mapObj = null;
+                Map mapObj = mapStream.getNext();
+                //Map mapObj = null;
                 if (mapObj == null)
                     break;
                 mapObj.print();
