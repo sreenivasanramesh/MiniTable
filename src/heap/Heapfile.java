@@ -1,11 +1,10 @@
 package heap;
 
-import java.io.*;
-
 import BigT.Map;
-import diskmgr.*;
-import bufmgr.*;
+import diskmgr.Page;
 import global.*;
+
+import java.io.IOException;
 
 /**
  * This heapfile implementation is directory-based. We maintain a
@@ -81,6 +80,88 @@ public class Heapfile implements Filetype, GlobalConst {
 
     } // end of _newDatapage
 
+    /**
+     * Initialize.  A null name produces a temporary heapfile which will be
+     * deleted by the destructor.  If the name already denotes a file, the
+     * file is opened; otherwise, a new empty file is created.
+     *
+     * @throws HFException        heapfile exception
+     * @throws HFBufMgrException  exception thrown from bufmgr layer
+     * @throws HFDiskMgrException exception thrown from diskmgr layer
+     * @throws IOException        I/O errors
+     */
+    public Heapfile(String name)
+            throws HFException,
+            HFBufMgrException,
+            HFDiskMgrException,
+            IOException {
+        // Give us a prayer of destructing cleanly if construction fails.
+        _file_deleted = true;
+        _fileName = null;
+
+        if (name == null) {
+            // If the name is NULL, allocate a temporary name
+            // and no logging is required.
+            _fileName = "tempHeapFile";
+            String useId = "user.name";
+            String userAccName;
+            userAccName = System.getProperty(useId);
+            _fileName = _fileName + userAccName;
+
+            String filenum = Integer.toString(tempfilecount);
+            _fileName = _fileName + filenum;
+            _ftype = TEMP;
+            tempfilecount++;
+
+        } else {
+            _fileName = name;
+            _ftype = ORDINARY;
+        }
+
+        // The constructor gets run in two different cases.
+        // In the first case, the file is new and the header page
+        // must be initialized.  This case is detected via a failure
+        // in the db->get_file_entry() call.  In the second case, the
+        // file already exists and all that must be done is to fetch
+        // the header page into the buffer pool
+
+        // try to open the file
+
+        Page apage = new Page();
+        _firstDirPageId = null;
+        if (_ftype == ORDINARY)
+            _firstDirPageId = get_file_entry(_fileName);
+
+        if (_firstDirPageId == null) {
+            // file doesn't exist. First create it.
+            _firstDirPageId = newPage(apage, 1);
+            // check error
+            if (_firstDirPageId == null)
+                throw new HFException(null, "can't new page");
+
+            add_file_entry(_fileName, _firstDirPageId);
+            // check error(new exception: Could not add file entry
+
+            HFPage firstDirPage = new HFPage();
+            firstDirPage.init(_firstDirPageId, apage);
+            PageId pageId = new PageId(INVALID_PAGE);
+
+            firstDirPage.setNextPage(pageId);
+            firstDirPage.setPrevPage(pageId);
+            unpinPage(_firstDirPageId, true /*dirty*/);
+
+
+        }
+        _file_deleted = false;
+        // ASSERTIONS:
+        // - ALL private data members of class Heapfile are valid:
+        //
+        //  - _firstDirPageId valid
+        //  - _fileName valid
+        //  - no datapage pinned yet
+
+    } // end of constructor
+
     /* Internal HeapFile function (used in getRecord and updateRecord):
        returns pinned directory page and pinned data page of the specified
        user record(rid) and true if record is found.
@@ -90,11 +171,7 @@ public class Heapfile implements Filetype, GlobalConst {
                                   PageId dirPageId, HFPage dirpage,
                                   PageId dataPageId, HFPage datapage,
                                   RID rpDataPageRid)
-            throws InvalidSlotNumberException,
-            InvalidTupleSizeException,
-            HFException,
-            HFBufMgrException,
-            HFDiskMgrException,
+            throws
             Exception {
         PageId currentDirPageId = new PageId(_firstDirPageId.pid);
 
@@ -193,7 +270,7 @@ public class Heapfile implements Filetype, GlobalConst {
 
 
     } // end of _findDatapage
-    
+
     /* Internal HeapFile function (used in getRecord and updateRecord):
        returns pinned directory page and pinned data page of the specified
        user record(rid) and true if record is found.
@@ -203,30 +280,26 @@ public class Heapfile implements Filetype, GlobalConst {
                                   PageId dirPageId, HFPage dirpage,
                                   PageId dataPageId, HFPage datapage,
                                   RID rpDataPageRid)
-            throws InvalidSlotNumberException,
-            InvalidTupleSizeException,
-            HFException,
-            HFBufMgrException,
-            HFDiskMgrException,
+    throws
             Exception {
         PageId currentDirPageId = new PageId(_firstDirPageId.pid);
-        
+
         HFPage currentDirPage = new HFPage();
         HFPage currentDataPage = new HFPage();
         RID currentDataPageRid = new RID();
         PageId nextDirPageId = new PageId();
         // datapageId is stored in dpinfo.pageId
-        
-        
+
+
         pinPage(currentDirPageId, currentDirPage, false/*read disk*/);
-        
+
         Map map = new Map();
         Tuple atuple = new Tuple();
-        
+
         while (currentDirPageId.pid != INVALID_PAGE) {// Start While01
             // ASSERTIONS:
             //  currentDirPage, currentDirPageId valid and pinned and Locked.
-            
+
             for (currentDataPageRid = currentDirPage.firstRecord();
                  currentDataPageRid != null;
                  currentDataPageRid = currentDirPage.nextRecord(currentDataPageRid)) {
@@ -236,12 +309,12 @@ public class Heapfile implements Filetype, GlobalConst {
                 {
                     return false;
                 }
-                
+
                 DataPageInfo dpinfo = new DataPageInfo(atuple);
                 try {
                     pinPage(dpinfo.pageId, currentDataPage, false/*Rddisk*/);
-                    
-                    
+
+
                     //check error;need unpin currentDirPage
                 } catch (Exception e) {
                     unpinPage(currentDirPageId, false/*undirty*/);
@@ -249,23 +322,23 @@ public class Heapfile implements Filetype, GlobalConst {
                     datapage = null;
                     throw e;
                 }
-                
-                
+
+
                 // ASSERTIONS:
                 // - currentDataPage, currentDataPageRid, dpinfo valid
                 // - currentDataPage pinned
-                
+
                 if (dpinfo.pageId.pid == mid.getPageNo().pid) {
                     map = currentDataPage.returnMap(mid);
                     // found user's record on the current datapage which itself
                     // is indexed on the current dirpage.  Return both of these.
-                    
+
                     dirpage.setpage(currentDirPage.getpage());
                     dirPageId.pid = currentDirPageId.pid;
-                    
+
                     datapage.setpage(currentDataPage.getpage());
                     dataPageId.pid = dpinfo.pageId.pid;
-                    
+
                     rpDataPageRid.pageNo.pid = currentDataPageRid.pageNo.pid;
                     rpDataPageRid.slotNo = currentDataPageRid.slotNo;
                     return true;
@@ -273,121 +346,40 @@ public class Heapfile implements Filetype, GlobalConst {
                     // user record not found on this datapage; unpin it
                     // and try the next one
                     unpinPage(dpinfo.pageId, false /*undirty*/);
-                    
+
                 }
-                
+
             }
-            
+
             // if we would have found the correct datapage on the current
             // directory page we would have already returned.
             // therefore:
             // read in next directory page:
-            
+
             nextDirPageId = currentDirPage.getNextPage();
             try {
                 unpinPage(currentDirPageId, false /*undirty*/);
             } catch (Exception e) {
                 throw new HFException(e, "heapfile,_find,unpinpage failed");
             }
-            
+
             currentDirPageId.pid = nextDirPageId.pid;
             if (currentDirPageId.pid != INVALID_PAGE) {
                 pinPage(currentDirPageId, currentDirPage, false/*Rdisk*/);
                 if (currentDirPage == null)
                     throw new HFException(null, "pinPage return null page");
             }
-            
-            
+
+
         } // end of While01
         // checked all dir pages and all data pages; user record not found:(
-        
+
         dirPageId.pid = dataPageId.pid = INVALID_PAGE;
-        
+
         return false;
-        
-        
+
+
     } // end of _findDatapage
-
-    /** Initialize.  A null name produces a temporary heapfile which will be
-     * deleted by the destructor.  If the name already denotes a file, the
-     * file is opened; otherwise, a new empty file is created.
-     *
-     * @exception HFException heapfile exception
-     * @exception HFBufMgrException exception thrown from bufmgr layer
-     * @exception HFDiskMgrException exception thrown from diskmgr layer
-     * @exception IOException I/O errors
-     */
-    public Heapfile(String name)
-            throws HFException,
-            HFBufMgrException,
-            HFDiskMgrException,
-            IOException {
-        // Give us a prayer of destructing cleanly if construction fails.
-        _file_deleted = true;
-        _fileName = null;
-
-        if (name == null) {
-            // If the name is NULL, allocate a temporary name
-            // and no logging is required.
-            _fileName = "tempHeapFile";
-            String useId = new String("user.name");
-            String userAccName;
-            userAccName = System.getProperty(useId);
-            _fileName = _fileName + userAccName;
-
-            String filenum = Integer.toString(tempfilecount);
-            _fileName = _fileName + filenum;
-            _ftype = TEMP;
-            tempfilecount++;
-
-        } else {
-            _fileName = name;
-            _ftype = ORDINARY;
-        }
-
-        // The constructor gets run in two different cases.
-        // In the first case, the file is new and the header page
-        // must be initialized.  This case is detected via a failure
-        // in the db->get_file_entry() call.  In the second case, the
-        // file already exists and all that must be done is to fetch
-        // the header page into the buffer pool
-
-        // try to open the file
-
-        Page apage = new Page();
-        _firstDirPageId = null;
-        if (_ftype == ORDINARY)
-            _firstDirPageId = get_file_entry(_fileName);
-
-        if (_firstDirPageId == null) {
-            // file doesn't exist. First create it.
-            _firstDirPageId = newPage(apage, 1);
-            // check error
-            if (_firstDirPageId == null)
-                throw new HFException(null, "can't new page");
-
-            add_file_entry(_fileName, _firstDirPageId);
-            // check error(new exception: Could not add file entry
-
-            HFPage firstDirPage = new HFPage();
-            firstDirPage.init(_firstDirPageId, apage);
-            PageId pageId = new PageId(INVALID_PAGE);
-
-            firstDirPage.setNextPage(pageId);
-            firstDirPage.setPrevPage(pageId);
-            unpinPage(_firstDirPageId, true /*dirty*/);
-
-
-        }
-        _file_deleted = false;
-        // ASSERTIONS:
-        // - ALL private data members of class Heapfile are valid:
-        //
-        //  - _firstDirPageId valid
-        //  - _fileName valid
-        //  - no datapage pinned yet
-
-    } // end of constructor 
 
     /** Return number of records in file.
      *
@@ -526,7 +518,7 @@ public class Heapfile implements Filetype, GlobalConst {
                 // - (2.2) (currentDirPage->available_space() <= sizeof(DataPageInfo):
                 //         look at the next directory page, if necessary, create it.
 
-                if (currentDirPage.available_space() >= dpinfo.size) {
+                if (currentDirPage.available_space() >= DataPageInfo.size) {
                     //Start IF02
                     // case (2.1) : add a new data page record into the
                     //              current directory page
@@ -762,15 +754,15 @@ public class Heapfile implements Filetype, GlobalConst {
                 //         page
                 // - (2.2) (currentDirPage->available_space() <= sizeof(DataPageInfo):
                 //         look at the next directory page, if necessary, create it.
-                
-                if (currentDirPage.available_space() >= dpinfo.size) {
+
+                if (currentDirPage.available_space() >= DataPageInfo.size) {
                     //Start IF02
                     // case (2.1) : add a new data page record into the
                     //              current directory page
                     currentDataPage = _newDatapage(dpinfo);
                     // currentDataPage is pinned! and dpinfo->pageId is also locked
                     // in the exclusive mode
-                    
+
                     // didn't check if currentDataPage==NULL, auto exception
                     
                     
@@ -925,11 +917,7 @@ public class Heapfile implements Filetype, GlobalConst {
      * @return true record deleted  false:record not found
      */
     public boolean deleteRecord(RID rid)
-            throws InvalidSlotNumberException,
-            InvalidTupleSizeException,
-            HFException,
-            HFBufMgrException,
-            HFDiskMgrException,
+    throws
             Exception {
         boolean status;
         HFPage currentDirPage = new HFPage();
@@ -1061,11 +1049,7 @@ public class Heapfile implements Filetype, GlobalConst {
      * @return true record deleted  false:record not found
      */
     public boolean deleteMap(MID mid)
-            throws InvalidSlotNumberException,
-            InvalidTupleSizeException,
-            HFException,
-            HFBufMgrException,
-            HFDiskMgrException,
+    throws
             Exception {
         boolean status;
         HFPage currentDirPage = new HFPage();
@@ -1200,12 +1184,7 @@ public class Heapfile implements Filetype, GlobalConst {
      * @return ture:update success   false: can't find the record
      */
     public boolean updateRecord(RID rid, Tuple newtuple)
-            throws InvalidSlotNumberException,
-            InvalidUpdateException,
-            InvalidTupleSizeException,
-            HFException,
-            HFDiskMgrException,
-            HFBufMgrException,
+    throws
             Exception {
         boolean status;
         HFPage dirPage = new HFPage();
@@ -1258,12 +1237,7 @@ public class Heapfile implements Filetype, GlobalConst {
      * @return ture:update success   false: can't find the record
      */
     public boolean updateMap(MID mid, Map newMap)
-            throws InvalidSlotNumberException,
-            InvalidUpdateException,
-            InvalidTupleSizeException,
-            HFException,
-            HFDiskMgrException,
-            HFBufMgrException,
+    throws
             Exception {
         boolean status;
         HFPage dirPage = new HFPage();
@@ -1317,11 +1291,7 @@ public class Heapfile implements Filetype, GlobalConst {
      * @return a Tuple. if Tuple==null, no more tuple
      */
     public Tuple getRecord(RID rid)
-            throws InvalidSlotNumberException,
-            InvalidTupleSizeException,
-            HFException,
-            HFDiskMgrException,
-            HFBufMgrException,
+    throws
             Exception {
         boolean status;
         HFPage dirPage = new HFPage();
@@ -1369,11 +1339,7 @@ public class Heapfile implements Filetype, GlobalConst {
      * @return a Tuple. if Tuple==null, no more tuple
      */
     public Map getMap(MID mid)
-            throws InvalidSlotNumberException,
-            InvalidTupleSizeException,
-            HFException,
-            HFDiskMgrException,
-            HFBufMgrException,
+    throws
             Exception {
         boolean status;
         HFPage dirPage = new HFPage();
@@ -1572,6 +1538,7 @@ public class Heapfile implements Filetype, GlobalConst {
             throws HFDiskMgrException {
 
         try {
+            System.out.println("filename = " + filename);
             SystemDefs.JavabaseDB.add_file_entry(filename, pageno);
         } catch (Exception e) {
             throw new HFDiskMgrException(e, "Heapfile.java: add_file_entry() failed");

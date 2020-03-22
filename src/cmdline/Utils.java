@@ -19,7 +19,7 @@ import static global.GlobalConst.NUMBUF;
 
 class Utils {
 
-    private static final int NUM_PAGES = 10000;
+    private static final int NUM_PAGES = 100000;
 
     static void batchInsert(String dataFile, String tableName, int type, boolean useMetaData) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException {
         //String dbPath = getDBPath(tableName, type);
@@ -87,17 +87,18 @@ class Utils {
         int resultCount = 0;
 
         try {
-            //TODO: query logic
-            bigT bigTable = new bigT(tableName, type);
+
+            bigT bigTable = new bigT(tableName);
+            if (!type.equals(bigTable.getType())) {
+                System.out.println("Type Mismatch");
+                throw new Exception("Invalid type passed");
+            }
             Stream mapStream = bigTable.openStream(orderType, rowFilter, colFilter, valFilter);
 
             MID mapId = null;
 
             while (true) {
-                //TODO: I'm not really sure about the mapId, have to check how to do this
                 Map mapObj = mapStream.getNext();
-                //Map mapObj = null;
-                System.out.println("mapObj = " + mapObj);
                 if (mapObj == null)
                     break;
                 mapObj.print();
@@ -107,7 +108,6 @@ class Utils {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
 
         System.out.println("Matched Records: " + resultCount);
         System.out.println("Reads : " + pcounter.rcounter);

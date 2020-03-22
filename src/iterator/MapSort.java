@@ -392,7 +392,8 @@ public class MapSort extends MapIterator implements GlobalConst {
                     try {
                         temp_files[run_num] = new Heapfile(null);
                     } catch (Exception e) {
-                        throw new SortException(e, "Sort.java: create Heapfile failed");
+                        e.printStackTrace();
+                        throw new SortException(e, "MapSort.java: create Heapfile failed");
                     }
 
                     // need io_bufs.java
@@ -403,7 +404,8 @@ public class MapSort extends MapIterator implements GlobalConst {
                         try {
                             MIN_VAL(lastElem, sortFldType);
                         } catch (UnknowAttrType e) {
-                            throw new SortException(e, "Sort.java: UnknowAttrType caught from MIN_VAL()");
+                            e.printStackTrace();
+                            throw new SortException(e, "MapSort.java: UnknowAttrType caught from MIN_VAL()");
                         } catch (Exception e) {
                             throw new SortException(e, "MIN_VAL failed");
                         }
@@ -411,7 +413,8 @@ public class MapSort extends MapIterator implements GlobalConst {
                         try {
                             MAX_VAL(lastElem, sortFldType);
                         } catch (UnknowAttrType e) {
-                            throw new SortException(e, "Sort.java: UnknowAttrType caught from MAX_VAL()");
+                            e.printStackTrace();
+                            throw new SortException(e, "MapSort.java: UnknowAttrType caught from MAX_VAL()");
                         } catch (Exception e) {
                             throw new SortException(e, "MIN_VAL failed");
                         }
