@@ -8,6 +8,7 @@ import cmdline.MiniTable;
 import diskmgr.OutOfSpaceException;
 import global.MID;
 import global.RID;
+import global.SystemDefs;
 import global.TupleOrder;
 import heap.Heapfile;
 import heap.MapScan;
@@ -106,27 +107,27 @@ public class Stream {
 
                         String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
                         String[] columnRange = columnFilter.replaceAll("[\\[ \\]]", "").split(",");
-                        start = new StringKey(rowRange[0] + columnRange[0]);
-                        end = new StringKey(rowRange[1] + columnRange[1]);
+                        start = new StringKey(rowRange[0] + "$" + columnRange[0]);
+                        end = new StringKey(rowRange[1] + "$" + columnRange[1]);
 
                         //check row range and column fixed/*
                     } else if ((rowFilter.matches(rangeRegex)) && (!columnFilter.matches(rangeRegex))) {
 
                         String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
-                        start = new StringKey(rowRange[0] + columnFilter);
-                        end = new StringKey(rowRange[1] + columnFilter);
+                        start = new StringKey(rowRange[0] + "$" + columnFilter);
+                        end = new StringKey(rowRange[1] + "$" + columnFilter);
 
                         // check column range and row fixed/*
                     } else if ((!rowFilter.matches(rangeRegex)) && (columnFilter.matches(rangeRegex))) {
 
                         String[] columnRange = columnFilter.replaceAll("[\\[ \\]]", "").split(",");
-                        start = new StringKey(rowFilter + columnRange[0]);
-                        end = new StringKey(rowFilter + columnRange[1]);
+                        start = new StringKey(rowFilter + "$" +columnRange[0]);
+                        end = new StringKey(rowFilter + "$" + columnRange[1]);
 
                         //row and col are fixed val or *,fixed fixed,*
                     } else {
 
-                        start = new StringKey(rowFilter + columnFilter);
+                        start = new StringKey(rowFilter + "$" + columnFilter);
                         end = start;
                     }
                 }
@@ -205,20 +206,11 @@ public class Stream {
                 RID rid = ((LeafData) entry.data).getData();
                 if (rid != null) {
                     MID midFromRid = new MID(rid.pageNo, rid.slotNo);
-                    Map map = bigtable.heapfile.getMap(midFromRid);
-                    if (this.type == 5) {
-                        if ((!rowFilter.matches(rangeRegex)) && !rowFilter.equals(map.getRowLabel())) {
-                            // is star
-                            break;
-                        } else if (rowFilter.matches(rangeRegex)) {
-                            String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
-                            if ((map.getRowLabel().compareTo(rowRange[0]) < 0)
-                                    || (map.getRowLabel().compareTo(rowRange[1]) > 0)) {
-                                break;
-                            }
-                        }
+                    Map mapObj = bigtable.heapfile.getMap(midFromRid);
+                    if (genericMatcher(mapObj, "row", rowFilter) && genericMatcher(mapObj, "column", columnFilter) && genericMatcher(mapObj, "value", valueFilter)) {
+                        tempHeapFile.insertMap(mapObj.getMapByteArray());
                     }
-                    tempHeapFile.insertMap(map.getMapByteArray());
+
                 }
                 entry = btreeScanner.get_next();
             }
@@ -343,6 +335,7 @@ public class Stream {
 
 
     public void closeStream() throws Exception {
+
         if (this.sortObj != null) {
             this.sortObj.close();
         }
@@ -371,7 +364,6 @@ public class Stream {
             System.out.println("Map is null ");
             System.out.println("Deleting temp file used for sorting");
             tempHeapFile.deleteFile();
-//            SystemDefs.JavabaseBM.flushAllPages();
             closeStream();
             return null;
         }
