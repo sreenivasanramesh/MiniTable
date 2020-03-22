@@ -29,6 +29,8 @@ public class Stream {
     private boolean scanAll = false;
     private String starFilter;
     private String rangeRegex = "\\[\\S+,\\S+\\]";
+    // Used to include the high filter also while fetching from BTree Index
+    private String lastChar;
     private BTFileScan btreeScanner, dummyScanner;
     public Heapfile tempHeapFile;
     private MID[] midList;
@@ -48,6 +50,7 @@ public class Stream {
         this.type = bigTable.type;
         this.orderType = orderType;
         this.starFilter = "*";
+        this.lastChar = "Z";
 
 
         queryConditions();
@@ -72,16 +75,17 @@ public class Stream {
                 this.scanAll = true;
                 break;
             case 2:
-                if (rowFilter.equals("*")) {
+                if (rowFilter.equals(starFilter)) {
                     this.scanAll = true;
                 } else {
                     // check if range
                     if (rowFilter.matches(rangeRegex)) {
                         String[] range = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
                         start = new StringKey(range[0]);
-                        end = new StringKey(range[1]);
+                        end = new StringKey(range[1] + this.lastChar);
                     } else {
-                        start = end = new StringKey(rowFilter);
+                        start = new StringKey(rowFilter);
+                        end = new StringKey(rowFilter + this.lastChar);
                     }
                 }
                 break;
@@ -93,9 +97,10 @@ public class Stream {
                     if (columnFilter.matches(rangeRegex)) {
                         String[] range = columnFilter.replaceAll("[\\[ \\]]", "").split(",");
                         start = new StringKey(range[0]);
-                        end = new StringKey(range[1]);
+                        end = new StringKey(range[1] + this.lastChar);
                     } else {
-                        start = end = new StringKey(columnFilter);
+                        start = new StringKey(columnFilter);
+                        end = new StringKey(columnFilter + this.lastChar);
                     }
                 }
                 break;
@@ -110,7 +115,7 @@ public class Stream {
                         String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
                         String[] columnRange = columnFilter.replaceAll("[\\[ \\]]", "").split(",");
                         start = new StringKey(columnRange[0] + "$" + rowRange[0]);
-                        end = new StringKey(columnRange[1] + "$" + rowRange[1]);
+                        end = new StringKey(columnRange[1] + "$" + rowRange[1] + this.lastChar);
 
                         //check row range and column fixed/*
                     } else if ((rowFilter.matches(rangeRegex)) && (!columnFilter.matches(rangeRegex))) {
@@ -119,18 +124,18 @@ public class Stream {
                             scanAll = true;
                         } else {
                             start = new StringKey(columnFilter + "$" + rowRange[0]);
-                            end = new StringKey(columnFilter + "$" + rowRange[1]);
+                            end = new StringKey(columnFilter + "$" + rowRange[1] + this.lastChar);
                         }
                         // check column range and row fixed/*
                     } else if ((!rowFilter.matches(rangeRegex)) && (columnFilter.matches(rangeRegex))) {
                         String[] columnRange = columnFilter.replaceAll("[\\[ \\]]", "").split(",");
                         if (rowFilter.equals(starFilter)) {
                             start = new StringKey(columnRange[0]);
-                            end = new StringKey(columnRange[1]);
+                            end = new StringKey(columnRange[1] + this.lastChar);
                         } else {
 
                             start = new StringKey(columnRange[0] + "$" + rowFilter);
-                            end = new StringKey(columnRange[1] + "$" + rowFilter);
+                            end = new StringKey(columnRange[1] + "$" + rowFilter + this.lastChar);
                         }
 
                         //row and col are fixed val or *,fixed fixed,*
@@ -141,14 +146,14 @@ public class Stream {
                             start = end = new StringKey(columnFilter);
                         } else {
                             start = new StringKey(columnFilter + "$" + rowFilter);
-                            end = start;
+                            end = new StringKey(columnFilter + "$" + rowFilter + this.lastChar);
                         }
                     }
                 }
                 break;
             case 5:
-                System.out.println(valueFilter + "--------------" + rowFilter);
-                if ((valueFilter.equals("*")) && (rowFilter.equals("*"))) {
+                
+                if ((valueFilter.equals(starFilter)) && (rowFilter.equals(starFilter))) {
                     scanAll = true;
                 } else {
 
@@ -158,7 +163,7 @@ public class Stream {
                         String[] valueRange = valueFilter.replaceAll("[\\[ \\]]", "").split(",");
                         String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
                         start = new StringKey(rowRange[0] + "$" + valueRange[0]);
-                        end = new StringKey(rowRange[1] + "$" + valueRange[1]);
+                        end = new StringKey(rowRange[1] + "$" + valueRange[1] + this.lastChar);
 
                         //check row range and column fixed/*
                     } else if ((valueFilter.matches(rangeRegex)) && (!rowFilter.matches(rangeRegex))) {
@@ -167,31 +172,33 @@ public class Stream {
                             scanAll = true;
                         } else {
                             start = new StringKey(rowFilter + "$" + valueRange[0]);
-                            end = new StringKey(rowFilter + "$" + valueRange[1]);
+                            end = new StringKey(rowFilter + "$" + valueRange[1] + this.lastChar);
                         }
                         // check column range and row fixed/*
                     } else if ((!valueFilter.matches(rangeRegex)) && (rowFilter.matches(rangeRegex))) {
                         String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
                         if (valueFilter.equals("*")) {
                             start = new StringKey(rowRange[0]);
-                            end = new StringKey(rowRange[1]);
+                            end = new StringKey(rowRange[1] + this.lastChar);
                         } else {
 
                             start = new StringKey(rowRange[0] + "$" + valueFilter);
-                            end = new StringKey(rowRange[1] + "$" + valueFilter);
+                            end = new StringKey(rowRange[1] + "$" + valueFilter + this.lastChar);
                         }
 
                         //row and col are fixed val or *,fixed fixed,*
                     } else {
                         if (rowFilter.equals("*")) {
+                            // *, fixed
                             scanAll = true;
                         } else if (valueFilter.equals("*")) {
+                            // fixed, *
                             start = new StringKey(rowFilter);
-                            end = new StringKey(rowFilter);
-                            System.out.println("came till here");
+                            end = new StringKey(rowFilter + lastChar);
                         } else {
+                            // both fixed
                             start = new StringKey(rowFilter + "$" + valueFilter);
-                            end = start;
+                            end = new StringKey(rowFilter + "$" + valueFilter + this.lastChar);
                         }
                     }
                 }
@@ -403,9 +410,6 @@ public class Stream {
             closeStream();
         }
         if (m == null) {
-            System.out.println("Map is null ");
-            System.out.println("Deleting temp file used for sorting");
-            System.out.println("tempHeapFile = " + tempHeapFile);
             tempHeapFile.deleteFile();
             closeStream();
             return null;

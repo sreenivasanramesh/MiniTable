@@ -11,23 +11,18 @@ import static global.GlobalConst.MINIBASE_DB_SIZE;
 import static global.GlobalConst.NUMBUF;
 
 public class BigTTest {
+
     public static void main(String[] args) throws Exception {
-        String s = "12345678901234567890";
-        System.out.println(s.getBytes().length);
-
-    }
-
-    public static void main1(String[] args) throws Exception {
         final long startTime = System.currentTimeMillis();
 
         boolean isNewDb = false;
         int numPages = isNewDb ? MINIBASE_DB_SIZE : 0;
-        new SystemDefs("/Users/sumukhashwinkamath/test.db", numPages, NUMBUF, "Clock");
+        new SystemDefs("/tmp/ash.db", numPages, NUMBUF, "Clock");
         bigT bigT;
         if (isNewDb) {
-            bigT = new bigT("test1", 4);
+            bigT = new bigT("ash", 4);
         } else {
-            bigT = new bigT("test1");
+            bigT = new bigT("ash");
         }
 
 //        BigTTest bigTTest = new BigTTest();
@@ -51,9 +46,9 @@ public class BigTTest {
 //
 //        map = bigTTest.formMap("a", "d", 10, "6");
 //        bigT.insertMap(map.getMapByteArray());
-        bigT.printFullScan();
+//        bigT.printFullScan();
 //
-
+        bigT.getRecords();
         int rowCnt = bigT.getRowCnt();
         System.out.println("rowCnt = " + rowCnt);
 
@@ -62,8 +57,7 @@ public class BigTTest {
 
         int mapCount = bigT.getMapCnt();
         System.out.println("mapCount = " + mapCount);
-
-        bigT.getRecords();
+        
         bigT.close();
     }
 

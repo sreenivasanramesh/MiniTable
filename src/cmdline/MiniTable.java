@@ -37,11 +37,11 @@ public class MiniTable {
                     BIGT_STR_SIZES = setBigTConstants(dataFile);
                     Integer type = Integer.parseInt(inputStr[2]);
                     String tableName = inputStr[3];
-                    boolean useMetadata = Boolean.parseBoolean(inputStr[4]);
+//                    boolean useMetadata = Boolean.parseBoolean(inputStr[4]);
                     checkDBExists(tableName);
-                    Utils.batchInsert(dataFile, tableName, type, useMetadata);
+                    Utils.batchInsert(dataFile, tableName, type);
                 } else if (inputStr[0].equalsIgnoreCase("query")) {
-                    BIGT_STR_SIZES = setBigTConstants("/Users/rakeshr/rr/ASU/testdata.csv");
+                    BIGT_STR_SIZES = setBigTConstants("/Users/sumukhashwinkamath/Downloads/project2_testdata.csv");
                     //query BIGTABLENAME TYPE ORDERTYPE ROWFILTER COLUMNFILTER VALUEFILTER NUMBUF
                     String tableName = inputStr[1].trim();
                     Integer type = Integer.parseInt(inputStr[2]);
@@ -49,9 +49,7 @@ public class MiniTable {
                     String rowFilter = inputStr[4].trim();
                     String colFilter = inputStr[5].trim();
                     String valFilter = inputStr[6].trim();
-                    //String filter = rowFilter + ";" + colFilter + ";" + valFilter;
                     Integer NUMBUF = Integer.parseInt(inputStr[7]);
-                    //CondExpr filters[] = Utils.getCondExpr(filter);
                     checkDBMissing(tableName);
                     Utils.query(tableName, type, orderType, rowFilter, colFilter, valFilter, NUMBUF);
                 } else
@@ -61,7 +59,7 @@ public class MiniTable {
                 e.printStackTrace();
             }
             SystemDefs.JavabaseBM.flushAllPages();
-
+            
             final long endTime = System.currentTimeMillis();
             System.out.println("Total execution time: " + (endTime - startTime) / 1000.0);
 

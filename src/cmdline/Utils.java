@@ -21,7 +21,7 @@ class Utils {
 
     private static final int NUM_PAGES = 100000;
 
-    static void batchInsert(String dataFile, String tableName, int type, boolean useMetaData) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException {
+    static void batchInsert(String dataFile, String tableName, int type) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException {
         //String dbPath = getDBPath(tableName, type);
         String dbPath = getDBPath(tableName);
         System.out.println(dbPath);
@@ -55,13 +55,19 @@ class Utils {
 
                 //
                 // TODO replace with bigT.insertMap()
-                MID mid = bigTable.insertMap(map.getMapByteArray(), useMetaData);
+                MID mid = bigTable.insertMap(map.getMapByteArray());
                 mapCount++;
             }
+            System.out.println("\n=======================================\n");
             System.out.println(mapCount + " maps inserted...\n");
             System.out.println("map count: " + bigTable.getMapCnt());
-            System.out.println("bigTable.getRowCnt() = " + bigTable.getRowCnt());
-            System.out.println("bigTable.getColumnCnt() = " + bigTable.getColumnCnt());
+            System.out.println("Distinct Rows = " + bigTable.getRowCnt());
+            System.out.println("Distinct Coloumns = " + bigTable.getColumnCnt());
+            System.out.println("\n=======================================\n");
+            System.out.println("Reads : " + pcounter.rcounter);
+            System.out.println("Writes: " + pcounter.wcounter);
+            System.out.println("NumBUFS: " + NUMBUF);
+            System.out.println("\n=======================================\n");
             bigTable.close();
 
 
@@ -74,9 +80,6 @@ class Utils {
 
         SystemDefs.JavabaseBM.flushAllPages();
         SystemDefs.JavabaseDB.closeDB();
-        System.out.println("Reads : " + pcounter.rcounter);
-        System.out.println("Writes: " + pcounter.wcounter);
-        System.out.println("NumBUFS: " + NUMBUF);
     }
 
 
@@ -92,7 +95,8 @@ class Utils {
             bigT bigTable = new bigT(tableName);
             if (!type.equals(bigTable.getType())) {
                 System.out.println("Type Mismatch");
-                throw new Exception("Invalid type passed");
+                bigTable.close();
+                return;
             }
             Stream mapStream = bigTable.openStream(orderType, rowFilter, colFilter, valFilter);
 
@@ -105,16 +109,19 @@ class Utils {
                 mapObj.print();
                 resultCount++;
             }
-
+            bigTable.close();
             mapStream.closeStream();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+    
+        System.out.println("\n=======================================\n");
         System.out.println("Matched Records: " + resultCount);
         System.out.println("Reads : " + pcounter.rcounter);
         System.out.println("Writes: " + pcounter.wcounter);
+        System.out.println("\n=======================================\n");
+        
     }
 
 

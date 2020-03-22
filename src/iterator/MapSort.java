@@ -111,7 +111,6 @@ public class MapSort extends MapIterator implements GlobalConst {
 
         try {
             temp_files[0] = new Heapfile(null);
-            System.out.println("temp_files = " + temp_files[0]);
         } catch (Exception e) {
             throw new SortException(e, "Sort.java: Heapfile error");
         }
@@ -467,7 +466,7 @@ public class MapSort extends MapIterator implements GlobalConst {
      * from each run into a heap. <code>delete_min() </code> will then get
      * the minimum of all runs.
      *
-     * @param tuple_size size (in bytes) of each tuple
+     * @param mapSize size (in bytes) of each tuple
      * @param n_R_runs   number of runs
      * @throws IOException     from lower layers
      * @throws LowMemException there is not enough memory to
@@ -704,7 +703,6 @@ public class MapSort extends MapIterator implements GlobalConst {
         for (int i = 0; i < temp_files.length; i++) {
             if (temp_files[i] != null) {
                 try {
-                    System.out.println("temp_files delete = " + temp_files[i]);
                     temp_files[i].deleteFile();
                 } catch (Exception e) {
                     e.printStackTrace();
