@@ -22,10 +22,6 @@ import static global.GlobalConst.MINIBASE_PAGESIZE;
 
 public class bigT {
     public static final int MAX_SIZE = MINIBASE_PAGESIZE;
-    public static final short[] BIGT_STR_SIZES = new short[]{(short) 25,  //rowValue
-            (short) 25,  //colValue
-            (short) 25}; //keyValue
-    public static final AttrType[] BIGT_ATTR_TYPES = new AttrType[]{new AttrType(0), new AttrType(0), new AttrType(1), new AttrType(0)};
 
     // Indexing type
     int type;

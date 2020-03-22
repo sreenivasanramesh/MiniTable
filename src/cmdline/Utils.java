@@ -16,13 +16,12 @@ import iterator.RelSpec;
 
 import java.io.*;
 
-import static BigT.bigT.BIGT_ATTR_TYPES;
-import static BigT.bigT.BIGT_STR_SIZES;
 import static global.GlobalConst.NUMBUF;
 
 class Utils {
 
     private static final int NUM_PAGES = 10000;
+
 
     static void batchInsert(String dataFile, String tableName, int type, boolean useMetaData) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException {
         String dbPath = getDBPath(tableName, type);
@@ -38,7 +37,6 @@ class Utils {
         FileInputStream fileStream = null;
         BufferedReader br = null;
         try {
-            setBigTConstants(dataFile);
             bigT bigTable = new bigT(tableName, type);
             fileStream = new FileInputStream(dataFile);
             Heapfile heapfile = new Heapfile(getDBPath(tableName, type));
@@ -50,7 +48,7 @@ class Utils {
                 String[] input = inputStr.split(",");
                 //set the map
                 Map map = new Map();
-                map.setHeader(BIGT_ATTR_TYPES, BIGT_STR_SIZES);
+                map.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
                 map.setRowLabel(input[0]);
                 map.setColumnLabel(input[1]);
                 map.setTimeStamp(Integer.parseInt(input[2]));
@@ -80,10 +78,6 @@ class Utils {
         System.out.println("Reads : " + pcounter.rcounter);
         System.out.println("Writes: " + pcounter.wcounter);
         System.out.println("NumBUFS: " + NUMBUF);
-    }
-
-    private static void setBigTConstants(String dataFile) {
-
     }
 
 

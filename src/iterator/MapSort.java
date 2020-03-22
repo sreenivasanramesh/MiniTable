@@ -1,7 +1,7 @@
 package iterator;
 
 import BigT.Map;
-import BigT.bigT;
+import cmdline.MiniTable;
 import global.AttrType;
 import global.GlobalConst;
 import global.PageId;
@@ -41,19 +41,19 @@ public class MapSort extends MapIterator implements GlobalConst {
      * Class constructor, take information about the tuples, and set up
      * the sorting
      *
-     * @param attrTypes  array containing attribute types of the relation
-     * @param field_sizes      array of sizes of string attributes
-     * @param am             an iterator for accessing the maps
-     * @param sort_fld       the field number of the field to sort on
-     * @param sort_order     the sorting order (ASCENDING, DESCENDING) // it is of type tuple order but can be used for maps.
-     * @param n_pages        amount of memory (attrTypes pages) available for sorting
+     * @param attrTypes   array containing attribute types of the relation
+     * @param field_sizes array of sizes of string attributes
+     * @param am          an iterator for accessing the maps
+     * @param sort_fld    the field number of the field to sort on
+     * @param sort_order  the sorting order (ASCENDING, DESCENDING) // it is of type tuple order but can be used for maps.
+     * @param n_pages     amount of memory (attrTypes pages) available for sorting
      * @throws SortException something went wrong attrTypes the lower layer.
      */
     public MapSort(AttrType[] attrTypes, short[] field_sizes, MapIterator am, int sort_fld, TupleOrder sort_order, int n_pages) throws SortException {
 
 
         int str_att_count = 0; // number of string field in maps
-        for (int i = 0; i < num_cols ; i++) {
+        for (int i = 0; i < num_cols; i++) {
             mapAttributes[i] = new AttrType(attrTypes[i].attrType);
             if (attrTypes[i].attrType == AttrType.attrString) {
                 // check if attribute is a string attribute and count them
@@ -77,7 +77,7 @@ public class MapSort extends MapIterator implements GlobalConst {
         Map tempMap = new Map();
 
         try {
-            tempMap.setHeader(bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES);
+            tempMap.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
         } catch (Exception e) {
             throw new SortException(e, "Sort.java: t.setHdr() failed");
         }
@@ -122,12 +122,11 @@ public class MapSort extends MapIterator implements GlobalConst {
 
         try {
             op_map_buf = new Map(tempMap);
-            op_map_buf.setHeader(bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES);
+            op_map_buf.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
         } catch (Exception e) {
             throw new SortException(e, "Sort.java: op_buf.setHdr() failed");
         }
     }
-
 
 
     /**
@@ -169,7 +168,6 @@ public class MapSort extends MapIterator implements GlobalConst {
     }
 
 
-
     /**
      * Generate sorted runs.
      * Using heap sort.
@@ -192,7 +190,7 @@ public class MapSort extends MapIterator implements GlobalConst {
         //Tuple lastElem = new Tuple(mapSize);  // need tuple.java
         Map lastElem = new Map();
         try {
-            lastElem.setHeader(bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES);
+            lastElem.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
             //lastElem.setHdr((short) num_cols, mapAttributes, str_fld_lens);
         } catch (Exception e) {
             throw new SortException(e, "Sort.java: setHdr() failed");
@@ -531,7 +529,7 @@ public class MapSort extends MapIterator implements GlobalConst {
             try {
                 //new_tuple = new Tuple(mapSize);
                 newMap = new Map();
-                newMap.setHeader(bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES);
+                newMap.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
                 //new_tuple.setHdr((short) num_cols, mapAttributes, str_fld_lens);
             } catch (Exception e) {
                 throw new SortException(e, "Sort.java: setHdr() failed");

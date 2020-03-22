@@ -3,15 +3,13 @@ package iterator;
 
 import BigT.InvalidStringSizeArrayException;
 import BigT.Map;
-import BigT.bigT;
+import bufmgr.PageNotReadException;
+import cmdline.MiniTable;
+import global.AttrType;
+import global.MID;
 import heap.*;
-import global.*;
-import bufmgr.*;
-import diskmgr.*;
 
-
-import java.lang.*;
-import java.io.*;
+import java.io.IOException;
 
 /**
  * open a heapfile and according to the condition expression to get
@@ -50,8 +48,8 @@ public class FileScan extends MapIterator {
      * @throws InvalidRelation     invalid relation
      */
     public FileScan(String file_name,
-                    AttrType in1[],
-                    short s1_sizes[],
+                    AttrType[] in1,
+                    short[] s1_sizes,
                     short len_in1,
                     int n_out_flds,
                     FldSpec[] proj_list,
@@ -76,7 +74,7 @@ public class FileScan extends MapIterator {
         tempMap = new Map();
 
         try {
-            tempMap.setHeader(bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES);
+            tempMap.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
         } catch (Exception e) {
             throw new FileScanException(e, "setHdr() failed");
         }
@@ -132,7 +130,7 @@ public class FileScan extends MapIterator {
                 return null;
             }
 
-            tempMap.setHeader(bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES);
+            tempMap.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
             if (PredEval.Eval(OutputFilter, tempMap, null, _in1, null)) {
                 Projection.Project(tempMap, _in1, mapObj, perm_mat);
                 return mapObj;
