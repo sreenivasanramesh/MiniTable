@@ -193,7 +193,7 @@ public class MapSort extends MapIterator implements GlobalConst {
         pnodeSplayPQ pcurr_Q = Q1;
         pnodeSplayPQ pother_Q = Q2;
         //Tuple lastElem = new Tuple(mapSize);  // need tuple.java
-        Map lastElem = new Map();
+        Map lastElem = new Map(mapSize);
         try {
             lastElem.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
             //lastElem.setHdr((short) num_cols, mapAttributes, str_fld_lens);
@@ -291,14 +291,24 @@ public class MapSort extends MapIterator implements GlobalConst {
                 // check to see whether need to expand the array
                 if (run_num == n_tempfiles) {
                     Heapfile[] temp1 = new Heapfile[2 * n_tempfiles];
-                    if (n_tempfiles >= 0) System.arraycopy(temp_files, 0, temp1, 0, n_tempfiles);
+                    for (int i = 0; i < n_tempfiles; i++) {
+                        temp1[i] = temp_files[i];
+                    }
                     temp_files = temp1;
                     n_tempfiles *= 2;
+//                    if (n_tempfiles >= 0) System.arraycopy(temp_files, 0, temp1, 0, n_tempfiles);
+//                    temp_files = temp1;
+//                    n_tempfiles *= 2;
 
                     int[] temp2 = new int[2 * n_runs];
-                    if (n_runs >= 0) System.arraycopy(n_Maps, 0, temp2, 0, n_runs);
+                    for (int i = 0; i < n_runs; i++) {
+                        temp2[i] = n_Maps[i];
+                    }
                     n_Maps = temp2;
                     n_runs *= 2;
+//                    if (n_runs >= 0) System.arraycopy(n_Maps, 0, temp2, 0, n_runs);
+//                    n_Maps = temp2;
+//                    n_runs *= 2;
                 }
 
                 try {
@@ -352,8 +362,8 @@ public class MapSort extends MapIterator implements GlobalConst {
                     }
                     cur_node = new pnode();
                     //cur_node.tuple = new Tuple(tuple); // tuple copy needed --  Bingjie 4/29/98
-                    cur_node.map = new Map();
-                    cur_node.map.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
+                    cur_node.map = new Map(map);
+//                    cur_node.map.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
                     try {
                         pcurr_Q.enq(cur_node);
                     } catch (UnknowAttrType e) {
@@ -379,14 +389,24 @@ public class MapSort extends MapIterator implements GlobalConst {
                     // check to see whether need to expand the array
                     if (run_num == n_tempfiles) {
                         Heapfile[] temp1 = new Heapfile[2 * n_tempfiles];
-                        if (n_tempfiles >= 0) System.arraycopy(temp_files, 0, temp1, 0, n_tempfiles);
+                        for (int i = 0; i < n_tempfiles; i++) {
+                            temp1[i] = temp_files[i];
+                        }
                         temp_files = temp1;
                         n_tempfiles *= 2;
+//                        if (n_tempfiles >= 0) System.arraycopy(temp_files, 0, temp1, 0, n_tempfiles);
+//                        temp_files = temp1;
+//                        n_tempfiles *= 2;
 
                         int[] temp2 = new int[2 * n_runs];
-                        if (n_runs >= 0) System.arraycopy(n_Maps, 0, temp2, 0, n_runs);
+                        for (int i = 0; i < n_runs; i++) {
+                            temp2[i] = n_Maps[i];
+                        }
                         n_Maps = temp2;
                         n_runs *= 2;
+//                        if (n_runs >= 0) System.arraycopy(n_Maps, 0, temp2, 0, n_runs);
+//                        n_Maps = temp2;
+//                        n_runs *= 2;
                     }
 
                     try {

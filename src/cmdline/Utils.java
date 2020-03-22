@@ -26,7 +26,8 @@ class Utils {
         System.out.println(dbPath);
         File f = new File(dbPath);
         //If DB exists use it, else create a new DB with NUM_PAGES pages
-        Integer numPages = !f.exists() ? NUM_PAGES : 0;
+//        Integer numPages = !f.exists() ? NUM_PAGES : 0;
+        Integer numPages = NUM_PAGES;
         //SystemDefs sysdef = new SystemDefs(dbpath, numPages, NUMBUF, "LRU");
 //        new SystemDefs(dbPath, numPages, NUMBUF, "Clock");
         new SystemDefs(dbPath, numPages, NUMBUF, "Clock");
