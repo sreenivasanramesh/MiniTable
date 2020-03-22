@@ -27,7 +27,7 @@ public class Stream {
     private final String valueFilter;
     private bigT bigtable;
     private boolean scanAll = false;
-    private String starFilter = "*";
+    private String starFilter;
     private String rangeRegex = "\\[\\S+,\\S+\\]";
     private BTFileScan btreeScanner, dummyScanner;
     public Heapfile tempHeapFile;
@@ -47,10 +47,12 @@ public class Stream {
         this.valueFilter = valueFilter;
         this.type = bigTable.type;
         this.orderType = orderType;
+        this.starFilter = "*";
 
 
         queryConditions();
         filterAndSortData(this.orderType);
+
 
 
     }
@@ -85,7 +87,6 @@ public class Stream {
                 break;
             case 3:
                 if (columnFilter.equals("*")) {
-                    System.out.println("column matches star");
                     this.scanAll = true;
                 } else {
                     // check if range
@@ -108,51 +109,90 @@ public class Stream {
 
                         String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
                         String[] columnRange = columnFilter.replaceAll("[\\[ \\]]", "").split(",");
-                        start = new StringKey(rowRange[0] + "$" + columnRange[0]);
-                        end = new StringKey(rowRange[1] + "$" + columnRange[1]);
+                        start = new StringKey(columnRange[0] + "$" + rowRange[0]);
+                        end = new StringKey(columnRange[1] + "$" + rowRange[1]);
 
                         //check row range and column fixed/*
                     } else if ((rowFilter.matches(rangeRegex)) && (!columnFilter.matches(rangeRegex))) {
-
                         String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
-                        start = new StringKey(rowRange[0] + "$" + columnFilter);
-                        end = new StringKey(rowRange[1] + "$" + columnFilter);
-
+                        if (columnFilter.equals(starFilter)) {
+                            scanAll = true;
+                        } else {
+                            start = new StringKey(columnFilter + "$" + rowRange[0]);
+                            end = new StringKey(columnFilter + "$" + rowRange[1]);
+                        }
                         // check column range and row fixed/*
                     } else if ((!rowFilter.matches(rangeRegex)) && (columnFilter.matches(rangeRegex))) {
-
                         String[] columnRange = columnFilter.replaceAll("[\\[ \\]]", "").split(",");
-                        start = new StringKey(rowFilter + "$" + columnRange[0]);
-                        end = new StringKey(rowFilter + "$" + columnRange[1]);
+                        if (rowFilter.equals(starFilter)) {
+                            start = new StringKey(columnRange[0]);
+                            end = new StringKey(columnRange[1]);
+                        } else {
+
+                            start = new StringKey(columnRange[0] + "$" + rowFilter);
+                            end = new StringKey(columnRange[1] + "$" + rowFilter);
+                        }
 
                         //row and col are fixed val or *,fixed fixed,*
                     } else {
-
-                        start = new StringKey(rowFilter + "$" + columnFilter);
-                        end = start;
+                        if (columnFilter.equals(starFilter)) {
+                            scanAll = true;
+                        } else if (rowFilter.equals(starFilter)) {
+                            start = end = new StringKey(columnFilter);
+                        } else {
+                            start = new StringKey(columnFilter + "$" + rowFilter);
+                            end = start;
+                        }
                     }
                 }
                 break;
             case 5:
-                if (rowFilter.matches(starFilter)) {
+                System.out.println(valueFilter + "--------------" + rowFilter);
+                if ((valueFilter.equals("*")) && (rowFilter.equals("*"))) {
                     scanAll = true;
                 } else {
-                    if (valueFilter.matches(starFilter)) {
-                        start = new StringKey(rowFilter);
-                    } else {
-                        if ((rowFilter.matches(rangeRegex)) && (valueFilter.matches(rangeRegex))) {
 
-                            String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
-                            String[] valueRange = valueFilter.replaceAll("[\\[ \\]]", "").split(",");
-                            start = new StringKey(rowRange[0] + valueRange[0]);
-                            end = new StringKey(rowRange[1] + valueRange[1]);
+                    // check if both range
+                    if ((valueFilter.matches(rangeRegex)) && (rowFilter.matches(rangeRegex))) {
 
+                        String[] valueRange = valueFilter.replaceAll("[\\[ \\]]", "").split(",");
+                        String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
+                        start = new StringKey(rowRange[0] + "$" + valueRange[0]);
+                        end = new StringKey(rowRange[1] + "$" + valueRange[1]);
+
+                        //check row range and column fixed/*
+                    } else if ((valueFilter.matches(rangeRegex)) && (!rowFilter.matches(rangeRegex))) {
+                        String[] valueRange = valueFilter.replaceAll("[\\[ \\]]", "").split(",");
+                        if (rowFilter.equals(starFilter)) {
+                            scanAll = true;
+                        } else {
+                            start = new StringKey(rowFilter + "$" + valueRange[0]);
+                            end = new StringKey(rowFilter + "$" + valueRange[1]);
+                        }
+                        // check column range and row fixed/*
+                    } else if ((!valueFilter.matches(rangeRegex)) && (rowFilter.matches(rangeRegex))) {
+                        String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
+                        if (valueFilter.equals("*")) {
+                            start = new StringKey(rowRange[0]);
+                            end = new StringKey(rowRange[1]);
                         } else {
 
-                            start = new StringKey(rowFilter + valueFilter);
-                            end = new StringKey(rowFilter + valueFilter);
+                            start = new StringKey(rowRange[0] + "$" + valueFilter);
+                            end = new StringKey(rowRange[1] + "$" + valueFilter);
+                        }
 
-                        }// add other conditions
+                        //row and col are fixed val or *,fixed fixed,*
+                    } else {
+                        if (rowFilter.equals("*")) {
+                            scanAll = true;
+                        } else if (valueFilter.equals("*")) {
+                            start = new StringKey(rowFilter);
+                            end = new StringKey(rowFilter);
+                            System.out.println("came till here");
+                        } else {
+                            start = new StringKey(rowFilter + "$" + valueFilter);
+                            end = start;
+                        }
                     }
                 }
                 break;
