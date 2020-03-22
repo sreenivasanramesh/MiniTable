@@ -22,7 +22,8 @@ class Utils {
     private static final int NUM_PAGES = 100000;
 
     static void batchInsert(String dataFile, String tableName, int type, boolean useMetaData) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException {
-        String dbPath = getDBPath(tableName, type);
+        //String dbPath = getDBPath(tableName, type);
+        String dbPath = getDBPath(tableName);
         System.out.println(dbPath);
         File f = new File(dbPath);
         //If DB exists use it, else create a new DB with NUM_PAGES pages
@@ -80,7 +81,8 @@ class Utils {
 
 
     static void query(String tableName, Integer type, Integer orderType, String rowFilter, String colFilter, String valFilter, Integer NUMBUF) throws Exception {
-        String dbPath = getDBPath(tableName, type);
+        //String dbPath = getDBPath(tableName, type);
+        String dbPath = getDBPath(tableName);
         new SystemDefs(dbPath, 0, NUMBUF, "Clock");
         pcounter.initialize();
         int resultCount = 0;
@@ -114,8 +116,12 @@ class Utils {
     }
 
 
-    public static String getDBPath(String tableName, Integer type) {
-        return "/tmp/" + tableName + "." + type + ".db";
+//    public static String getDBPath(String tableName, Integer type) {
+//        return "/tmp/" + tableName + "." + type + ".db";
+//    }
+
+    public static String getDBPath(String tableName) {
+        return "/tmp/" + tableName  + ".db";
     }
 
 

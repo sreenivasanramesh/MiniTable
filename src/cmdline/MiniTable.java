@@ -37,6 +37,7 @@ public class MiniTable {
                     Integer type = Integer.parseInt(inputStr[2]);
                     String tableName = inputStr[3];
                     boolean useMetadata = Boolean.parseBoolean(inputStr[4]);
+                    checkDBExists(tableName);
                     Utils.batchInsert(dataFile, tableName, type, useMetadata);
                 } else if (inputStr[0].equalsIgnoreCase("query")) {
                     BIGT_STR_SIZES = setBigTConstants("/Users/rakeshr/rr/ASU/testdata.csv");
@@ -50,6 +51,7 @@ public class MiniTable {
                     //String filter = rowFilter + ";" + colFilter + ";" + valFilter;
                     Integer NUMBUF = Integer.parseInt(inputStr[7]);
                     //CondExpr filters[] = Utils.getCondExpr(filter);
+                    checkDBMissing(tableName);
                     Utils.query(tableName, type, orderType, rowFilter, colFilter, valFilter, NUMBUF);
                 } else
                     System.out.println("Invalid input. Type exit to quit.\n\n");
@@ -106,4 +108,21 @@ public class MiniTable {
         return new short[0];
     }
 
+    private static void checkDBExists(String dbName) {
+        String dbPath = Utils.getDBPath(dbName);
+        File f = new File(dbPath);
+        if(f.exists()) {
+            System.out.println("DB already exists. Exiting.");
+            System.exit(0);
+        }
+    }
+
+    private static void checkDBMissing(String dbName) {
+        String dbPath = Utils.getDBPath(dbName);
+        File f = new File(dbPath);
+        if(!f.exists()) {
+            System.out.println("DB does not exist. Exiting.");
+            System.exit(0);
+        }
+    }
 }
