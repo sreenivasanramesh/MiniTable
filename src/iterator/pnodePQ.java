@@ -96,6 +96,9 @@ public abstract class pnodePQ {
      */
     public int pnodeCMP(pnode a, pnode b)
             throws IOException, UnknowAttrType, TupleUtilsException, InvalidFieldNo {
+        if (b.map == null) {
+            System.out.println("b = " + b);
+        }
         if (a.map != null ) {
             int ans = MapUtils.CompareMapWithMap(a.map, b.map, fld_no);
             return ans;

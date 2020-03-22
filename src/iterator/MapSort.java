@@ -102,7 +102,7 @@ public class MapSort extends MapIterator implements GlobalConst {
         n_runs = ARBIT_RUNS;
 
         try {
-            temp_files[0] = new Heapfile(null);
+            temp_files[0] = new Heapfile("testr");
         } catch (Exception e) {
             throw new SortException(e, "Sort.java: Heapfile error");
         }

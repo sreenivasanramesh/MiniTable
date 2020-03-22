@@ -90,7 +90,7 @@ class Utils {
             Stream mapStream = bigTable.openStream(orderType, rowFilter, colFilter, valFilter);
 
             MID mapId = null;
-
+            System.out.println("out");
             while (true) {
                 //TODO: I'm not really sure about the mapId, have to check how to do this
 
@@ -98,6 +98,7 @@ class Utils {
                 //Map mapObj = null;
                 if (mapObj == null)
                     break;
+                System.out.println("mapp");
                 mapObj.print();
                 resultCount++;
             }

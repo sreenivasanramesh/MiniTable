@@ -1,22 +1,24 @@
 package BigT;
 
-import btree.*;
+import btree.BTFileScan;
+import btree.KeyDataEntry;
+import btree.LeafData;
+import btree.StringKey;
 import diskmgr.OutOfSpaceException;
-import global.AttrType;
 import global.MID;
 import global.RID;
 import global.TupleOrder;
-import heap.*;
+import heap.Heapfile;
+import heap.MapScan;
 import iterator.FileScan;
 import iterator.FldSpec;
 import iterator.MapSort;
 import iterator.RelSpec;
 
-
 import java.io.IOException;
 
 /**
- Initialize a stream of maps on bigtable.
+ * Initialize a stream of maps on bigtable.
  */
 public class Stream {
     private final String rowFilter;
@@ -59,7 +61,7 @@ public class Stream {
         /*
         type is an integer denoting the different clustering and indexing strategies you will use for the graph database.
          */
-        switch(this.type) {
+        switch (this.type) {
             case 1:
             default:
                 // same as case 1
@@ -95,7 +97,7 @@ public class Stream {
                 }
                 break;
             case 4:
-                if ( (rowFilter.equals("*"))  && (columnFilter.equals("*"))) {
+                if ((rowFilter.equals("*")) && (columnFilter.equals("*"))) {
                     scanAll = true;
                 } else {
 
@@ -103,7 +105,7 @@ public class Stream {
                     if ((rowFilter.matches(rangeRegex)) && (columnFilter.matches(rangeRegex))) {
 
                         String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
-                        String [] columnRange = columnFilter.replaceAll("[\\[ \\]]", "").split(",");
+                        String[] columnRange = columnFilter.replaceAll("[\\[ \\]]", "").split(",");
                         start = new StringKey(rowRange[0] + columnRange[0]);
                         end = new StringKey(rowRange[1] + columnRange[1]);
 
@@ -111,13 +113,13 @@ public class Stream {
                     } else if ((rowFilter.matches(rangeRegex)) && (!columnFilter.matches(rangeRegex))) {
 
                         String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
-                        start = new StringKey( rowRange[0] + columnFilter);
-                        end =  new StringKey( rowRange[1] + columnFilter);
+                        start = new StringKey(rowRange[0] + columnFilter);
+                        end = new StringKey(rowRange[1] + columnFilter);
 
                         // check column range and row fixed/*
                     } else if ((!rowFilter.matches(rangeRegex)) && (columnFilter.matches(rangeRegex))) {
 
-                        String [] columnRange = columnFilter.replaceAll("[\\[ \\]]", "").split(",");
+                        String[] columnRange = columnFilter.replaceAll("[\\[ \\]]", "").split(",");
                         start = new StringKey(rowFilter + columnRange[0]);
                         end = new StringKey(rowFilter + columnRange[1]);
 
@@ -139,7 +141,7 @@ public class Stream {
                         if ((rowFilter.matches(rangeRegex)) && (valueFilter.matches(rangeRegex))) {
 
                             String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
-                            String [] valueRange = valueFilter.replaceAll("[\\[ \\]]", "").split(",");
+                            String[] valueRange = valueFilter.replaceAll("[\\[ \\]]", "").split(",");
                             start = new StringKey(rowRange[0] + valueRange[0]);
                             end = new StringKey(rowRange[1] + valueRange[1]);
 
@@ -153,13 +155,11 @@ public class Stream {
                 }
                 break;
         }
-        System.out.println("outside QC break");
 
-        if(!this.scanAll) {
+        if (!this.scanAll) {
             this.btreeScanner = bigtable.indexFile.new_scan(start, end);
         }
 
-        System.out.println("qc before filter n sort");
 
         filterAndSortData(this.orderType);
     }
@@ -173,45 +173,33 @@ public class Stream {
         · 6, then results are ordered in time stamp
         * */
 
-        System.out.println("FS");
-        tempHeapFile = new Heapfile(null);
-
-        System.out.println("a");
+        tempHeapFile = new Heapfile("tempSort");
 
         MID midObj = new MID();
-
-        System.out.println(this.scanAll);
-
-
         if (this.scanAll) {
-            System.out.println("if FS");
-
-
             //scanning whole bigt file.
             mapScan = bigtable.heapfile.openMapScan();
-            System.out.println("openscan");
 
             //mapObj.setHeader();
             Map mapObj = null;
 
-            if(rowFilter.equals(starFilter) && columnFilter.equals(columnFilter) && valueFilter.equals(starFilter)) {
-                System.out.println("1 iffff");
-
+            if (rowFilter.equals(starFilter) && columnFilter.equals(starFilter) && valueFilter.equals(starFilter)) {
                 tempHeapFile = this.bigtable.heapfile;
-            }
-            else {
-                System.out.println("2 elssss");
+            } else {
+                System.out.println(this.bigtable.name);
+                int count = 0;
+                mapObj = this.mapScan.getNext(midObj);
 
-                mapObj = mapScan.getNext(midObj);
+                mapObj.print();
                 while (mapObj != null) {
+                    count++;
                     if (genericMatcher(mapObj, "row", rowFilter) && genericMatcher(mapObj, "column", columnFilter) && genericMatcher(mapObj, "value", valueFilter)) {
                         tempHeapFile.insertMap(mapObj.getMapByteArray());
                     }
+                    mapObj = mapScan.getNext(midObj);
                 }
             }
-        }
-        else {
-            System.out.println("else FS");
+        } else {
 
             KeyDataEntry entry = btreeScanner.get_next();
             while (entry != null) {
@@ -219,14 +207,14 @@ public class Stream {
                 if (rid != null) {
                     MID midFromRid = new MID(rid.pageNo, rid.slotNo);
                     Map map = bigtable.heapfile.getMap(midFromRid);
-                    if(this.type == 5){
-                        if((!rowFilter.matches(rangeRegex)) && !rowFilter.equals(map.getRowLabel())){
+                    if (this.type == 5) {
+                        if ((!rowFilter.matches(rangeRegex)) && !rowFilter.equals(map.getRowLabel())) {
                             // is star
                             break;
                         } else if (rowFilter.matches(rangeRegex)) {
                             String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
-                            if((map.getRowLabel().compareTo(rowRange[0]) < 0)
-                                    || (map.getRowLabel().compareTo(rowRange[1]) > 0)){
+                            if ((map.getRowLabel().compareTo(rowRange[0]) < 0)
+                                    || (map.getRowLabel().compareTo(rowRange[1]) > 0)) {
                                 break;
                             }
                         }
@@ -237,69 +225,63 @@ public class Stream {
             }
         }
 
-        System.out.println("FD proj");
 
 
-            FldSpec[] projection = new FldSpec[4];
-            RelSpec rel = new RelSpec(RelSpec.outer);
-            projection[0] = new FldSpec(rel, 1);
-            projection[1] = new FldSpec(rel, 2);
-            projection[2] = new FldSpec(rel, 3);
-            projection[3] = new FldSpec(rel, 4);
+        FldSpec[] projection = new FldSpec[4];
+        RelSpec rel = new RelSpec(RelSpec.outer);
+        projection[0] = new FldSpec(rel, 1);
+        projection[1] = new FldSpec(rel, 2);
+        projection[2] = new FldSpec(rel, 3);
+        projection[3] = new FldSpec(rel, 4);
 
-            FileScan fscan = null;
+        FileScan fscan = null;
 
-            try {
-                fscan = new FileScan("temp_heap_file", bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES, (short) 4, 4, projection, null);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        System.out.println("FSfilscan");
-            int sortField, num_pages = 10;
-            switch (orderType) {
-                case 1:
-                case 3:
-                    sortField = 1;
-                    break;
-                case 2:
-                case 4:
-                    sortField = 2;
-                    break;
-                case 6:
-                    sortField = 3;
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected value: " + orderType);
-            }
-            try {
-                System.out.println("reached till map sorter.");
-                this.sortObj = new MapSort(bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES, fscan, sortField, new TupleOrder(TupleOrder.Ascending), num_pages);
-                System.out.println("Came till filterAndSortData!!!");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        try {
+            fscan = new FileScan("tempSort", bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES, (short) 4, 4, projection, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        int sortField, num_pages = 10;
+        switch (orderType) {
+            case 1:
+            case 3:
+                sortField = 1;
+                break;
+            case 2:
+            case 4:
+                sortField = 2;
+                break;
+            case 6:
+                sortField = 3;
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + orderType);
+        }
+        try {
+            this.sortObj = new MapSort(bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES, fscan, sortField, new TupleOrder(TupleOrder.Ascending), num_pages);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
 
-    public boolean genericMatcher(Map map, String field, String genericFilter) throws Exception {
+    private boolean genericMatcher(Map map, String field, String genericFilter) throws Exception {
         if (genericFilter.matches(rangeRegex)) {
-            String[] range = genericFilter.replaceAll("[\\[ \\]]", "").split(",");
-            if (map.getGenericValue(field).compareTo(range[0]) >= 0 && map.getGenericValue(field).compareTo(range[1]) <= 0) {
-                // so now row is in range
-                return true;
-            }
-            else {
-                return false;
-            }
-        } else if(genericFilter.equals(map.getGenericValue(field))) {
+//            String[] range = genericFilter.replaceAll("[\\[ \\]]", "").split(",");
+            String[] range = ",".split(genericFilter.replaceAll("[\\[ \\]]", ""));
+            // so now row is in range
+//            System.out.println("range = " + Arrays.toString(range));
+            return map.getGenericValue(field).compareTo(range[0]) >= 0 && map.getGenericValue(field).compareTo(range[1]) <= 0;
+        } else if (genericFilter.equals(map.getGenericValue(field))) {
+
+//                System.out.println("genericFilter = " + genericFilter);
+//                System.out.println("map.getGenericValue() = " + map.getGenericValue(field));
             // matches specific value
             return true;
-        } else if (genericFilter.equals(starFilter)){
-            // matches star
-            return false;
+        } else {
+            return genericFilter.equals(starFilter);
         }
-        return false;
     }
 
     public boolean setFilter(Map map, String rowFilter, String columnFilter, String valueFilter) throws IOException {
@@ -308,13 +290,14 @@ public class Stream {
 
         if (rowFilter.matches(rangeRegex)) {
             String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
-            if (map.getRowLabel().compareTo(rowRange[0]) < 0 || map.getRowLabel().compareTo(rowRange[1]) > 0) ret_val = false;
+            if (map.getRowLabel().compareTo(rowRange[0]) < 0 || map.getRowLabel().compareTo(rowRange[1]) > 0)
+                ret_val = false;
         } else {
             //System.out.println("ganesh" + rowFilter + (rowFilter.matches(starFilter)));
             //System.out.println("suresh" + map.getRowLabel() + rowFilter);
             if (!(rowFilter.matches(starFilter))) {
                 //ret_val = false;
-                if(!map.getRowLabel().equals(rowFilter)) {
+                if (!map.getRowLabel().equals(rowFilter)) {
                     ret_val = false;
                 }
             }
@@ -325,10 +308,10 @@ public class Stream {
             if (map.getRowLabel().compareTo(columnRange[0]) < 0 || map.getRowLabel().compareTo(columnRange[1]) > 0)
                 ret_val = false;
         } else {
-           // if ( (columnFilter.matches(starFilter))  && (map.getRowLabel().compareTo(columnFilter)!=0)) ret_val = false;
+            // if ( (columnFilter.matches(starFilter))  && (map.getRowLabel().compareTo(columnFilter)!=0)) ret_val = false;
             if (!(columnFilter.matches(starFilter))) {
                 //ret_val = false;
-                if(!map.getColumnLabel().equals(columnFilter)) {
+                if (!map.getColumnLabel().equals(columnFilter)) {
                     ret_val = false;
                 }
             }
@@ -342,7 +325,7 @@ public class Stream {
             //if ( (valueFilter.matches(starFilter))  && (map.getRowLabel().compareTo(valueFilter)!=0)) ret_val = false;
             if (!(valueFilter.matches(starFilter))) {
                 //ret_val = false;
-                if(!map.getValue().equals(valueFilter)) {
+                if (!map.getValue().equals(valueFilter)) {
                     ret_val = false;
                 }
             }

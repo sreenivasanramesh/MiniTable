@@ -20,6 +20,11 @@ public class MapUtils {
                 map2Str = map2.getRowLabel();
                 return Integer.compare(map1Str.compareTo(map2Str), 0);
             case 1:
+                if (map1.getColumnLabel()==null) {
+                    System.out.println("map1.getFieldOffset() = " + map1.getFieldOffset());
+                    System.out.println("dkajsdalsdjalsdjalsdj = ");
+                    System.out.println("map1 = " + map1);
+                }
                 map1Str = map1.getColumnLabel();
                 map2Str = map2.getColumnLabel();
                 return Integer.compare(map1Str.compareTo(map2Str), 0);
