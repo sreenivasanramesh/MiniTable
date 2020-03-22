@@ -1,6 +1,7 @@
 package iterator;
 
 import BigT.Map;
+import BigT.bigT;
 import global.AttrType;
 import global.MID;
 import global.RID;
@@ -132,7 +133,7 @@ public class MapUtils {
         }
 
         try {
-            Jmap.setHeader(res_attrs, res_str_sizes);
+            Jmap.setHeader(bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES);
         } catch (Exception e) {
             throw new TupleUtilsException(e, "setHdr() failed");
         }
