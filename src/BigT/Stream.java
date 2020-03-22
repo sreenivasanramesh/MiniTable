@@ -246,7 +246,7 @@ public class Stream {
                 break;
             case 5:
                 sortField = 3;
-                sortFieldLength = MiniTable.BIGT_STR_SIZES[3];
+                sortFieldLength = MiniTable.BIGT_STR_SIZES[2];
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + orderType);
