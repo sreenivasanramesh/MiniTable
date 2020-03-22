@@ -184,21 +184,22 @@ public class Stream {
             //mapObj.setHeader();
             Map mapObj = null;
 
-            if (rowFilter.equals(starFilter) && columnFilter.equals(starFilter) && valueFilter.equals(starFilter)) {
-                tempHeapFile = this.bigtable.heapfile;
-            } else {
+//            if (rowFilter.equals(starFilter) && columnFilter.equals(starFilter) && valueFilter.equals(starFilter)) {
+//                System.out.println("rowFilter = " + rowFilter);
+//                tempHeapFile = this.bigtable.heapfile;
+//            } else {
 
-                int count = 0;
-                mapObj = this.mapScan.getNext(midObj);
-                while (mapObj != null) {
-                    count++;
-                    short kaka = 0;
-                    if (genericMatcher(mapObj, "row", rowFilter) && genericMatcher(mapObj, "column", columnFilter) && genericMatcher(mapObj, "value", valueFilter)) {
-                        tempHeapFile.insertMap(mapObj.getMapByteArray());
-                    }
-                    mapObj = mapScan.getNext(midObj);
+            int count = 0;
+            mapObj = this.mapScan.getNext(midObj);
+            while (mapObj != null) {
+                count++;
+                short kaka = 0;
+                if (genericMatcher(mapObj, "row", rowFilter) && genericMatcher(mapObj, "column", columnFilter) && genericMatcher(mapObj, "value", valueFilter)) {
+                    tempHeapFile.insertMap(mapObj.getMapByteArray());
                 }
-            }
+                mapObj = mapScan.getNext(midObj);
+                }
+
         } else {
 
             KeyDataEntry entry = btreeScanner.get_next();
@@ -357,13 +358,15 @@ public class Stream {
             m = this.sortObj.get_next();
 
         } catch (OutOfSpaceException e) {
+            System.out.println("outofspace");
+            e.printStackTrace();
             tempHeapFile.deleteFile();
             closeStream();
         }
         if (m == null) {
             System.out.println("Map is null ");
             System.out.println("Deleting temp file used for sorting");
-            tempHeapFile.deleteFile();
+//            tempHeapFile.deleteFile();
             closeStream();
             return null;
         }

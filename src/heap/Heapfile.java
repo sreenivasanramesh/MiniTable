@@ -1499,6 +1499,7 @@ public class Heapfile implements Filetype, GlobalConst {
         try {
             SystemDefs.JavabaseBM.freePage(pageno);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new HFBufMgrException(e, "Heapfile.java: freePage() failed");
         }
 
@@ -1538,6 +1539,7 @@ public class Heapfile implements Filetype, GlobalConst {
             throws HFDiskMgrException {
 
         try {
+            System.out.println("filename = " + filename);
             SystemDefs.JavabaseDB.add_file_entry(filename, pageno);
         } catch (Exception e) {
             throw new HFDiskMgrException(e, "Heapfile.java: add_file_entry() failed");

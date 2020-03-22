@@ -314,7 +314,7 @@ public class MapSort extends MapIterator implements GlobalConst {
                 try {
                     temp_files[run_num] = new Heapfile(null);
                 } catch (Exception e) {
-                    throw new SortException(e, "Sort.java: create Heapfile failed");
+                    throw new SortException(e, "MapSort.java: create Heapfile failed");
                 }
 
                 // need io_bufs.java
