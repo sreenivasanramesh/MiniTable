@@ -60,6 +60,7 @@ class Utils {
             }
             System.out.println(mapCount + " tuples inserted...\n");
             System.out.println("tuple count: " + bigTable.getMapCnt());
+            bigTable.close();
 
 
         } catch (Exception e) {
@@ -69,8 +70,8 @@ class Utils {
             br.close();
         }
 
-        SystemDefs.JavabaseBM.flushAllPages();
-        SystemDefs.JavabaseDB.closeDB();
+        //SystemDefs.JavabaseBM.flushAllPages();
+        //SystemDefs.JavabaseDB.closeDB();
         System.out.println("Reads : " + pcounter.rcounter);
         System.out.println("Writes: " + pcounter.wcounter);
     }
@@ -78,6 +79,7 @@ class Utils {
 
     static void query(String tableName, Integer type, Integer orderType, String rowFilter, String colFilter, String valFilter, Integer NUMBUF) throws Exception {
         String dbPath = getDBPath(tableName, type);
+        System.out.println("dbpath is " + dbPath);
         new SystemDefs(dbPath, 0, NUMBUF, "Clock");
         pcounter.initialize();
         int resultCount = 0;
@@ -91,6 +93,7 @@ class Utils {
 
             while (true) {
                 //TODO: I'm not really sure about the mapId, have to check how to do this
+
                 Map mapObj = mapStream.getNext();
                 //Map mapObj = null;
                 if (mapObj == null)

@@ -350,8 +350,11 @@ public class bigT {
     }
 
     public Stream openStream(int orderType, java.lang.String rowFilter, java.lang.String columnFilter, java.
-            lang.String valueFilter) {
+            lang.String valueFilter) throws Exception {
+        return new Stream(this, orderType, rowFilter, columnFilter, valueFilter);
+        /*
         try {
+
             switch (orderType) {
                 case 1:
                     //results are row, col, ts
@@ -375,6 +378,7 @@ public class bigT {
             e.printStackTrace();
         }
         return null;
+    */
     }
 
 }
