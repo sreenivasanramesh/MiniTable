@@ -60,7 +60,6 @@ public class MiniTable {
                             new BufferedReader(fileReader);
     
                     String csvFileName = bufferedReader.readLine();
-                    System.out.println("csvFileName = " + csvFileName);
                     // Always close files.
                     bufferedReader.close();
                     
