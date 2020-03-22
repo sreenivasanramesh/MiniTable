@@ -39,11 +39,32 @@ public class MiniTable {
                     String tableName = inputStr[3];
 //                    boolean useMetadata = Boolean.parseBoolean(inputStr[4]);
                     checkDBExists(tableName);
+                    // Get the csv name for the given DB. This is used to set the headers for the Maps
+                    File file = new File("/tmp/" + tableName + "_csv_name.txt");
+                    FileWriter fileWriter = new FileWriter(file);
+                    BufferedWriter bufferedWriter =
+                            new BufferedWriter(fileWriter);
+                    bufferedWriter.write(dataFile);
+                    bufferedWriter.close();
                     Utils.batchInsert(dataFile, tableName, type);
                 } else if (inputStr[0].equalsIgnoreCase("query")) {
-                    BIGT_STR_SIZES = setBigTConstants("/Users/sumukhashwinkamath/Downloads/project2_testdata.csv");
+                    
                     //query BIGTABLENAME TYPE ORDERTYPE ROWFILTER COLUMNFILTER VALUEFILTER NUMBUF
                     String tableName = inputStr[1].trim();
+                    String filename = "/tmp/" + tableName + "_csv_name.txt";
+                    FileReader fileReader =
+                            new FileReader(filename);
+    
+                    // Always wrap FileReader in BufferedReader.
+                    BufferedReader bufferedReader =
+                            new BufferedReader(fileReader);
+    
+                    String csvFileName = bufferedReader.readLine();
+                    System.out.println("csvFileName = " + csvFileName);
+                    // Always close files.
+                    bufferedReader.close();
+                    
+                    BIGT_STR_SIZES = setBigTConstants(csvFileName);
                     Integer type = Integer.parseInt(inputStr[2]);
                     orderType = Integer.parseInt(inputStr[3]);
                     String rowFilter = inputStr[4].trim();
