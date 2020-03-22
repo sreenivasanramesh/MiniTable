@@ -122,7 +122,7 @@ public class Stream {
                     } else if ((!rowFilter.matches(rangeRegex)) && (columnFilter.matches(rangeRegex))) {
 
                         String[] columnRange = columnFilter.replaceAll("[\\[ \\]]", "").split(",");
-                        start = new StringKey(rowFilter + "$" +columnRange[0]);
+                        start = new StringKey(rowFilter + "$" + columnRange[0]);
                         end = new StringKey(rowFilter + "$" + columnRange[1]);
 
                         //row and col are fixed val or *,fixed fixed,*
@@ -198,7 +198,7 @@ public class Stream {
                     tempHeapFile.insertMap(mapObj.getMapByteArray());
                 }
                 mapObj = mapScan.getNext(midObj);
-                }
+            }
 
         } else {
 
@@ -360,13 +360,13 @@ public class Stream {
         } catch (OutOfSpaceException e) {
             System.out.println("outofspace");
             e.printStackTrace();
-            tempHeapFile.deleteFile();
             closeStream();
         }
         if (m == null) {
             System.out.println("Map is null ");
             System.out.println("Deleting temp file used for sorting");
-//            tempHeapFile.deleteFile();
+            System.out.println("tempHeapFile = " + tempHeapFile);
+            tempHeapFile.deleteFile();
             closeStream();
             return null;
         }

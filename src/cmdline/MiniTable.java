@@ -2,6 +2,7 @@ package cmdline;
 
 import bufmgr.*;
 import global.AttrType;
+import global.SystemDefs;
 
 import java.io.*;
 
@@ -59,6 +60,7 @@ public class MiniTable {
                 System.out.println("Invalid parameters. Try again.\n\n");
                 e.printStackTrace();
             }
+            SystemDefs.JavabaseBM.flushAllPages();
 
             final long endTime = System.currentTimeMillis();
             System.out.println("Total execution time: " + (endTime - startTime) / 1000.0);
