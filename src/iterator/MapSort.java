@@ -1,6 +1,7 @@
 package iterator;
 
 import BigT.Map;
+import BigT.bigT;
 import global.AttrType;
 import global.GlobalConst;
 import global.PageId;
@@ -60,6 +61,7 @@ public class MapSort extends MapIterator implements GlobalConst {
             }
         }
 
+
         str_fld_lens = new short[str_att_count];
 
         str_att_count = 0;
@@ -75,7 +77,7 @@ public class MapSort extends MapIterator implements GlobalConst {
         Map tempMap = new Map();
 
         try {
-            tempMap.setHeader(mapAttributes, str_fld_lens); // str_fld_lens.length should always be 3
+            tempMap.setHeader(bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES);
         } catch (Exception e) {
             throw new SortException(e, "Sort.java: t.setHdr() failed");
         }
@@ -120,7 +122,7 @@ public class MapSort extends MapIterator implements GlobalConst {
 
         try {
             op_map_buf = new Map(tempMap);
-            op_map_buf.setHeader(mapAttributes, str_fld_lens);
+            op_map_buf.setHeader(bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES);
         } catch (Exception e) {
             throw new SortException(e, "Sort.java: op_buf.setHdr() failed");
         }
@@ -190,7 +192,7 @@ public class MapSort extends MapIterator implements GlobalConst {
         //Tuple lastElem = new Tuple(mapSize);  // need tuple.java
         Map lastElem = new Map();
         try {
-            lastElem.setHeader(mapAttributes, str_fld_lens);
+            lastElem.setHeader(bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES);
             //lastElem.setHdr((short) num_cols, mapAttributes, str_fld_lens);
         } catch (Exception e) {
             throw new SortException(e, "Sort.java: setHdr() failed");
@@ -529,7 +531,7 @@ public class MapSort extends MapIterator implements GlobalConst {
             try {
                 //new_tuple = new Tuple(mapSize);
                 newMap = new Map();
-                newMap.setHeader( mapAttributes, str_fld_lens);
+                newMap.setHeader(bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES);
                 //new_tuple.setHdr((short) num_cols, mapAttributes, str_fld_lens);
             } catch (Exception e) {
                 throw new SortException(e, "Sort.java: setHdr() failed");

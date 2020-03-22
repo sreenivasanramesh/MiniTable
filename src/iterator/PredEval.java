@@ -2,6 +2,7 @@ package iterator;
 
 import BigT.InvalidStringSizeArrayException;
 import BigT.Map;
+import BigT.bigT;
 import global.AttrOperator;
 import global.AttrType;
 import heap.*;
@@ -211,20 +212,20 @@ public class PredEval {
                 switch (temp_ptr.type1.attrType)
                 {
                     case AttrType.attrInteger:
-                        value.setHeader(val_type, null);
+                        value.setHeader(bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES);
                         value.setIntFld(1, temp_ptr.operand1.integer);
                         map1 = value;
                         comparison_type.attrType = AttrType.attrInteger;
                         break;
                     case AttrType.attrReal:
-                        value.setHeader(val_type, null);
+                        value.setHeader(bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES);
                         value.setFloFld(1, temp_ptr.operand1.real);
                         map1 = value;
                         comparison_type.attrType =AttrType.attrReal;
                         break;
                     case AttrType.attrString:
                         str_size[0] = (short)(temp_ptr.operand1.string.length()+1 );
-                        value.setHeader(val_type, str_size);
+                        value.setHeader(bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES);
                         value.setStrFld(1, temp_ptr.operand1.string);
                         map1 = value;
                         comparison_type.attrType = AttrType.attrString;
@@ -252,18 +253,18 @@ public class PredEval {
                 switch (temp_ptr.type2.attrType)
                 {
                     case AttrType.attrInteger:
-                        value.setHeader( val_type, null);
+                        value.setHeader(bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES);
                         value.setIntFld(1, temp_ptr.operand2.integer);
                         map2 = value;
                         break;
                     case AttrType.attrReal:
-                        value.setHeader( val_type, null);
+                        value.setHeader(bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES);
                         value.setFloFld(1, temp_ptr.operand2.real);
                         map2 = value;
                         break;
                     case AttrType.attrString:
                         str_size[0] = (short)(temp_ptr.operand2.string.length()+1 );
-                        value.setHeader( val_type, str_size);
+                        value.setHeader(bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES);
                         value.setStrFld(1, temp_ptr.operand2.string);
                         map2 = value;
                         break;
