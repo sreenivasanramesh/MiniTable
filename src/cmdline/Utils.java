@@ -101,6 +101,7 @@ class Utils {
                 mapObj.print();
                 resultCount++;
             }
+            mapStream.closeStream();
         } catch (Exception e) {
             e.printStackTrace();
         }

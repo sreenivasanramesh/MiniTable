@@ -8,6 +8,7 @@ import cmdline.MiniTable;
 import diskmgr.OutOfSpaceException;
 import global.MID;
 import global.RID;
+import global.SystemDefs;
 import global.TupleOrder;
 import heap.Heapfile;
 import heap.MapScan;
@@ -106,27 +107,27 @@ public class Stream {
 
                         String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
                         String[] columnRange = columnFilter.replaceAll("[\\[ \\]]", "").split(",");
-                        start = new StringKey(rowRange[0] + columnRange[0]);
-                        end = new StringKey(rowRange[1] + columnRange[1]);
+                        start = new StringKey(rowRange[0] + "$" + columnRange[0]);
+                        end = new StringKey(rowRange[1] + "$" + columnRange[1]);
 
                         //check row range and column fixed/*
                     } else if ((rowFilter.matches(rangeRegex)) && (!columnFilter.matches(rangeRegex))) {
 
                         String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
-                        start = new StringKey(rowRange[0] + columnFilter);
-                        end = new StringKey(rowRange[1] + columnFilter);
+                        start = new StringKey(rowRange[0] + "$" + columnFilter);
+                        end = new StringKey(rowRange[1] + "$" + columnFilter);
 
                         // check column range and row fixed/*
                     } else if ((!rowFilter.matches(rangeRegex)) && (columnFilter.matches(rangeRegex))) {
 
                         String[] columnRange = columnFilter.replaceAll("[\\[ \\]]", "").split(",");
-                        start = new StringKey(rowFilter + columnRange[0]);
-                        end = new StringKey(rowFilter + columnRange[1]);
+                        start = new StringKey(rowFilter + "$" +columnRange[0]);
+                        end = new StringKey(rowFilter + "$" + columnRange[1]);
 
                         //row and col are fixed val or *,fixed fixed,*
                     } else {
 
-                        start = new StringKey(rowFilter + columnFilter);
+                        start = new StringKey(rowFilter + "$" + columnFilter);
                         end = start;
                     }
                 }
@@ -343,6 +344,7 @@ public class Stream {
 
 
     public void closeStream() throws Exception {
+
         if (this.sortObj != null) {
             this.sortObj.close();
         }
@@ -352,6 +354,9 @@ public class Stream {
         if (btreeScanner != null) {
             btreeScanner.DestroyBTreeFileScan();
         }
+        SystemDefs.JavabaseDB.delete_file_entry("tempSort4");
+        SystemDefs.JavabaseDB.delete_file_entry("tempHeapFile");
+
     }
 
     public Map getNext() throws Exception {
@@ -365,12 +370,16 @@ public class Stream {
 
         } catch (OutOfSpaceException e) {
             tempHeapFile.deleteFile();
+            SystemDefs.JavabaseDB.delete_file_entry("tempSort4");
+            SystemDefs.JavabaseDB.delete_file_entry("tempHeapFile");
             closeStream();
         }
         if (m == null) {
             System.out.println("Map is null ");
             System.out.println("Deleting temp file used for sorting");
             tempHeapFile.deleteFile();
+            SystemDefs.JavabaseDB.delete_file_entry("tempSort4");
+            SystemDefs.JavabaseDB.delete_file_entry("tempHeapFile");
             closeStream();
             return null;
         }
