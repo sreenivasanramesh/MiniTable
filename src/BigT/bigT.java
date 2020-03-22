@@ -38,6 +38,14 @@ public class bigT {
     // Heap file which stores maps
     Heapfile heapfile;
 
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
     // HashMap used for maintaining map versions
     HashMap<String, ArrayList<MID>> mapVersion;
 

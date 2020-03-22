@@ -8,7 +8,6 @@ import cmdline.MiniTable;
 import diskmgr.OutOfSpaceException;
 import global.MID;
 import global.RID;
-import global.SystemDefs;
 import global.TupleOrder;
 import heap.Heapfile;
 import heap.MapScan;
@@ -29,7 +28,7 @@ public class Stream {
     private bigT bigtable;
     private boolean scanAll = false;
     private String starFilter = "*";
-    private String rangeRegex = "\\[\\d+, \\d+\\]";
+    private String rangeRegex = "\\[\\S+,\\S+\\]";
     private BTFileScan btreeScanner, dummyScanner;
     public Heapfile tempHeapFile;
     private MID[] midList;
@@ -51,6 +50,8 @@ public class Stream {
 
 
         queryConditions();
+        filterAndSortData(this.orderType);
+
 
     }
 
@@ -162,7 +163,6 @@ public class Stream {
         }
 
 
-        filterAndSortData(this.orderType);
     }
 
     public void filterAndSortData(int orderType) throws Exception {
@@ -268,8 +268,8 @@ public class Stream {
 
     private boolean genericMatcher(Map map, String field, String genericFilter) throws Exception {
         if (genericFilter.matches(rangeRegex)) {
-//            String[] range = genericFilter.replaceAll("[\\[ \\]]", "").split(",");
-            String[] range = ",".split(genericFilter.replaceAll("[\\[ \\]]", ""));
+            String[] range = genericFilter.replaceAll("[\\[ \\]]", "").split(",");
+//            String[] range = ",".split(genericFilter.replaceAll("[\\[ \\]]", ""));
             // so now row is in range
 //            System.out.println("range = " + Arrays.toString(range));
             return map.getGenericValue(field).compareTo(range[0]) >= 0 && map.getGenericValue(field).compareTo(range[1]) <= 0;
