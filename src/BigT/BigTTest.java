@@ -11,8 +11,15 @@ import static global.GlobalConst.MINIBASE_DB_SIZE;
 import static global.GlobalConst.NUMBUF;
 
 public class BigTTest {
-
     public static void main(String[] args) throws Exception {
+        String s = "12345678901234567890";
+        System.out.println(s.getBytes().length);
+
+    }
+
+    public static void main1(String[] args) throws Exception {
+        final long startTime = System.currentTimeMillis();
+
         boolean isNewDb = false;
         int numPages = isNewDb ? MINIBASE_DB_SIZE : 0;
         new SystemDefs("/Users/sumukhashwinkamath/test.db", numPages, NUMBUF, "Clock");

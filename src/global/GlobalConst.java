@@ -3,7 +3,7 @@ package global;
 public interface GlobalConst {
 
     int MINIBASE_MAXARRSIZE = 50;
-    int NUMBUF = 100;
+    int NUMBUF = 50;
 
     /**
      * Size of page.

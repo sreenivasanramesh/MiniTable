@@ -58,8 +58,10 @@ class Utils {
                 MID mid = bigTable.insertMap(map.getMapByteArray(), useMetaData);
                 mapCount++;
             }
-            System.out.println(mapCount + " tuples inserted...\n");
-            System.out.println("tuple count: " + bigTable.getMapCnt());
+            System.out.println(mapCount + " maps inserted...\n");
+            System.out.println("map count: " + bigTable.getMapCnt());
+            System.out.println("bigTable.getRowCnt() = " + bigTable.getRowCnt());
+            System.out.println("bigTable.getColumnCnt() = " + bigTable.getColumnCnt());
             bigTable.close();
 
 
@@ -70,35 +72,33 @@ class Utils {
             br.close();
         }
 
-        //SystemDefs.JavabaseBM.flushAllPages();
-        //SystemDefs.JavabaseDB.closeDB();
+//        SystemDefs.JavabaseBM.flushAllPages();
+//        SystemDefs.JavabaseDB.closeDB();
         System.out.println("Reads : " + pcounter.rcounter);
         System.out.println("Writes: " + pcounter.wcounter);
+        System.out.println("NumBUFS: " + NUMBUF);
     }
 
 
     static void query(String tableName, Integer type, Integer orderType, String rowFilter, String colFilter, String valFilter, Integer NUMBUF) throws Exception {
         String dbPath = getDBPath(tableName, type);
-        System.out.println("dbpath is " + dbPath);
         new SystemDefs(dbPath, 0, NUMBUF, "Clock");
         pcounter.initialize();
         int resultCount = 0;
 
         try {
             //TODO: query logic
-            bigT bigTable = new bigT(tableName);
+            bigT bigTable = new bigT(tableName, type);
             Stream mapStream = bigTable.openStream(orderType, rowFilter, colFilter, valFilter);
 
             MID mapId = null;
-            System.out.println("out");
+
             while (true) {
                 //TODO: I'm not really sure about the mapId, have to check how to do this
-
                 Map mapObj = mapStream.getNext();
                 //Map mapObj = null;
                 if (mapObj == null)
                     break;
-                System.out.println("mapp");
                 mapObj.print();
                 resultCount++;
             }

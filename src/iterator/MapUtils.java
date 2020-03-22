@@ -1,6 +1,7 @@
 package iterator;
 
 import BigT.Map;
+import cmdline.MiniTable;
 import global.AttrType;
 import global.MID;
 import global.RID;
@@ -90,8 +91,8 @@ public class MapUtils {
     public static RID ridFromMid(MID mid){
         return new RID(mid.getPageNo(), mid.getSlotNo());
     }
-    
-    public static MID midFromRid(RID rid){
+
+    public static MID midFromRid(RID rid) {
         MID mid = new MID();
         mid.setPageNo(rid.pageNo);
         mid.setSlotNo(rid.slotNo);
@@ -99,10 +100,10 @@ public class MapUtils {
     }
 
 
-    public static short[] setup_op_tuple(Map Jmap, AttrType res_attrs[],
-                                         AttrType in1[], int len_in1,
-                                         short t1_str_sizes[],
-                                         FldSpec proj_list[], int nOutFlds)
+    public static short[] setup_op_tuple(Map Jmap, AttrType[] res_attrs,
+                                         AttrType[] in1, int len_in1,
+                                         short[] t1_str_sizes,
+                                         FldSpec[] proj_list, int nOutFlds)
             throws IOException,
             TupleUtilsException,
             InvalidRelation {
@@ -137,7 +138,7 @@ public class MapUtils {
         }
 
         try {
-            Jmap.setHeader(res_attrs, res_str_sizes);
+            Jmap.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
         } catch (Exception e) {
             throw new TupleUtilsException(e, "setHdr() failed");
         }

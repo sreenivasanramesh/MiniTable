@@ -22,10 +22,6 @@ import static global.GlobalConst.MINIBASE_PAGESIZE;
 
 public class bigT {
     public static final int MAX_SIZE = MINIBASE_PAGESIZE;
-    public static final short[] BIGT_STR_SIZES = new short[]{(short) 32,  //rowValue
-            (short) 32,  //colValue
-            (short) 32}; //keyValue
-    public static final AttrType[] BIGT_ATTR_TYPES = new AttrType[]{new AttrType(0), new AttrType(0), new AttrType(1), new AttrType(0)};
 
     // Indexing type
     int type;
@@ -254,28 +250,32 @@ public class bigT {
         } else {
             int oldestTimestamp = Integer.MAX_VALUE;
             MID oldestMID = null;
+            Map oldestMap = new Map();
             if (!useMetadata) {
                 // find record
             } else {
-                for (MID mid1 : list) {
-                    Map map1 = heapfile.getMap(mid1);
-                    if (MapUtils.Equal(map1, map)) {
-                        return mid1;
-                    } else {
-                        if (map1.getTimeStamp() < oldestTimestamp) {
-                            oldestTimestamp = map1.getTimeStamp();
-                            oldestMID = mid1;
+                if (list.size() > 3) {
+                    throw new IOException("Metadata file is corrupted, please delete it");
+                }
+                if (list.size() == 3) {
+                    for (MID mid1 : list) {
+                        Map map1 = heapfile.getMap(mid1);
+                        if (MapUtils.Equal(map1, map)) {
+                            return mid1;
+                        } else {
+                            if (map1.getTimeStamp() < oldestTimestamp) {
+                                oldestTimestamp = map1.getTimeStamp();
+                                oldestMID = mid1;
+                                oldestMap = map1;
+                            }
                         }
                     }
                 }
-
             }
 
-            if (list.size() > 3) {
-                throw new IOException("Metadata file is corrupted, please delete it");
-            }
+
             if (list.size() == 3) {
-                Map oldestMap = heapfile.getMap(oldestMID);
+//                Map oldestMap = heapfile.getMap(oldestMID);
                 switch (this.type) {
                     case 1:
                         key = null;

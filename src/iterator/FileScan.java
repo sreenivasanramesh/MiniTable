@@ -3,14 +3,13 @@ package iterator;
 
 import BigT.InvalidStringSizeArrayException;
 import BigT.Map;
+import bufmgr.PageNotReadException;
+import cmdline.MiniTable;
+import global.AttrType;
+import global.MID;
 import heap.*;
-import global.*;
-import bufmgr.*;
-import diskmgr.*;
 
-
-import java.lang.*;
-import java.io.*;
+import java.io.IOException;
 
 /**
  * open a heapfile and according to the condition expression to get
@@ -49,8 +48,8 @@ public class FileScan extends MapIterator {
      * @throws InvalidRelation     invalid relation
      */
     public FileScan(String file_name,
-                    AttrType in1[],
-                    short s1_sizes[],
+                    AttrType[] in1,
+                    short[] s1_sizes,
                     short len_in1,
                     int n_out_flds,
                     FldSpec[] proj_list,
@@ -75,12 +74,7 @@ public class FileScan extends MapIterator {
         tempMap = new Map();
 
         try {
-
-            short[] strSizes1 = new short[]{(short) 32,  //rowValue
-                    (short) 32,  //colValue
-                    (short) 32}; //keyValue
-            AttrType[] attrType = new AttrType[] {new AttrType(0), new AttrType(0), new AttrType(1), new AttrType(0)};
-            tempMap.setHeader(attrType, strSizes1); //TODO: temporary, fix these values somewhere
+            tempMap.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
         } catch (Exception e) {
             throw new FileScanException(e, "setHdr() failed");
         }
@@ -136,14 +130,9 @@ public class FileScan extends MapIterator {
                 return null;
             }
 
-            short[] strSizes1 = new short[]{(short) 32,  //rowValue
-                    (short) 32,  //colValue
-                    (short) 32}; //keyValue
-            AttrType[] attrType = new AttrType[] {new AttrType(0), new AttrType(0), new AttrType(1), new AttrType(0)};
-            tempMap.setHeader(attrType, strSizes1); //TODO: temporary, fix these values somewhere
-
-            if (PredEval.Eval(OutputFilter, tempMap, null, _in1, null)) { //TODO ganesh is doing this
-                Projection.Project(tempMap, _in1, mapObj, perm_mat); //TODO - vasan is doing
+            tempMap.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
+            if (PredEval.Eval(OutputFilter, tempMap, null, _in1, null)) {
+                Projection.Project(tempMap, _in1, mapObj, perm_mat);
                 return mapObj;
             }
         }
