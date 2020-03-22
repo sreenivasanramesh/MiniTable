@@ -14,6 +14,8 @@ public class MiniTable {
         String input = null;
         String[] inputStr = null;
         while(true){
+            final long startTime = System.currentTimeMillis();
+
             System.out.print("miniTable>  ");
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
             input = br.readLine();
@@ -46,14 +48,15 @@ public class MiniTable {
                     Integer NUMBUF = Integer.parseInt(inputStr[7]);
                     //CondExpr filters[] = Utils.getCondExpr(filter);
                     Utils.query(tableName, type, orderType, rowFilter, colFilter, valFilter, NUMBUF);
-                }
-                else
+                } else
                     System.out.println("Invalid input. Type exit to quit.\n\n");
-            }
-            catch (Exception e){
+            } catch (Exception e) {
                 System.out.println("Invalid parameters. Try again.\n\n");
                 e.printStackTrace();
             }
+
+            final long endTime = System.currentTimeMillis();
+            System.out.println("Total execution time: " + (endTime - startTime) / 1000.0);
 
 
         }

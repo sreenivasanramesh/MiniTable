@@ -9,6 +9,7 @@ import global.AttrOperator;
 import global.AttrType;
 import global.MID;
 import global.SystemDefs;
+import heap.Heapfile;
 import iterator.CondExpr;
 import iterator.FldSpec;
 import iterator.RelSpec;
@@ -37,8 +38,10 @@ class Utils {
         FileInputStream fileStream = null;
         BufferedReader br = null;
         try {
+            setBigTConstants(dataFile);
             bigT bigTable = new bigT(tableName, type);
             fileStream = new FileInputStream(dataFile);
+            Heapfile heapfile = new Heapfile(getDBPath(tableName, type));
             br = new BufferedReader(new InputStreamReader(fileStream));
             String inputStr;
             int mapCount = 0;
@@ -58,8 +61,11 @@ class Utils {
                 MID mid = bigTable.insertMap(map.getMapByteArray(), useMetaData);
                 mapCount++;
             }
-            System.out.println(mapCount + " tuples inserted...\n");
-            System.out.println("tuple count: " + bigTable.getMapCnt());
+            System.out.println(mapCount + " maps inserted...\n");
+            System.out.println("map count: " + bigTable.getMapCnt());
+            System.out.println("bigTable.getRowCnt() = " + bigTable.getRowCnt());
+            System.out.println("bigTable.getColumnCnt() = " + bigTable.getColumnCnt());
+            bigTable.close();
 
 
         } catch (Exception e) {
@@ -69,10 +75,15 @@ class Utils {
             br.close();
         }
 
-        SystemDefs.JavabaseBM.flushAllPages();
-        SystemDefs.JavabaseDB.closeDB();
+//        SystemDefs.JavabaseBM.flushAllPages();
+//        SystemDefs.JavabaseDB.closeDB();
         System.out.println("Reads : " + pcounter.rcounter);
         System.out.println("Writes: " + pcounter.wcounter);
+        System.out.println("NumBUFS: " + NUMBUF);
+    }
+
+    private static void setBigTConstants(String dataFile) {
+
     }
 
 
