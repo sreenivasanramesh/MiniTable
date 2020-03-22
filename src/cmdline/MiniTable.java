@@ -37,7 +37,7 @@ public class MiniTable {
                     Integer type = Integer.parseInt(inputStr[2]);
                     String tableName = inputStr[3];
                     boolean useMetadata = Boolean.parseBoolean(inputStr[4]);
-                    checkDBExists(dataFile);
+                    checkDBExists(tableName);
                     Utils.batchInsert(dataFile, tableName, type, useMetadata);
                 } else if (inputStr[0].equalsIgnoreCase("query")) {
                     BIGT_STR_SIZES = setBigTConstants("/Users/rakeshr/rr/ASU/testdata.csv");
