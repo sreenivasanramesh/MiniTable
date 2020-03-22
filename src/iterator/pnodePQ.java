@@ -1,12 +1,10 @@
 
 package iterator;
 
-import global.*;
-import bufmgr.*;
-import diskmgr.*;
-import heap.*;
+import global.AttrType;
+import global.TupleOrder;
 
-import java.io.*;
+import java.io.IOException;
 
 /**
  * Implements a sorted binary tree.
@@ -100,8 +98,11 @@ public abstract class pnodePQ {
             System.out.println("b = " + b);
         }
         if (a.map != null ) {
-            int ans = MapUtils.CompareMapWithMap(a.map, b.map, fld_no);
-            return ans;
+
+            return MapUtils.pnodePQCompare(a.map, b.map);
+//            int ans = MapUtils.CompareMapWithMap(a.map, b.map, fld_no);
+
+
         } else {
             int ans = TupleUtils.CompareTupleWithTuple(fld_type, a.tuple, fld_no, b.tuple, fld_no);
             return ans;

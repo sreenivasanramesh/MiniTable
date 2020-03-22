@@ -27,11 +27,11 @@ public class Stream {
     private final String valueFilter;
     private bigT bigtable;
     private boolean scanAll = false;
-    private String starFilter = new String("*");
-    private String rangeRegex = new String("\\[\\d+, \\d+\\]");
+    private String starFilter = "*";
+    private String rangeRegex = "\\[\\d+, \\d+\\]";
     private BTFileScan btreeScanner, dummyScanner;
     public Heapfile tempHeapFile;
-    private MID midList[];
+    private MID[] midList;
     private int midCounter = 0;
     private MapSort sortObj;
     private boolean versionEnabled = true;
@@ -48,14 +48,13 @@ public class Stream {
         this.type = bigTable.type;
         this.orderType = orderType;
 
-        System.out.println("constructor");
+
         queryConditions();
-        System.out.println("completed query conditions");
+
     }
 
     public void queryConditions() throws Exception {
 
-        System.out.println("QC");
 
         StringKey start = null, end = null;
 
@@ -174,7 +173,7 @@ public class Stream {
         · 6, then results are ordered in time stamp
         * */
 
-        tempHeapFile = new Heapfile("tempSort");
+        tempHeapFile = new Heapfile("tempSort4");
 
         MID midObj = new MID();
         if (this.scanAll) {
@@ -187,13 +186,12 @@ public class Stream {
             if (rowFilter.equals(starFilter) && columnFilter.equals(starFilter) && valueFilter.equals(starFilter)) {
                 tempHeapFile = this.bigtable.heapfile;
             } else {
-                System.out.println(this.bigtable.name);
+
                 int count = 0;
                 mapObj = this.mapScan.getNext(midObj);
-
-                mapObj.print();
                 while (mapObj != null) {
                     count++;
+                    short kaka = 0;
                     if (genericMatcher(mapObj, "row", rowFilter) && genericMatcher(mapObj, "column", columnFilter) && genericMatcher(mapObj, "value", valueFilter)) {
                         tempHeapFile.insertMap(mapObj.getMapByteArray());
                     }
@@ -227,7 +225,6 @@ public class Stream {
         }
 
 
-
         FldSpec[] projection = new FldSpec[4];
         RelSpec rel = new RelSpec(RelSpec.outer);
         projection[0] = new FldSpec(rel, 1);
@@ -238,28 +235,38 @@ public class Stream {
         FileScan fscan = null;
 
         try {
-            fscan = new FileScan("tempSort", MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, (short) 4, 4, projection, null);
+            fscan = new FileScan("tempSort4", MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, (short) 4, 4, projection, null);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        int sortField, num_pages = 10;
+        int sortField, num_pages = 10, sortFieldLength;
         switch (orderType) {
             case 1:
             case 3:
                 sortField = 1;
+                sortFieldLength = MiniTable.BIGT_STR_SIZES[0];
                 break;
             case 2:
             case 4:
                 sortField = 2;
+                sortFieldLength = MiniTable.BIGT_STR_SIZES[1];
                 break;
-            case 6:
+            case 5:
                 sortField = 3;
+                sortFieldLength = MiniTable.BIGT_STR_SIZES[3];
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + orderType);
         }
         try {
-            this.sortObj = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, sortField, new TupleOrder(TupleOrder.Ascending), num_pages);
+//            FileScan ff =fscan;
+//            Map m = ff.get_next();
+//            while (m!=null) {
+//                System.out.println("EMMEMEMEMEME");
+//                m.print();
+//                m = ff.get_next();
+//            }
+            this.sortObj = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, sortField, new TupleOrder(TupleOrder.Ascending), num_pages, sortFieldLength);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -355,7 +362,9 @@ public class Stream {
         Map m = null;
         try {
             m = this.sortObj.get_next();
+
         } catch (OutOfSpaceException e) {
+            tempHeapFile.deleteFile();
             closeStream();
         }
         if (m == null) {

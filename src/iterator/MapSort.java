@@ -36,6 +36,7 @@ public class MapSort extends MapIterator implements GlobalConst {
     private Map op_map_buf, output_map;
     AttrType[] mapAttributes = new AttrType[4];
     private SpoofIbuf[] i_buf;
+    private PageId[] bufs_pids;
 
     /**
      * Class constructor, take information about the tuples, and set up
@@ -49,7 +50,7 @@ public class MapSort extends MapIterator implements GlobalConst {
      * @param n_pages     amount of memory (attrTypes pages) available for sorting
      * @throws SortException something went wrong attrTypes the lower layer.
      */
-    public MapSort(AttrType[] attrTypes, short[] field_sizes, MapIterator am, int sort_fld, TupleOrder sort_order, int n_pages) throws SortException {
+    public MapSort(AttrType[] attrTypes, short[] field_sizes, MapIterator am, int sort_fld, TupleOrder sort_order, int n_pages, int sortFieldLength) throws SortException {
 
 
         int str_att_count = 0; // number of string field in maps
@@ -88,12 +89,17 @@ public class MapSort extends MapIterator implements GlobalConst {
         sortOrder = sort_order;
         _num_pages = n_pages; //memory available for sorting in terms of pages
 
-        // this may need change, bufs ???  need io_bufs.java
-        //    bufs = get_buffer_pages(_n_pages, bufs_pids, bufs);
-        PageId[] bufs_pids = new PageId[_num_pages];
-        bufs = new byte[_num_pages][];
 
-        for (int k = 0; k < _num_pages; k++) bufs[k] = new byte[MAX_SPACE];
+        bufs_pids = new PageId[_num_pages];
+        bufs = new byte[_num_pages][];
+        try {
+            get_buffer_pages(_num_pages, bufs_pids, bufs);
+        } catch (IteratorBMException e) {
+            e.printStackTrace();
+        }
+
+
+//        for (int k = 0; k < _num_pages; k++) bufs[k] = new byte[MAX_SPACE];
 
 
         // as a heuristic, we set the number of runs to an arbitrary value
@@ -104,7 +110,7 @@ public class MapSort extends MapIterator implements GlobalConst {
         n_runs = ARBIT_RUNS;
 
         try {
-            temp_files[0] = new Heapfile("testr");
+            temp_files[0] = new Heapfile(null);
         } catch (Exception e) {
             throw new SortException(e, "Sort.java: Heapfile error");
         }
@@ -116,7 +122,7 @@ public class MapSort extends MapIterator implements GlobalConst {
         o_buf.init(bufs, _num_pages, mapSize, temp_files[0], false);
 
         max_elems_in_heap = 200;
-        sortFldLen = MINIBASE_PAGESIZE;
+        sortFldLen = sortFieldLength;
 
         queue = new pnodeSplayPQ(sort_fld, attrTypes[sort_fld - 1], sortOrder);
 
@@ -348,6 +354,7 @@ public class MapSort extends MapIterator implements GlobalConst {
                     cur_node = new pnode();
                     //cur_node.tuple = new Tuple(tuple); // tuple copy needed --  Bingjie 4/29/98
                     cur_node.map = new Map();
+                    cur_node.map.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
                     try {
                         pcurr_Q.enq(cur_node);
                     } catch (UnknowAttrType e) {
@@ -656,7 +663,17 @@ public class MapSort extends MapIterator implements GlobalConst {
             try {
                 mapIterObj.close();
             } catch (Exception e) {
-                throw new SortException(e, "Sort.java: error in closing iterator.");
+                throw new SortException(e, "MapSort.java: error in closing iterator.");
+            }
+
+            try {
+                free_buffer_pages(_num_pages, bufs_pids);
+            } catch (IteratorBMException e) {
+                e.printStackTrace();
+            }
+
+            for (SpoofIbuf spoofIbuf : i_buf) {
+                spoofIbuf.close();
             }
 
 
@@ -665,7 +682,8 @@ public class MapSort extends MapIterator implements GlobalConst {
                     try {
                         temp_files[i].deleteFile();
                     } catch (Exception e) {
-                        throw new SortException(e, "Sort.java: Heapfile error");
+                        e.printStackTrace();
+                        throw new SortException(e, "MapSort.java: Heapfile error");
                     }
                     temp_files[i] = null;
                 }

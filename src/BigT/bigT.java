@@ -120,8 +120,8 @@ public class bigT {
             throw new IOException("File not writable: " + e.toString());
         }
 
-        SystemDefs.JavabaseBM.flushAllPages();
-        SystemDefs.JavabaseDB.closeDB();
+//        SystemDefs.JavabaseBM.flushAllPages();
+//        SystemDefs.JavabaseDB.closeDB();
         System.out.println("Successfully closed the BigT File");
     }
 

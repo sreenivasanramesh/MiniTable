@@ -70,8 +70,8 @@ class Utils {
             br.close();
         }
 
-//        SystemDefs.JavabaseBM.flushAllPages();
-//        SystemDefs.JavabaseDB.closeDB();
+        SystemDefs.JavabaseBM.flushAllPages();
+        SystemDefs.JavabaseDB.closeDB();
         System.out.println("Reads : " + pcounter.rcounter);
         System.out.println("Writes: " + pcounter.wcounter);
         System.out.println("NumBUFS: " + NUMBUF);
@@ -95,6 +95,7 @@ class Utils {
                 //TODO: I'm not really sure about the mapId, have to check how to do this
                 Map mapObj = mapStream.getNext();
                 //Map mapObj = null;
+                System.out.println("mapObj = " + mapObj);
                 if (mapObj == null)
                     break;
                 mapObj.print();
@@ -103,9 +104,6 @@ class Utils {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        SystemDefs.JavabaseBM.flushAllPages();
-        SystemDefs.JavabaseDB.closeDB();
 
         System.out.println("Matched Records: " + resultCount);
         System.out.println("Reads : " + pcounter.rcounter);

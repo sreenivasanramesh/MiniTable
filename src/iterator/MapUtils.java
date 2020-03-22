@@ -14,14 +14,14 @@ public class MapUtils {
             InvalidFieldNo {
         int map1Int, map2Int;
         String map1Str, map2Str;
-        
+
         switch (fieldNo) {
             case 0:
                 map1Str = map1.getRowLabel();
                 map2Str = map2.getRowLabel();
                 return Integer.compare(map1Str.compareTo(map2Str), 0);
             case 1:
-                if (map1.getColumnLabel()==null) {
+                if (map1.getColumnLabel() == null) {
                     System.out.println("map1.getFieldOffset() = " + map1.getFieldOffset());
                     System.out.println("dkajsdalsdjalsdjalsdj = ");
                     System.out.println("map1 = " + map1);
@@ -61,7 +61,7 @@ public class MapUtils {
         }
     }
 
-    public static int CompareMapWithValue( Map m1, int fieldNo, String value)
+    public static int CompareMapWithValue(Map m1, int fieldNo, String value)
             throws IOException,
             UnknowAttrType,
             TupleUtilsException, InvalidFieldNo {
@@ -87,8 +87,8 @@ public class MapUtils {
         }
         return true;
     }
-    
-    public static RID ridFromMid(MID mid){
+
+    public static RID ridFromMid(MID mid) {
         return new RID(mid.getPageNo(), mid.getSlotNo());
     }
 
@@ -145,4 +145,93 @@ public class MapUtils {
         return res_str_sizes;
     }
 
+    public static int pnodePQCompare(Map map1, Map map2) throws IOException {
+        switch (MiniTable.orderType) {
+            case 1:
+                if (map1.getRowLabel().compareTo(map2.getRowLabel()) > 0) {
+                    return 1;
+                } else if (map1.getRowLabel().compareTo(map2.getRowLabel()) < 0) {
+                    return -1;
+                } else {
+                    if (map1.getColumnLabel().compareTo(map2.getColumnLabel()) > 0) {
+                        return 1;
+                    } else if (map1.getColumnLabel().compareTo(map2.getColumnLabel()) < 0) {
+                        return -1;
+                    } else {
+                        if (map1.getTimeStamp() >= map2.getTimeStamp()) {
+                            return 1;
+                        } else {
+                            return -1;
+                        }
+                    }
+                }
+            case 2:
+                if (map1.getColumnLabel().compareTo(map2.getColumnLabel()) > 0) {
+                    return 1;
+                } else if (map1.getColumnLabel().compareTo(map2.getColumnLabel()) < 0) {
+                    return -1;
+                } else {
+                    if (map1.getRowLabel().compareTo(map2.getRowLabel()) > 0) {
+                        return 1;
+                    } else if (map1.getRowLabel().compareTo(map2.getRowLabel()) < 0) {
+                        return -1;
+                    } else {
+                        if (map1.getTimeStamp() >= map2.getTimeStamp()) {
+                            return 1;
+                        } else {
+                            return -1;
+                        }
+                    }
+                }
+            case 3:
+                if (map1.getRowLabel().compareTo(map2.getRowLabel()) > 0) {
+                    return 1;
+                } else if (map1.getRowLabel().compareTo(map2.getRowLabel()) < 0) {
+                    return -1;
+                } else {
+                    if (map1.getTimeStamp() >= map2.getTimeStamp()) {
+                        return 1;
+                    } else {
+                        return -1;
+                    }
+                }
+            case 4:
+                if (map1.getColumnLabel().compareTo(map2.getColumnLabel()) > 0) {
+                    return 1;
+                } else if (map1.getColumnLabel().compareTo(map2.getColumnLabel()) < 0) {
+                    return -1;
+                } else {
+                    if (map1.getTimeStamp() >= map2.getTimeStamp()) {
+                        return 1;
+                    } else {
+                        return -1;
+                    }
+                }
+            case 5:
+                if (map1.getTimeStamp() >= map2.getTimeStamp()) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+            default:
+                if (map1.getRowLabel().compareTo(map2.getRowLabel()) > 0) {
+                    return 1;
+                } else if (map1.getRowLabel().compareTo(map2.getRowLabel()) < 0) {
+                    return -1;
+                } else {
+                    if (map1.getColumnLabel().compareTo(map2.getColumnLabel()) > 0) {
+                        return 1;
+                    } else if (map1.getColumnLabel().compareTo(map2.getColumnLabel()) < 0) {
+                        return -1;
+                    } else {
+                        if (map1.getTimeStamp() >= map2.getTimeStamp()) {
+                            return 1;
+                        } else {
+                            return -1;
+                        }
+                    }
+                }
+        }
+
+    }
 }

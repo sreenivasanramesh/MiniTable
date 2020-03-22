@@ -1,12 +1,14 @@
 package iterator;
 
 import BigT.Map;
-import heap.*;
-import global.*;
-import diskmgr.*;
-import bufmgr.*;
+import global.GlobalConst;
+import global.RID;
+import heap.Heapfile;
+import heap.InvalidTupleSizeException;
+import heap.Scan;
+import heap.Tuple;
 
-import java.io.*;
+import java.io.IOException;
 
 public class SpoofIbuf implements GlobalConst {
 
@@ -31,7 +33,7 @@ public class SpoofIbuf implements GlobalConst {
      * @throws IOException some I/O fault
      * @throws Exception   other exceptions
      */
-    public void init(Heapfile fd, byte bufs[][], int n_pages,
+    public void init(Heapfile fd, byte[][] bufs, int n_pages,
                      int tSize, int Ntuples)
             throws IOException,
             Exception {
@@ -111,7 +113,7 @@ public class SpoofIbuf implements GlobalConst {
         return buf;
     }
 
-    public Map Get(Map buf) throws IOException, Exception {
+    public Map Get(Map buf) throws Exception {
         if (tot_t_proc == nMaps) done = true;
 
         if (done) {
@@ -185,6 +187,10 @@ public class SpoofIbuf implements GlobalConst {
             curr_page++;
         }
         return tot_read;
+    }
+
+    public void close() {
+        hf_scan.closescan();
     }
 
 

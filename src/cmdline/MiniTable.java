@@ -11,6 +11,7 @@ public class MiniTable {
     public static short[] BIGT_STR_SIZES = new short[]{(short) 25,  //rowValue
             (short) 25,  //colValue
             (short) 25}; //keyValue;
+    public static int orderType = 1;
 
     public static void main(String[] args) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException {
 
@@ -38,10 +39,11 @@ public class MiniTable {
                     boolean useMetadata = Boolean.parseBoolean(inputStr[4]);
                     Utils.batchInsert(dataFile, tableName, type, useMetadata);
                 } else if (inputStr[0].equalsIgnoreCase("query")) {
+                    BIGT_STR_SIZES = setBigTConstants("/Users/rakeshr/rr/ASU/testdata.csv");
                     //query BIGTABLENAME TYPE ORDERTYPE ROWFILTER COLUMNFILTER VALUEFILTER NUMBUF
                     String tableName = inputStr[1].trim();
                     Integer type = Integer.parseInt(inputStr[2]);
-                    Integer orderType = Integer.parseInt(inputStr[3]);
+                    orderType = Integer.parseInt(inputStr[3]);
                     String rowFilter = inputStr[4].trim();
                     String colFilter = inputStr[5].trim();
                     String valFilter = inputStr[6].trim();
