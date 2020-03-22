@@ -2,6 +2,7 @@ package BigT;
 
 import btree.*;
 import bufmgr.*;
+import cmdline.MiniTable;
 import global.*;
 import heap.*;
 import iterator.MapUtils;
@@ -219,17 +220,17 @@ public class bigT {
                 this.indexFile = null;
                 break;
             case 2:
-                this.indexFile = new BTreeFile(this.name + "_row.idx", AttrType.attrString, 20, DeleteFashion.NAIVE_DELETE);
+                this.indexFile = new BTreeFile(this.name + "_row.idx", AttrType.attrString, MiniTable.BIGT_STR_SIZES[0], DeleteFashion.NAIVE_DELETE);
                 break;
             case 3:
-                this.indexFile = new BTreeFile(this.name + "_col.idx", AttrType.attrString, 20, DeleteFashion.NAIVE_DELETE);
+                this.indexFile = new BTreeFile(this.name + "_col.idx", AttrType.attrString, MiniTable.BIGT_STR_SIZES[1], DeleteFashion.NAIVE_DELETE);
                 break;
             case 4:
-                this.indexFile = new BTreeFile(this.name + "_col_row.idx", AttrType.attrString, 20, DeleteFashion.NAIVE_DELETE);
+                this.indexFile = new BTreeFile(this.name + "_col_row.idx", AttrType.attrString, MiniTable.BIGT_STR_SIZES[0] + MiniTable.BIGT_STR_SIZES[1] + "$".getBytes().length, DeleteFashion.NAIVE_DELETE);
                 this.timestampIndexFile = new BTreeFile(this.name + "_timestamp.idx", AttrType.attrInteger, 4, DeleteFashion.NAIVE_DELETE);
                 break;
             case 5:
-                this.indexFile = new BTreeFile(this.name + "row_val.idx", AttrType.attrString, 20, DeleteFashion.NAIVE_DELETE);
+                this.indexFile = new BTreeFile(this.name + "row_val.idx", AttrType.attrString, MiniTable.BIGT_STR_SIZES[0] + MiniTable.BIGT_STR_SIZES[2] + "$".getBytes().length, DeleteFashion.NAIVE_DELETE);
                 this.timestampIndexFile = new BTreeFile(this.name + "_timestamp.idx", AttrType.attrInteger, 4, DeleteFashion.NAIVE_DELETE);
                 break;
             default:
