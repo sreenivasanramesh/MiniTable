@@ -15,8 +15,6 @@ import iterator.RelSpec;
 
 import java.io.*;
 
-import static BigT.bigT.BIGT_ATTR_TYPES;
-import static BigT.bigT.BIGT_STR_SIZES;
 import static global.GlobalConst.NUMBUF;
 
 class Utils {
@@ -47,7 +45,7 @@ class Utils {
                 String[] input = inputStr.split(",");
                 //set the map
                 Map map = new Map();
-                map.setHeader(BIGT_ATTR_TYPES, BIGT_STR_SIZES);
+                map.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
                 map.setRowLabel(input[0]);
                 map.setColumnLabel(input[1]);
                 map.setTimeStamp(Integer.parseInt(input[2]));

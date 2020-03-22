@@ -4,6 +4,7 @@ import btree.BTFileScan;
 import btree.KeyDataEntry;
 import btree.LeafData;
 import btree.StringKey;
+import cmdline.MiniTable;
 import diskmgr.OutOfSpaceException;
 import global.MID;
 import global.RID;
@@ -237,7 +238,7 @@ public class Stream {
         FileScan fscan = null;
 
         try {
-            fscan = new FileScan("tempSort", bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES, (short) 4, 4, projection, null);
+            fscan = new FileScan("tempSort", MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, (short) 4, 4, projection, null);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -258,7 +259,7 @@ public class Stream {
                 throw new IllegalStateException("Unexpected value: " + orderType);
         }
         try {
-            this.sortObj = new MapSort(bigT.BIGT_ATTR_TYPES, bigT.BIGT_STR_SIZES, fscan, sortField, new TupleOrder(TupleOrder.Ascending), num_pages);
+            this.sortObj = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, sortField, new TupleOrder(TupleOrder.Ascending), num_pages);
         } catch (Exception e) {
             e.printStackTrace();
         }
