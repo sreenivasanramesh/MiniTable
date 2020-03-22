@@ -8,7 +8,6 @@ import global.PageId;
 import global.TupleOrder;
 import heap.FieldNumberOutOfBoundException;
 import heap.Heapfile;
-import heap.Tuple;
 
 import java.io.IOException;
 
@@ -451,7 +450,7 @@ public class MapSort extends MapIterator implements GlobalConst {
      * @throws Exception       other exceptions
      */
     // TODO: modify tuple to map.
-    private void setup_for_merge(int tuple_size, int n_R_runs)
+    private void setup_for_merge(int mapSize, int n_R_runs)
             throws IOException,
             LowMemException,
             SortException,
@@ -474,29 +473,29 @@ public class MapSort extends MapIterator implements GlobalConst {
             apage[0] = bufs[i];
 
             // need iobufs.java
-            i_buf[i].init(temp_files[i], apage, 1, tuple_size, n_Maps[i]);
+            i_buf[i].init(temp_files[i], apage, 1, mapSize, n_Maps[i]);
 
             cur_node = new pnode();
             cur_node.run_num = i;
 
             // may need change depending on whether Get() returns the original
             // or make a copy of the tuple, need io_bufs.java ???
-            Tuple temp_tuple = new Tuple(tuple_size);
+            Map tempMap = new Map(mapSize);
 
             try {
-                temp_tuple.setHdr((short) num_cols, mapAttributes, str_fld_lens);
+                tempMap.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
             } catch (Exception e) {
                 throw new SortException(e, "Sort.java: Tuple.setHdr() failed");
             }
 
-            temp_tuple = i_buf[i].Get(temp_tuple);  // need io_bufs.java
+            tempMap = i_buf[i].Get(tempMap);  // need io_bufs.java
 
-            if (temp_tuple != null) {
+            if (tempMap != null) {
 	/*
 	System.out.print("Get tuple from run " + i);
 	temp_tuple.print(_in);
 	*/
-                cur_node.tuple = temp_tuple; // no copy needed
+                cur_node.map = tempMap; // no copy needed
                 try {
                     queue.enq(cur_node);
                 } catch (UnknowAttrType e) {

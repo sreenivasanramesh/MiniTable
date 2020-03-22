@@ -53,6 +53,13 @@ public class Map implements GlobalConst {
 
     }
 
+    public Map(int size) {
+        this.data = new byte[size];
+        this.mapOffset = 0;
+        this.mapLength = size;
+        this.fieldCount = 4;
+    }
+
     public byte[] getData() {
         return data;
     }
