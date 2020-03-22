@@ -169,7 +169,9 @@ class BufHashTbl implements GlobalConst {
 
         ent.pageNo.pid = pageNo.pid;
         ent.frameNo = frameNo;
-
+//        System.out.println("index = " + index);
+//        System.out.println("ent.next = " + ent.next);
+//        System.out.println("ht = " + ht);
         ent.next = ht[index];    // insert this page at the top
         ht[index] = ent;
 
@@ -556,6 +558,7 @@ public class BufMgr implements GlobalConst {
 
             frmeTable[frameNo].pageNo.pid = INVALID_PAGE; // frame is empty
             frmeTable[frameNo].dirty = false;             // not dirty
+
 
             bst2 = hashTable.insert(pin_pgid, frameNo);
 

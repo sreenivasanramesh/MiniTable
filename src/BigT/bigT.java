@@ -281,7 +281,9 @@ public class bigT {
                     }
                 }
             }
-
+            if (list.size() == 3 && map.getTimeStamp() < oldestTimestamp) {
+                return oldestMID;
+            }
 
             if (list.size() == 3) {
 //                Map oldestMap = heapfile.getMap(oldestMID);
@@ -293,15 +295,15 @@ public class bigT {
                         key = oldestMap.getRowLabel();
                         break;
                     case 3:
-                        key = map.getColumnLabel();
+                        key = oldestMap.getColumnLabel();
                         break;
                     case 4:
-                        key = oldestMap.getColumnLabel() + "$" + map.getRowLabel();
-                        this.timestampIndexFile.Delete(new IntegerKey(map.getTimeStamp()), MapUtils.ridFromMid(oldestMID));
+                        key = oldestMap.getColumnLabel() + "$" + oldestMap.getRowLabel();
+                        this.timestampIndexFile.Delete(new IntegerKey(oldestMap.getTimeStamp()), MapUtils.ridFromMid(oldestMID));
                         break;
                     case 5:
-                        key = map.getRowLabel() + "$" + map.getValue();
-                        this.timestampIndexFile.Delete(new IntegerKey(map.getTimeStamp()), MapUtils.ridFromMid(oldestMID));
+                        key = oldestMap.getRowLabel() + "$" + oldestMap.getValue();
+                        this.timestampIndexFile.Delete(new IntegerKey(oldestMap.getTimeStamp()), MapUtils.ridFromMid(oldestMID));
                         break;
                     default:
                         throw new Exception("Invalid Index Type");

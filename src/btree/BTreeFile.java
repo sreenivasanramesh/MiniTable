@@ -1167,6 +1167,8 @@ public class BTreeFile extends IndexFile
             nextpage = leafPage.getNextPage();
             unpinPage(leafPage.getCurPage());
 
+//            System.out.println("leafPage = " + leafPage);
+//            System.out.println("nextpage = " + nextpage);
             leafPage = new BTLeafPage(pinPage(nextpage), headerPage.get_keyType());
 
             entry = leafPage.getFirst(curRid);

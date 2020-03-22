@@ -155,7 +155,7 @@ public class Map implements GlobalConst {
 
     public byte[] getMapByteArray() {
         byte[] mapCopy = new byte[this.mapLength];
-        System.arraycopy(this.data, this.mapOffset, mapCopy, 0, mapLength);
+        System.arraycopy(this.data, this.mapOffset, mapCopy, 0, this.mapLength);
         return mapCopy;
     }
 
