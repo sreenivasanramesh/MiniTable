@@ -206,20 +206,10 @@ public class Stream {
                 RID rid = ((LeafData) entry.data).getData();
                 if (rid != null) {
                     MID midFromRid = new MID(rid.pageNo, rid.slotNo);
-                    Map map = bigtable.heapfile.getMap(midFromRid);
-                    if (this.type == 5) {
-                        if ((!rowFilter.matches(rangeRegex)) && !rowFilter.equals(map.getRowLabel())) {
-                            // is star
-                            break;
-                        } else if (rowFilter.matches(rangeRegex)) {
-                            String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
-                            if ((map.getRowLabel().compareTo(rowRange[0]) < 0)
-                                    || (map.getRowLabel().compareTo(rowRange[1]) > 0)) {
-                                break;
-                            }
-                        }
+                    Map mapObj = bigtable.heapfile.getMap(midFromRid);
+                    if (genericMatcher(mapObj, "row", rowFilter) && genericMatcher(mapObj, "column", columnFilter) && genericMatcher(mapObj, "value", valueFilter)) {
+                        tempHeapFile.insertMap(mapObj.getMapByteArray());
                     }
-                    tempHeapFile.insertMap(map.getMapByteArray());
                 }
                 entry = btreeScanner.get_next();
             }
