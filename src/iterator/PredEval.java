@@ -213,12 +213,12 @@ public class PredEval {
                         map1 = value;
                         comparison_type.attrType = AttrType.attrInteger;
                         break;
-                    case AttrType.attrReal:
-                        value.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
-                        value.setFloFld(1, temp_ptr.operand1.real);
-                        map1 = value;
-                        comparison_type.attrType = AttrType.attrReal;
-                        break;
+//                    case AttrType.attrReal:
+//                        value.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
+//                        value.setFloFld(1, temp_ptr.operand1.real);
+//                        map1 = value;
+//                        comparison_type.attrType = AttrType.attrReal;
+//                        break;
                     case AttrType.attrString:
                         str_size[0] = (short) (temp_ptr.operand1.string.length() + 1);
                         value.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);

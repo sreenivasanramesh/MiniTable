@@ -73,11 +73,13 @@ public class MiniTable {
             int maxRowKeyLength = Short.MIN_VALUE;
             int maxColumnKeyLength = Short.MIN_VALUE;
             int maxValueLength = Short.MIN_VALUE;
+            int maxTimeStampLength = Short.MIN_VALUE;
             while ((line = br.readLine()) != null) {
                 String[] fields = line.split(",");
                 OutputStream out = new ByteArrayOutputStream();
                 DataOutputStream rowStream = new DataOutputStream(out);
                 DataOutputStream columnStream = new DataOutputStream(out);
+                DataOutputStream timestampStream = new DataOutputStream(out);
                 DataOutputStream valueStream = new DataOutputStream(out);
 
                 rowStream.writeUTF(fields[0]);
@@ -85,6 +87,9 @@ public class MiniTable {
 
                 columnStream.writeUTF(fields[1]);
                 maxColumnKeyLength = Math.max(columnStream.size(), maxColumnKeyLength);
+
+                timestampStream.writeUTF(fields[2]);
+                maxTimeStampLength = Math.max(timestampStream.size(), maxTimeStampLength);
 
                 valueStream.writeUTF(fields[3]);
                 maxValueLength = Math.max(valueStream.size(), maxValueLength);

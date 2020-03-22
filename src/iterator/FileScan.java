@@ -129,12 +129,12 @@ public class FileScan extends MapIterator {
             if ((tempMap = scan.getNext(mid)) == null) {
                 return null;
             }
-
-            tempMap.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
-            if (PredEval.Eval(OutputFilter, tempMap, null, _in1, null)) {
-                Projection.Project(tempMap, _in1, mapObj, perm_mat);
-                return mapObj;
-            }
+            return tempMap;
+//            tempMap.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
+//            if (PredEval.Eval(OutputFilter, tempMap, null, _in1, null)) {
+//                Projection.Project(tempMap, _in1, mapObj, perm_mat);
+//                return mapObj;
+//            }
         }
     }
 

@@ -371,6 +371,7 @@ public class Stream {
             System.out.println("Map is null ");
             System.out.println("Deleting temp file used for sorting");
             tempHeapFile.deleteFile();
+//            SystemDefs.JavabaseBM.flushAllPages();
             closeStream();
             return null;
         }

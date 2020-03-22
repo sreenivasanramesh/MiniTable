@@ -101,9 +101,11 @@ class Utils {
                 mapObj.print();
                 resultCount++;
             }
+            mapStream.closeStream();
         } catch (Exception e) {
             e.printStackTrace();
         }
+
 
         System.out.println("Matched Records: " + resultCount);
         System.out.println("Reads : " + pcounter.rcounter);
