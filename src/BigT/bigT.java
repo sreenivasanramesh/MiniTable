@@ -145,12 +145,8 @@ public class bigT {
         Map mappa = this.heapfile.getMap(midi);
         mappa.print();
     }
-    
-    //Delete the bigtable from the database.
-    void deleteBigt() {
-    
-    }
-    
+
+
     // Return number of maps in the bigtable.
     public int getMapCnt() throws HFBufMgrException, IOException, HFDiskMgrException, InvalidSlotNumberException, InvalidTupleSizeException {
         return this.heapfile.getRecCnt();
