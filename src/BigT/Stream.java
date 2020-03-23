@@ -19,7 +19,7 @@ import iterator.RelSpec;
 import java.io.IOException;
 
 /**
- * Initialize a stream of maps on bigtable.
+ * Stream Class to initialize a stream of maps on bigTable.
  */
 public class Stream {
     private final String rowFilter;
@@ -41,6 +41,14 @@ public class Stream {
     private int type, orderType;
 
 
+    /**
+     * @param bigTable Object containing all the maps in bigt table.
+     * @param orderType Ordertype for sorting/ ordering of output.
+     * @param rowFilter Filtering based on row values.
+     * @param columnFilter Filtering based on column values.
+     * @param valueFilter Filtering based on value field.
+     * @throws Exception Throws generic Exception.
+     */
     public Stream(bigT bigTable, int orderType, String rowFilter, String columnFilter, String valueFilter) throws Exception {
 
         this.bigtable = bigTable;
@@ -60,6 +68,10 @@ public class Stream {
 
     }
 
+    /**
+     * This type value for each type to use index or file.
+     * @throws Exception Throws generic exception.
+     */
     public void queryConditions() throws Exception {
 
 
@@ -212,6 +224,10 @@ public class Stream {
 
     }
 
+    /**
+     * @param orderType Ordertype for sorting data.
+     * @throws Exception
+     */
     public void filterAndSortData(int orderType) throws Exception {
         /* orderType is for ordering by
         · 1, then results are first ordered in row label, then column label, then time stamp
@@ -299,13 +315,6 @@ public class Stream {
                 throw new IllegalStateException("Unexpected value: " + orderType);
         }
         try {
-//            FileScan ff =fscan;
-//            Map m = ff.get_next();
-//            while (m!=null) {
-//                System.out.println("EMMEMEMEMEME");
-//                m.print();
-//                m = ff.get_next();
-//            }
             this.sortObj = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, sortField, new TupleOrder(TupleOrder.Ascending), num_pages, sortFieldLength);
         } catch (Exception e) {
             e.printStackTrace();
@@ -314,6 +323,13 @@ public class Stream {
     }
 
 
+    /**
+     * @param map Map object to compare field with filter.
+     * @param field field type to be compared - row, column or value.
+     * @param genericFilter Filter on fields - row, column or value.
+     * @return
+     * @throws Exception
+     */
     private boolean genericMatcher(Map map, String field, String genericFilter) throws Exception {
         if (genericFilter.matches(rangeRegex)) {
             String[] range = genericFilter.replaceAll("[\\[ \\]]", "").split(",");
@@ -382,6 +398,10 @@ public class Stream {
     }
 
 
+    /**
+     * Closes the stream object.
+     * @throws Exception Throws generic exception.
+     */
     public void closeStream() throws Exception {
 
         if (this.sortObj != null) {
@@ -395,6 +415,10 @@ public class Stream {
         }
     }
 
+    /**
+     * @return returns the Map in the Stream based on query conditions.
+     * @throws Exception throws generic exception.
+     */
     public Map getNext() throws Exception {
         if (this.sortObj == null) {
             System.out.println("sort object is not initialised");

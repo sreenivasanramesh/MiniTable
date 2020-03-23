@@ -23,12 +23,20 @@ public class Map implements GlobalConst {
     private short fieldCount;
     private short[] fieldOffset;
 
+    /**
+     * Default Map constructor to initialise a new map.
+     */
     public Map() {
         this.data = new byte[MAX_SIZE];
         this.mapOffset = 0;
         this.mapLength = MAX_SIZE;
     }
 
+    /**
+     * @param amap Initialise map based on bytearray from given map.
+     * @param offset map offset.
+     * @throws IOException throws IO exception
+     */
     public Map(byte[] amap, int offset) throws IOException {
         this.data = amap;
         this.mapOffset = offset;
@@ -36,6 +44,12 @@ public class Map implements GlobalConst {
         setFieldCount(Convert.getShortValue(offset, this.data));
     }
 
+    /**
+     * @param amap Initialise map based on bytearray from given map.
+     * @param offset map offset.
+     * @param mapLength Set length of the map.
+     * @throws IOException throws IO Exception.
+     */
     public Map(byte[] amap, int offset, int mapLength) throws IOException {
         this.data = amap;
         this.mapOffset = offset;
@@ -44,6 +58,9 @@ public class Map implements GlobalConst {
         setFieldCount(Convert.getShortValue(offset, this.data));
     }
 
+    /**
+     * @param fromMap Initialse maps given map object.
+     */
     public Map(Map fromMap) {
         this.data = fromMap.getMapByteArray();
         this.mapLength = fromMap.getMapLength();
@@ -53,6 +70,9 @@ public class Map implements GlobalConst {
 
     }
 
+    /**
+     * @param size Initialze map based on given size.
+     */
     public Map(int size) {
         this.data = new byte[size];
         this.mapOffset = 0;
@@ -116,6 +136,9 @@ public class Map implements GlobalConst {
         return newFieldOffset;
     }
 
+    /**
+     * @param fromMap Copy the map object to this map object.
+     */
     public void copyMap(Map fromMap) {
         byte[] tempArray = fromMap.getMapByteArray();
         System.arraycopy(tempArray, 0, data, mapOffset, mapLength);
