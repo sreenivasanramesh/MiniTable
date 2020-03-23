@@ -16,11 +16,6 @@ import java.util.Set;
 import static global.GlobalConst.MINIBASE_PAGESIZE;
 
 
-//TODO: Make Btree Return MID instead of RID
-//TODO: Insert Map (Working on this)
-//TODO: Get Row Count and Column Count and Map count
-//TODO: Flag variable for meta data
-
 public class bigT {
     public static final int MAX_SIZE = MINIBASE_PAGESIZE;
     
@@ -341,8 +336,7 @@ public class bigT {
         }
         return mid;
     }
-    
-    // TODO: This method needs to be removed
+
     // Just a method to test Map Scan. to be removed
     public void printFullScan() throws InvalidTupleSizeException, IOException {
         MapScan mapScan = this.heapfile.openMapScan();

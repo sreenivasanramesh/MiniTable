@@ -53,8 +53,7 @@ class Utils {
                 map.setTimeStamp(Integer.parseInt(input[2]));
                 map.setValue(input[3]);
 
-                //
-                // TODO replace with bigT.insertMap()
+
                 MID mid = bigTable.insertMap(map.getMapByteArray());
                 mapCount++;
             }
