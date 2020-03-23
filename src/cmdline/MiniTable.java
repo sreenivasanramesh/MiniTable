@@ -37,9 +37,8 @@ public class MiniTable {
                     BIGT_STR_SIZES = setBigTConstants(dataFile);
                     Integer type = Integer.parseInt(inputStr[2]);
                     String tableName = inputStr[3];
-//                    boolean useMetadata = Boolean.parseBoolean(inputStr[4]);
                     checkDBExists(tableName);
-                    // Get the csv name for the given DB. This is used to set the headers for the Maps
+                    // Set the metadata name for the given DB. This is used to set the headers for the Maps
                     File file = new File("/tmp/" + tableName + "_metadata.txt");
                     FileWriter fileWriter = new FileWriter(file);
                     BufferedWriter bufferedWriter =
@@ -57,7 +56,6 @@ public class MiniTable {
                     BufferedReader bufferedReader = null;
                     try {
                         fileReader = new FileReader(filename);
-                        // Always wrap FileReader in BufferedReader.
                         bufferedReader = new BufferedReader(fileReader);
                     }
                     catch (FileNotFoundException e){
@@ -76,11 +74,13 @@ public class MiniTable {
                     Integer NUMBUF = Integer.parseInt(inputStr[7]);
                     checkDBMissing(tableName);
                     Utils.query(tableName, type, orderType, rowFilter, colFilter, valFilter, NUMBUF);
-                } else
+                } else {
                     System.out.println("Invalid input. Type exit to quit.\n\n");
+                    continue;
+                }
             } catch (Exception e) {
                 System.out.println("Invalid parameters. Try again.\n\n");
-                e.printStackTrace();
+                continue;
             }
             SystemDefs.JavabaseBM.flushAllPages();
 
