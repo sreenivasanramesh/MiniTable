@@ -145,7 +145,7 @@ public class MapUtils {
         return res_str_sizes;
     }
 
-    public static int pnodePQCompare(Map map1, Map map2) throws IOException {
+    public static int CompareMapsOnOrderType(Map map1, Map map2) throws IOException {
         switch (MiniTable.orderType) {
             case 1:
                 if (map1.getRowLabel().compareTo(map2.getRowLabel()) > 0) {
@@ -232,6 +232,5 @@ public class MapUtils {
                     }
                 }
         }
-
     }
 }
