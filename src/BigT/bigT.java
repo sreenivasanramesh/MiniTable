@@ -16,8 +16,6 @@ import java.util.Set;
 import static global.GlobalConst.MINIBASE_PAGESIZE;
 
 
-//TODO: void delete bigt
-
 public class bigT {
     public static final int MAX_SIZE = MINIBASE_PAGESIZE;
     
@@ -329,7 +327,7 @@ public class bigT {
         return mid;
     }
 
-    
+
     public Stream openStream(int orderType, java.lang.String rowFilter, java.lang.String columnFilter, java.
             lang.String valueFilter) throws Exception {
         return new Stream(this, orderType, rowFilter, columnFilter, valueFilter);

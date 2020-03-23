@@ -99,7 +99,7 @@ public abstract class pnodePQ {
         }
         if (a.map != null ) {
 
-            return MapUtils.pnodePQCompare(a.map, b.map);
+            return MapUtils.CompareMapsOnOrderType(a.map, b.map);
 //            int ans = MapUtils.CompareMapWithMap(a.map, b.map, fld_no);
 
 

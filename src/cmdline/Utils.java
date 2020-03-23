@@ -52,8 +52,6 @@ class Utils {
                 map.setColumnLabel(input[1]);
                 map.setTimeStamp(Integer.parseInt(input[2]));
                 map.setValue(input[3]);
-
-                //
                 MID mid = bigTable.insertMap(map.getMapByteArray());
                 mapCount++;
             }

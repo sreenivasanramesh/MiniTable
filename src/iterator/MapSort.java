@@ -261,7 +261,7 @@ public class MapSort extends MapIterator implements GlobalConst {
 
             // comp_res = TupleUtils.CompareTupleWithValue(sortFldType, cur_node.tuple, _sort_fld, lastElem);  // need tuple_utils.java
             // comp_res = MapUtils.CompareMapWithValue(cur_node.map, _sort_fld, lastElem);
-            comp_res = MapUtils.pnodePQCompare(cur_node.map, lastElem);
+            comp_res = MapUtils.CompareMapsOnOrderType(cur_node.map, lastElem);
 
             if ((comp_res < 0 && sortOrder.tupleOrder == TupleOrder.Ascending) || (comp_res > 0 && sortOrder.tupleOrder == TupleOrder.Descending)) {
                 // doesn't fit in current run, put into the other queue
