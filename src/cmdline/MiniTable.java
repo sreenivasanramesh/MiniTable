@@ -19,14 +19,13 @@ public class MiniTable {
         String input = null;
         String[] inputStr = null;
         while (true) {
-            final long startTime = System.currentTimeMillis();
-
             System.out.print("miniTable>  ");
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
             input = br.readLine();
             if (input.equals(""))
                 continue;
             inputStr = input.trim().split("\\s+");
+            final long startTime = System.currentTimeMillis();
 
             try {
                 if (inputStr[0].equalsIgnoreCase("exit"))
@@ -85,7 +84,7 @@ public class MiniTable {
             SystemDefs.JavabaseBM.flushAllPages();
 
             final long endTime = System.currentTimeMillis();
-            System.out.println("Total execution time: " + (endTime - startTime) / 1000.0);
+            System.out.println("Total execution time: " + (endTime - startTime) / 1000.0 + " seconds");
 
 
         }
