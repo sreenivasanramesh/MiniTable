@@ -54,7 +54,6 @@ class Utils {
                 map.setValue(input[3]);
 
                 //
-                // TODO replace with bigT.insertMap()
                 MID mid = bigTable.insertMap(map.getMapByteArray());
                 mapCount++;
             }

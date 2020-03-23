@@ -16,10 +16,7 @@ import java.util.Set;
 import static global.GlobalConst.MINIBASE_PAGESIZE;
 
 
-//TODO: Make Btree Return MID instead of RID
-//TODO: Insert Map (Working on this)
-//TODO: Get Row Count and Column Count and Map count
-//TODO: Flag variable for meta data
+//TODO: void delete bigt
 
 public class bigT {
     public static final int MAX_SIZE = MINIBASE_PAGESIZE;
@@ -118,9 +115,6 @@ public class bigT {
     public void close() throws PageUnpinnedException, PagePinnedException, PageNotFoundException, HashOperationException, BufMgrException, IOException, HashEntryNotFoundException, InvalidFrameNumberException, ReplacerException {
         if (this.indexFile != null) this.indexFile.close();
         if (this.timestampIndexFile != null) this.timestampIndexFile.close();
-//        System.out.println("HashMap ->");
-//        printMapVersion();
-        
         
         try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream("/tmp/" + this.name + ".hashmap.ser"))) {
             objectOutputStream.writeByte(type);
@@ -145,7 +139,7 @@ public class bigT {
         }
     }
     
-    // This should ideally be removed. This functionality should be a part of Stream class
+
     private void printMap(KeyDataEntry keyDataEntry) throws Exception {
         LeafData dataClass = (LeafData) keyDataEntry.data;
         RID rra = dataClass.getData();
@@ -235,14 +229,7 @@ public class bigT {
                 throw new Exception("Invalid Index Type");
         }
     }
-    
-    // Prints the mapVersion HashMap
-    private void printMapVersion() {
-        mapVersion.entrySet().forEach(entry -> {
-            System.out.println(entry.getKey() + ":" + entry.getValue().toString());
-        });
-    }
-    
+
     
     // This has to be modified to take care of storing 3 versions of a map at any point in time
     public MID insertMap(byte[] mapPtr) throws Exception {
@@ -341,49 +328,11 @@ public class bigT {
         }
         return mid;
     }
-    
-    // TODO: This method needs to be removed
-    // Just a method to test Map Scan. to be removed
-    public void printFullScan() throws InvalidTupleSizeException, IOException {
-        MapScan mapScan = this.heapfile.openMapScan();
-        MID mid = new MID();
-        Map map = mapScan.getNext(mid);
-        while (map != null) {
-            map.print();
-            map = mapScan.getNext(mid);
-        }
-    }
+
     
     public Stream openStream(int orderType, java.lang.String rowFilter, java.lang.String columnFilter, java.
             lang.String valueFilter) throws Exception {
         return new Stream(this, orderType, rowFilter, columnFilter, valueFilter);
-        /*
-        try {
-
-            switch (orderType) {
-                case 1:
-                    //results are row, col, ts
-                    break;
-                case 2:
-                    //col, row, ts
-                    break;
-                case 3:
-                    //row and ts
-                    break;
-                case 4:
-                    //col, ts
-                    break;
-                case 5:
-                    //TS
-                    break;
-                default:
-                    throw new Exception("Invalid OrderType Passed");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    */
     }
     
 }

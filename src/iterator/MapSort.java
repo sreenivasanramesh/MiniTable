@@ -474,7 +474,6 @@ public class MapSort extends MapIterator implements GlobalConst {
      * @throws SortException   something went wrong in the lower layer.
      * @throws Exception       other exceptions
      */
-    // TODO: modify tuple to map.
     private void setup_for_merge(int mapSize, int n_R_runs)
             throws IOException,
             LowMemException,
