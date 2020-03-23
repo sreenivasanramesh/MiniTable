@@ -22,15 +22,10 @@ class Utils {
     private static final int NUM_PAGES = 100000;
 
     static void batchInsert(String dataFile, String tableName, int type) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException {
-        //String dbPath = getDBPath(tableName, type);
         String dbPath = getDBPath(tableName);
         System.out.println(dbPath);
         File f = new File(dbPath);
-        //If DB exists use it, else create a new DB with NUM_PAGES pages
-//        Integer numPages = !f.exists() ? NUM_PAGES : 0;
         Integer numPages = NUM_PAGES;
-        //SystemDefs sysdef = new SystemDefs(dbpath, numPages, NUMBUF, "LRU");
-//        new SystemDefs(dbPath, numPages, NUMBUF, "Clock");
         new SystemDefs(dbPath, numPages, NUMBUF, "Clock");
         pcounter.initialize();
 
@@ -96,7 +91,6 @@ class Utils {
                 return;
             }
             Stream mapStream = bigTable.openStream(orderType, rowFilter, colFilter, valFilter);
-
             MID mapId = null;
 
             while (true) {
@@ -120,11 +114,6 @@ class Utils {
         System.out.println("\n=======================================\n");
         
     }
-
-
-//    public static String getDBPath(String tableName, Integer type) {
-//        return "/tmp/" + tableName + "." + type + ".db";
-//    }
 
     public static String getDBPath(String tableName) {
         return "/tmp/" + tableName  + ".db";
