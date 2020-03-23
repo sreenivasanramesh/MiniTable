@@ -50,8 +50,7 @@ class Utils {
                 MID mid = bigTable.insertMap(map.getMapByteArray());
                 mapCount++;
             }
-            System.out.println("\n=======================================\n");
-            System.out.println(mapCount + " maps inserted...\n");
+            System.out.println("=======================================\n");
             System.out.println("map count: " + bigTable.getMapCnt());
             System.out.println("Distinct Rows = " + bigTable.getRowCnt());
             System.out.println("Distinct Coloumns = " + bigTable.getColumnCnt());
