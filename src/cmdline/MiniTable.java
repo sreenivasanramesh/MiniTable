@@ -37,10 +37,9 @@ public class MiniTable {
                     BIGT_STR_SIZES = setBigTConstants(dataFile);
                     Integer type = Integer.parseInt(inputStr[2]);
                     String tableName = inputStr[3];
-//                    boolean useMetadata = Boolean.parseBoolean(inputStr[4]);
                     checkDBExists(tableName);
-                    // Get the csv name for the given DB. This is used to set the headers for the Maps
-                    File file = new File("/tmp/" + tableName + "_csv_name.txt");
+                    // Set the metadata name for the given DB. This is used to set the headers for the Maps
+                    File file = new File("/tmp/" + tableName + "_metadata.txt");
                     FileWriter fileWriter = new FileWriter(file);
                     BufferedWriter bufferedWriter =
                             new BufferedWriter(fileWriter);
@@ -48,22 +47,25 @@ public class MiniTable {
                     bufferedWriter.close();
                     Utils.batchInsert(dataFile, tableName, type);
                 } else if (inputStr[0].equalsIgnoreCase("query")) {
-                    
+
                     //query BIGTABLENAME TYPE ORDERTYPE ROWFILTER COLUMNFILTER VALUEFILTER NUMBUF
                     String tableName = inputStr[1].trim();
-                    String filename = "/tmp/" + tableName + "_csv_name.txt";
-                    FileReader fileReader =
-                            new FileReader(filename);
-    
-                    // Always wrap FileReader in BufferedReader.
-                    BufferedReader bufferedReader =
-                            new BufferedReader(fileReader);
-    
-                    String csvFileName = bufferedReader.readLine();
+                    String filename = "/tmp/" + tableName + "_metadata.txt";
+
+                    FileReader fileReader;
+                    BufferedReader bufferedReader = null;
+                    try {
+                        fileReader = new FileReader(filename);
+                        bufferedReader = new BufferedReader(fileReader);
+                    }
+                    catch (FileNotFoundException e){
+                        System.out.println("Given tableName does not exist\n\n");
+                        continue;
+                    }
+                    String metadataFile = bufferedReader.readLine();
                     // Always close files.
                     bufferedReader.close();
-                    
-                    BIGT_STR_SIZES = setBigTConstants(csvFileName);
+                    BIGT_STR_SIZES = setBigTConstants(metadataFile);
                     Integer type = Integer.parseInt(inputStr[2]);
                     orderType = Integer.parseInt(inputStr[3]);
                     String rowFilter = inputStr[4].trim();
@@ -72,14 +74,16 @@ public class MiniTable {
                     Integer NUMBUF = Integer.parseInt(inputStr[7]);
                     checkDBMissing(tableName);
                     Utils.query(tableName, type, orderType, rowFilter, colFilter, valFilter, NUMBUF);
-                } else
+                } else {
                     System.out.println("Invalid input. Type exit to quit.\n\n");
+                    continue;
+                }
             } catch (Exception e) {
                 System.out.println("Invalid parameters. Try again.\n\n");
-                e.printStackTrace();
+                continue;
             }
             SystemDefs.JavabaseBM.flushAllPages();
-            
+
             final long endTime = System.currentTimeMillis();
             System.out.println("Total execution time: " + (endTime - startTime) / 1000.0);
 
@@ -131,7 +135,7 @@ public class MiniTable {
     private static void checkDBExists(String dbName) {
         String dbPath = Utils.getDBPath(dbName);
         File f = new File(dbPath);
-        if(f.exists()) {
+        if (f.exists()) {
             System.out.println("DB already exists. Exiting.");
             System.exit(0);
         }
@@ -140,7 +144,7 @@ public class MiniTable {
     private static void checkDBMissing(String dbName) {
         String dbPath = Utils.getDBPath(dbName);
         File f = new File(dbPath);
-        if(!f.exists()) {
+        if (!f.exists()) {
             System.out.println("DB does not exist. Exiting.");
             System.exit(0);
         }
