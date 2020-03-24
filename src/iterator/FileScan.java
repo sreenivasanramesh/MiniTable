@@ -1,27 +1,31 @@
 package iterator;
 
 
+import BigT.InvalidStringSizeArrayException;
+import BigT.Map;
+import bufmgr.PageNotReadException;
+import cmdline.MiniTable;
+import global.AttrType;
+import global.MID;
 import heap.*;
-import global.*;
-import bufmgr.*;
-import diskmgr.*;
 
-
-import java.lang.*;
-import java.io.*;
+import java.io.IOException;
 
 /**
  * open a heapfile and according to the condition expression to get
  * output file, call get_next to get all tuples
  */
-public class FileScan extends Iterator {
+public class FileScan extends MapIterator {
     private AttrType[] _in1;
     private short in1_len;
     private short[] s_sizes;
     private Heapfile f;
-    private Scan scan;
-    private Tuple tuple1;
-    private Tuple Jtuple;
+    private MapScan scan;
+    //private Scan scan;
+    //private Tuple tuple1;
+    private Map mapObj;
+    private Map tempMap;
+    //private Tuple Jtuple;
     private int t1_size;
     private int nOutFlds;
     private CondExpr[] OutputFilter;
@@ -44,8 +48,8 @@ public class FileScan extends Iterator {
      * @throws InvalidRelation     invalid relation
      */
     public FileScan(String file_name,
-                    AttrType in1[],
-                    short s1_sizes[],
+                    AttrType[] in1,
+                    short[] s1_sizes,
                     short len_in1,
                     int n_out_flds,
                     FldSpec[] proj_list,
@@ -59,22 +63,22 @@ public class FileScan extends Iterator {
         in1_len = len_in1;
         s_sizes = s1_sizes;
 
-        Jtuple = new Tuple();
+        mapObj = new Map();
         AttrType[] Jtypes = new AttrType[n_out_flds];
         short[] ts_size;
-        ts_size = TupleUtils.setup_op_tuple(Jtuple, Jtypes, in1, len_in1, s1_sizes, proj_list, n_out_flds);
+        ts_size = MapUtils.setup_op_tuple(mapObj, Jtypes, in1, len_in1, s1_sizes, proj_list, n_out_flds);
 
         OutputFilter = outFilter;
         perm_mat = proj_list;
         nOutFlds = n_out_flds;
-        tuple1 = new Tuple();
+        tempMap = new Map();
 
         try {
-            tuple1.setHdr(in1_len, _in1, s1_sizes);
+            tempMap.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
         } catch (Exception e) {
             throw new FileScanException(e, "setHdr() failed");
         }
-        t1_size = tuple1.size();
+        t1_size = tempMap.size();
 
         try {
             f = new Heapfile(file_name);
@@ -84,7 +88,7 @@ public class FileScan extends Iterator {
         }
 
         try {
-            scan = f.openScan();
+            scan = f.openMapScan();
         } catch (Exception e) {
             throw new FileScanException(e, "openScan() failed");
         }
@@ -109,7 +113,7 @@ public class FileScan extends Iterator {
      * @throws FieldNumberOutOfBoundException array out of bounds
      * @throws WrongPermat                    exception for wrong FldSpec argument
      */
-    public Tuple get_next()
+    public Map get_next()
             throws JoinsException,
             IOException,
             InvalidTupleSizeException,
@@ -118,20 +122,19 @@ public class FileScan extends Iterator {
             PredEvalException,
             UnknowAttrType,
             FieldNumberOutOfBoundException,
-            WrongPermat {
-        RID rid = new RID();
-        ;
+            WrongPermat, InvalidMapSizeException, InvalidStringSizeArrayException {
+        MID mid = new MID();
 
         while (true) {
-            if ((tuple1 = scan.getNext(rid)) == null) {
+            if ((tempMap = scan.getNext(mid)) == null) {
                 return null;
             }
-
-            tuple1.setHdr(in1_len, _in1, s_sizes);
-            if (PredEval.Eval(OutputFilter, tuple1, null, _in1, null) == true) {
-                Projection.Project(tuple1, _in1, Jtuple, perm_mat, nOutFlds);
-                return Jtuple;
-            }
+            return tempMap;
+//            tempMap.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
+//            if (PredEval.Eval(OutputFilter, tempMap, null, _in1, null)) {
+//                Projection.Project(tempMap, _in1, mapObj, perm_mat);
+//                return mapObj;
+//            }
         }
     }
 

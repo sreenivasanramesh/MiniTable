@@ -1,11 +1,14 @@
 package iterator;
 
-import heap.*;
-import global.*;
-import diskmgr.*;
-import bufmgr.*;
+import BigT.Map;
+import global.GlobalConst;
+import global.RID;
+import heap.Heapfile;
+import heap.InvalidTupleSizeException;
+import heap.Scan;
+import heap.Tuple;
 
-import java.io.*;
+import java.io.IOException;
 
 public class SpoofIbuf implements GlobalConst {
 
@@ -22,7 +25,7 @@ public class SpoofIbuf implements GlobalConst {
      * Initialize some necessary inormation, call Iobuf to create the
      * object, and call init to finish intantiation
      *
-     * @param bufs[][] the I/O buffer
+     * @param bufs the I/O buffer
      * @param n_pages  the numbers of page of this buffer
      * @param tSize    the tuple size
      * @param fd       the reference to an Heapfile
@@ -30,7 +33,7 @@ public class SpoofIbuf implements GlobalConst {
      * @throws IOException some I/O fault
      * @throws Exception   other exceptions
      */
-    public void init(Heapfile fd, byte bufs[][], int n_pages,
+    public void init(Heapfile fd, byte[][] bufs, int n_pages,
                      int tSize, int Ntuples)
             throws IOException,
             Exception {
@@ -49,6 +52,7 @@ public class SpoofIbuf implements GlobalConst {
 
 
         n_tuples = Ntuples;
+        nMaps = Ntuples;
 
         // open a scan
         if (hf_scan != null) hf_scan = null;
@@ -109,6 +113,43 @@ public class SpoofIbuf implements GlobalConst {
         return buf;
     }
 
+    public Map Get(Map buf) throws Exception {
+        if (tot_t_proc == nMaps) done = true;
+
+        if (done) {
+            return null;
+        }
+        if (t_proc == t_in_buf) {
+            try {
+                t_in_buf = readin();
+            } catch (Exception e) {
+                throw e;
+            }
+            curr_page = 0;
+            t_rd_from_pg = 0;
+            t_proc = 0;
+        }
+
+        if (t_in_buf == 0)                        // No tuples read in?
+        {
+            done = true;
+            buf = null;
+            return null;
+        }
+
+        buf.mapSet(_bufs[curr_page], t_rd_from_pg * t_size);
+        tot_t_proc++;
+
+        // Setup for next read
+        t_rd_from_pg++;
+        t_proc++;
+        if (t_rd_from_pg == t_per_pg) {
+            t_rd_from_pg = 0;
+            curr_page++;
+        }
+        return buf;
+    }
+
 
     /**
      * @return if the buffer is empty,return true. otherwise false
@@ -148,6 +189,10 @@ public class SpoofIbuf implements GlobalConst {
         return tot_read;
     }
 
+    public void close() {
+        hf_scan.closescan();
+    }
+
 
     private byte[][] _bufs;
 
@@ -164,6 +209,7 @@ public class SpoofIbuf implements GlobalConst {
     private int t_per_pg;
     private boolean done;
     private int n_tuples;
+    private int nMaps;
 }
 
 

@@ -1,12 +1,14 @@
 package global;
 
-import bufmgr.*;
-import diskmgr.*;
-import catalog.*;
+import bufmgr.BufMgr;
+import catalog.Catalog;
+import diskmgr.bigDB;
+
+import java.io.File;
 
 public class SystemDefs {
     public static BufMgr JavabaseBM;
-    public static DB JavabaseDB;
+    public static bigDB JavabaseDB;
     public static Catalog JavabaseCatalog;
 
     public static String JavabaseDBName;
@@ -17,14 +19,12 @@ public class SystemDefs {
     public SystemDefs() {
     }
 
-    ;
-
     public SystemDefs(String dbname, int num_pgs, int bufpoolsize,
                       String replacement_policy) {
         int logsize;
 
-        String real_logname = new String(dbname);
-        String real_dbname = new String(dbname);
+        String real_logname = dbname;
+        String real_dbname = dbname;
 
         if (num_pgs == 0) {
             logsize = 500;
@@ -33,7 +33,7 @@ public class SystemDefs {
         }
 
         if (replacement_policy == null) {
-            replacement_policy = new String("Clock");
+            replacement_policy = "Clock";
         }
 
         init(real_dbname, real_logname, num_pgs, logsize,
@@ -54,7 +54,7 @@ public class SystemDefs {
 
         try {
             JavabaseBM = new BufMgr(bufpoolsize, replacement_policy);
-            JavabaseDB = new DB();
+            JavabaseDB = new bigDB();
 /*
 	JavabaseCatalog = new Catalog(); 
 */
@@ -64,11 +64,15 @@ public class SystemDefs {
             Runtime.getRuntime().exit(1);
         }
 
-        JavabaseDBName = new String(dbname);
-        JavabaseLogName = new String(logname);
-        MINIBASE_DBNAME = new String(JavabaseDBName);
+        JavabaseDBName = dbname;
+        JavabaseLogName = logname;
+        MINIBASE_DBNAME = JavabaseDBName;
 
         // create or open the DB
+        File file = new File(dbname);
+        if (file.exists()) {
+            MINIBASE_RESTART_FLAG = true;
+        }
 
         if ((MINIBASE_RESTART_FLAG) || (num_pgs == 0)) {//open an existing database
             try {

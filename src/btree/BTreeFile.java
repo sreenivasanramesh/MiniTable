@@ -7,12 +7,17 @@
 
 package btree;
 
-import java.io.*;
-
-import diskmgr.*;
-import bufmgr.*;
+import bufmgr.HashEntryNotFoundException;
+import bufmgr.InvalidFrameNumberException;
+import bufmgr.PageUnpinnedException;
+import bufmgr.ReplacerException;
+import diskmgr.Page;
 import global.*;
-import heap.*;
+import heap.HFPage;
+
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * btfile.java
@@ -168,7 +173,7 @@ public class BTreeFile extends IndexFile
         headerPageId = get_file_entry(filename);
 
         headerPage = new BTreeHeaderPage(headerPageId);
-        dbname = new String(filename);
+        dbname = filename;
         /*
          *
          * - headerPageId is the PageId of this BTreeFile's header page;
@@ -216,7 +221,7 @@ public class BTreeFile extends IndexFile
             headerPage = new BTreeHeaderPage(headerPageId);
         }
 
-        dbname = new String(filename);
+        dbname = filename;
 
     }
 
@@ -363,7 +368,6 @@ public class BTreeFile extends IndexFile
             InsertException,
             IOException {
         KeyDataEntry newRootEntry;
-
         if (BT.getKeyLength(key) > headerPage.get_maxKeySize())
             throw new KeyTooLongException(null, "");
 
@@ -511,7 +515,6 @@ public class BTreeFile extends IndexFile
                                  PageId currentPageId)
             throws PinPageException,
             IOException,
-            ConstructPageException,
             LeafDeleteException,
             ConstructPageException,
             DeleteRecException,
@@ -1099,7 +1102,6 @@ public class BTreeFile extends IndexFile
     private boolean NaiveDelete(KeyClass key, RID rid)
             throws LeafDeleteException,
             KeyNotMatchException,
-            PinPageException,
             ConstructPageException,
             IOException,
             UnpinPageException,
@@ -1165,6 +1167,8 @@ public class BTreeFile extends IndexFile
             nextpage = leafPage.getNextPage();
             unpinPage(leafPage.getCurPage());
 
+//            System.out.println("leafPage = " + leafPage);
+//            System.out.println("nextpage = " + nextpage);
             leafPage = new BTLeafPage(pinPage(nextpage), headerPage.get_keyType());
 
             entry = leafPage.getFirst(curRid);
@@ -1212,7 +1216,6 @@ public class BTreeFile extends IndexFile
             KeyNotMatchException,
             ConstructPageException,
             IOException,
-            IteratorException,
             PinPageException,
             UnpinPageException,
             IteratorException {

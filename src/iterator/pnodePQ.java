@@ -1,12 +1,10 @@
 
 package iterator;
 
-import global.*;
-import bufmgr.*;
-import diskmgr.*;
-import heap.*;
+import global.AttrType;
+import global.TupleOrder;
 
-import java.io.*;
+import java.io.IOException;
 
 /**
  * Implements a sorted binary tree.
@@ -70,7 +68,7 @@ public abstract class pnodePQ {
      * @throws TupleUtilsException error in tuple compare routines
      */
     abstract public void enq(pnode item)
-            throws IOException, UnknowAttrType, TupleUtilsException;
+            throws IOException, UnknowAttrType, TupleUtilsException, InvalidFieldNo;
 
     /**
      * removes the minimum (Ascending) or maximum (Descending) element
@@ -95,9 +93,20 @@ public abstract class pnodePQ {
      * @throws TupleUtilsException error in tuple compare routines
      */
     public int pnodeCMP(pnode a, pnode b)
-            throws IOException, UnknowAttrType, TupleUtilsException {
-        int ans = TupleUtils.CompareTupleWithTuple(fld_type, a.tuple, fld_no, b.tuple, fld_no);
-        return ans;
+            throws IOException, UnknowAttrType, TupleUtilsException, InvalidFieldNo {
+        if (b.map == null) {
+            System.out.println("b = " + b);
+        }
+        if (a.map != null ) {
+
+            return MapUtils.CompareMapsOnOrderType(a.map, b.map);
+//            int ans = MapUtils.CompareMapWithMap(a.map, b.map, fld_no);
+
+
+        } else {
+            int ans = TupleUtils.CompareTupleWithTuple(fld_type, a.tuple, fld_no, b.tuple, fld_no);
+            return ans;
+        }
     }
 
     /**
@@ -112,7 +121,7 @@ public abstract class pnodePQ {
      *                             <code>attrNull</code> encountered
      * @throws TupleUtilsException error in tuple compare routines
      */
-    public boolean pnodeEQ(pnode a, pnode b) throws IOException, UnknowAttrType, TupleUtilsException {
+    public boolean pnodeEQ(pnode a, pnode b) throws IOException, UnknowAttrType, TupleUtilsException, InvalidFieldNo {
         return pnodeCMP(a, b) == 0;
     }
 

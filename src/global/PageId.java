@@ -1,11 +1,12 @@
 package global;
 
-import java.io.*;
+import java.io.Serializable;
 
 /**
  * class PageId
  */
-public class PageId {
+public class PageId implements Serializable {
+    private static final long serialVersionUID = -1L;
 
     /**
      * public int pid
@@ -21,7 +22,7 @@ public class PageId {
     /**
      * constructor of class
      *
-     * @param    pageno    the page ID
+     * @param pageno the page ID
      */
     public PageId(int pageno) {
         pid = pageno;

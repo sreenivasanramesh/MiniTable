@@ -2,11 +2,15 @@
 
 package bufmgr;
 
-import java.io.*;
-import java.util.*;
+import diskmgr.DiskMgrException;
+import diskmgr.FileIOException;
+import diskmgr.InvalidPageNumberException;
+import diskmgr.Page;
+import global.GlobalConst;
+import global.PageId;
+import global.SystemDefs;
 
-import diskmgr.*;
-import global.*;
+import java.io.IOException;
 
 
 /**
@@ -127,7 +131,7 @@ class BufHashTbl implements GlobalConst {
      * Each slot holds a linked list of BufHTEntrys, NULL means
      * none.
      */
-    private BufHTEntry ht[] = new BufHTEntry[HTSIZE];
+    private BufHTEntry[] ht = new BufHTEntry[HTSIZE];
 
 
     /**
@@ -165,7 +169,9 @@ class BufHashTbl implements GlobalConst {
 
         ent.pageNo.pid = pageNo.pid;
         ent.frameNo = frameNo;
-
+//        System.out.println("index = " + index);
+//        System.out.println("ent.next = " + ent.next);
+//        System.out.println("ht = " + ht);
         ent.next = ht[index];    // insert this page at the top
         ht[index] = ent;
 
@@ -254,7 +260,7 @@ class BufHashTbl implements GlobalConst {
                 System.out.println("NONE\t");
             }
         }
-        System.out.println("");
+        System.out.println();
 
     }
 
@@ -284,7 +290,7 @@ class Clock extends Replacer {
      *
      * @return -1 if no frame is available.
      * head of the list otherwise.
-     * @throws BufferPoolExceededException.
+     * @throws BufferPoolExceededException
      */
     public int pick_victim()
             throws BufferPoolExceededException,
@@ -499,7 +505,7 @@ public class BufMgr implements GlobalConst {
      * if emptyPage==TRUE, then actually no read is done to bring
      * the page in.
      *
-     * @param Page_Id_in_a_DB page number in the minibase.
+     * @param pin_pgid page number in the minibase.
      * @param page            the pointer poit to the page.
      * @param emptyPage       true (empty page); false (non-empty page)
      * @throws ReplacerException           if there is a replacer error.
@@ -552,6 +558,7 @@ public class BufMgr implements GlobalConst {
 
             frmeTable[frameNo].pageNo.pid = INVALID_PAGE; // frame is empty
             frmeTable[frameNo].dirty = false;             // not dirty
+
 
             bst2 = hashTable.insert(pin_pgid, frameNo);
 
@@ -611,8 +618,8 @@ public class BufMgr implements GlobalConst {
      * put it in a group of replacement candidates.
      * if pincount=0 before this call, return error.
      *
-     * @param globalPageId_in_a_DB page number in the minibase.
-     * @param dirty                the dirty bit of the frame
+     * @param PageId_in_a_DB page number in the minibase.
+     * @param dirty          the dirty bit of the frame
      * @throws ReplacerException           if there is a replacer error.
      * @throws PageUnpinnedException       if there is a page that is already unpinned.
      * @throws InvalidFrameNumberException if there is an invalid frame number .
@@ -750,7 +757,7 @@ public class BufMgr implements GlobalConst {
 
             return;
         }
-        if (frameNo >= (int) numBuffers) {
+        if (frameNo >= numBuffers) {
             throw new InvalidBufferException(null, "BUFMGR, BAD_BUFFER");
 
         }

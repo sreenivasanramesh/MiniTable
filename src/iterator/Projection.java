@@ -1,9 +1,11 @@
 package iterator;
 
-import heap.*;
-import global.*;
+import BigT.Map;
+import global.AttrType;
+import heap.FieldNumberOutOfBoundException;
+import heap.Tuple;
 
-import java.io.*;
+import java.io.IOException;
 
 /**
  * Jtuple has the appropriate types.
@@ -27,9 +29,9 @@ public class Projection {
      * @throws FieldNumberOutOfBoundException field number exceeds limit
      * @throws IOException                    some I/O fault
      */
-    public static void Join(Tuple t1, AttrType type1[],
-                            Tuple t2, AttrType type2[],
-                            Tuple Jtuple, FldSpec perm_mat[],
+    public static void Join(Tuple t1, AttrType[] type1,
+                            Tuple t2, AttrType[] type2,
+                            Tuple Jtuple, FldSpec[] perm_mat,
                             int nOutFlds
     )
             throws UnknowAttrType,
@@ -95,8 +97,8 @@ public class Projection {
      * @throws IOException                    some I/O fault
      */
 
-    public static void Project(Tuple t1, AttrType type1[],
-                               Tuple Jtuple, FldSpec perm_mat[],
+    public static void Project(Tuple t1, AttrType[] type1,
+                               Tuple Jtuple, FldSpec[] perm_mat,
                                int nOutFlds
     )
             throws UnknowAttrType,
@@ -117,6 +119,46 @@ public class Projection {
                             break;
                         case AttrType.attrString:
                             Jtuple.setStrFld(i + 1, t1.getStrFld(perm_mat[i].offset));
+                            break;
+                        default:
+
+                            throw new UnknowAttrType("Don't know how to handle attrSymbol, attrNull");
+
+                    }
+                    break;
+
+                default:
+
+                    throw new WrongPermat("something is wrong in perm_mat");
+
+            }
+        }
+        return;
+    }
+
+
+    //overloading with maps, cause I don't want to remove the older project and break some internal feature
+    public static void Project(Map mapObj, AttrType[] type1,
+                               Map JMap, FldSpec[] perm_mat
+    )
+            throws UnknowAttrType,
+            WrongPermat,
+            FieldNumberOutOfBoundException,
+            IOException {
+
+
+        for (int i = 0; i < 4; i++) {
+            switch (perm_mat[i].relation.key) {
+                case RelSpec.outer:      // Field of outer (t1)
+                    switch (type1[perm_mat[i].offset - 1].attrType) {
+                        case AttrType.attrInteger:
+                            JMap.setTimeStamp(mapObj.getTimeStamp());
+                            break;
+                        //case AttrType.attrReal:
+                        //    JMap.setFloFld(i + 1, mapObj.getFloFld(perm_mat[i].offset));
+                        //    break;
+                        case AttrType.attrString:
+                            JMap.setStrFld(i + 1, mapObj.getStringField((short) perm_mat[i].offset));
                             break;
                         default:
 
