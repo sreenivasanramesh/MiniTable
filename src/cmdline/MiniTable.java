@@ -18,6 +18,7 @@ public class MiniTable {
 
         String input = null;
         String[] inputStr = null;
+        // shortenStrings("/home/baani/Downloads/project2_testdata.csv");
         while (true) {
             System.out.print("miniTable>  ");
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -129,6 +130,39 @@ public class MiniTable {
             ex.printStackTrace();
         }
         return new short[0];
+    }
+
+    private static void shortenStrings(String dataFileName) {
+        try (BufferedReader br = new BufferedReader(new FileReader(dataFileName))) {
+            String line;
+            FileWriter csvWriter = new FileWriter("data.csv");
+            while ((line = br.readLine()) != null) {
+                String[] fields = line.split(",");
+                OutputStream out = new ByteArrayOutputStream();
+                DataOutputStream rowStream = new DataOutputStream(out);
+                DataOutputStream columnStream = new DataOutputStream(out);
+                DataOutputStream timestampStream = new DataOutputStream(out);
+                DataOutputStream valueStream = new DataOutputStream(out);
+
+                rowStream.writeUTF(fields[0]);
+                columnStream.writeUTF(fields[1]);
+                timestampStream.writeUTF(fields[2]);
+                valueStream.writeUTF(fields[3]);
+
+                for (int i = 0; i < fields.length; i++) {
+                    if (fields[i].length() > 25) {
+                        fields[i] = fields[i].substring(0, 25);
+                    }
+                    csvWriter.append(fields[i]);
+                    csvWriter.append(",");
+                }
+                csvWriter.append("\n");
+            }
+            csvWriter.flush();
+            csvWriter.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     private static void checkDBExists(String dbName) {
