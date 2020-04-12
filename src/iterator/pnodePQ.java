@@ -1,6 +1,7 @@
 
 package iterator;
 
+import cmdline.MiniTable;
 import global.AttrType;
 import global.TupleOrder;
 
@@ -98,8 +99,12 @@ public abstract class pnodePQ {
             System.out.println("b = " + b);
         }
         if (a.map != null ) {
+            if (MiniTable.mapInsertOrder) {
+                return MapUtils.CompareMapsOnOrderType(a.map, b.map);
+            } else {
+                return MapUtils.CompareMapsOnInsertType(a.map, b.map);
+            }
 
-            return MapUtils.CompareMapsOnOrderType(a.map, b.map);
 //            int ans = MapUtils.CompareMapWithMap(a.map, b.map, fld_no);
 
 

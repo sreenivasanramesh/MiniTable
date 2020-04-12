@@ -32,7 +32,7 @@ class Utils {
         FileInputStream fileStream = null;
         BufferedReader br = null;
         try {
-            bigT bigTable = new bigT(tableName, type);
+            bigT bigTable = new bigT(tableName, true);
             fileStream = new FileInputStream(dataFile);
             br = new BufferedReader(new InputStreamReader(fileStream));
             String inputStr;
@@ -43,11 +43,20 @@ class Utils {
                 //set the map
                 Map map = new Map();
                 map.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
+                if (input[0].length() > 25) {
+                    input[0] = input[0].substring(0, 25);
+                }
+                if (input[1].length() > 25) {
+                    input[1] = input[1].substring(0, 25);
+                }
+                if (input[3].length() > 25) {
+                    input[3] = input[3].substring(0, 25);
+                }
                 map.setRowLabel(input[0]);
                 map.setColumnLabel(input[1]);
                 map.setTimeStamp(Integer.parseInt(input[2]));
                 map.setValue(input[3]);
-                MID mid = bigTable.insertMap(map.getMapByteArray());
+                bigTable.insertMap(map.getMapByteArray(), 0);
                 mapCount++;
             }
             System.out.println("=======================================\n");
@@ -83,12 +92,7 @@ class Utils {
 
         try {
 
-            bigT bigTable = new bigT(tableName);
-            if (!type.equals(bigTable.getType())) {
-                System.out.println("Type Mismatch");
-                bigTable.close();
-                return;
-            }
+            bigT bigTable = new bigT(tableName, false);
             Stream mapStream = bigTable.openStream(orderType, rowFilter, colFilter, valFilter);
             MID mapId = null;
 
@@ -105,17 +109,17 @@ class Utils {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    
+
         System.out.println("\n=======================================\n");
         System.out.println("Matched Records: " + resultCount);
         System.out.println("Reads : " + pcounter.rcounter);
         System.out.println("Writes: " + pcounter.wcounter);
         System.out.println("\n=======================================\n");
-        
+
     }
 
     public static String getDBPath(String tableName) {
-        return "/tmp/" + tableName  + ".db";
+        return "/tmp/" + tableName + ".db";
     }
 
 

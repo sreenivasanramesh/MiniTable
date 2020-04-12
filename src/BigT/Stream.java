@@ -315,7 +315,7 @@ public class Stream {
                 throw new IllegalStateException("Unexpected value: " + orderType);
         }
         try {
-            this.sortObj = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, sortField, new TupleOrder(TupleOrder.Ascending), num_pages, sortFieldLength);
+            this.sortObj = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, sortField, new TupleOrder(TupleOrder.Ascending), num_pages, sortFieldLength, false);
         } catch (Exception e) {
             e.printStackTrace();
         }

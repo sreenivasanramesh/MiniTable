@@ -13,6 +13,8 @@ public class MiniTable {
             (short) 25,  //colValue
             (short) 25}; //keyValue;
     public static int orderType = 1;
+    public static boolean mapInsertOrder = false;
+    public static int insertType = 0;
 
     public static void main(String[] args) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException {
 
@@ -33,6 +35,9 @@ public class MiniTable {
                 else if (inputStr[0].equalsIgnoreCase("batchinsert")) {
                     //batchinsert DATAFILENAME TYPE BIGTABLENAME
                     String dataFile = inputStr[1];
+                    /*
+                    Setting constant size strings of 25 bytes
+                    */
                     BIGT_STR_SIZES = setBigTConstants(dataFile);
                     Integer type = Integer.parseInt(inputStr[2]);
                     String tableName = inputStr[3];
