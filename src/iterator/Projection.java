@@ -29,9 +29,9 @@ public class Projection {
      * @throws FieldNumberOutOfBoundException field number exceeds limit
      * @throws IOException                    some I/O fault
      */
-    public static void Join(Tuple t1, AttrType[] type1,
-                            Tuple t2, AttrType[] type2,
-                            Tuple Jtuple, FldSpec[] perm_mat,
+    public static void Join(Map t1, AttrType[] type1,
+                            Map t2, AttrType[] type2,
+                            Map Jtuple, FldSpec[] perm_mat,
                             int nOutFlds
     )
             throws UnknowAttrType,
@@ -44,6 +44,7 @@ public class Projection {
                 case RelSpec.outer:        // Field of outer (t1)
                     switch (type1[perm_mat[i].offset - 1].attrType) {
                         case AttrType.attrInteger:
+                            // TODO: need getIntFld, getFloFld and getStrFld in Map.java
                             Jtuple.setIntFld(i + 1, t1.getIntFld(perm_mat[i].offset));
                             break;
                         case AttrType.attrReal:
@@ -97,8 +98,8 @@ public class Projection {
      * @throws IOException                    some I/O fault
      */
 
-    public static void Project(Tuple t1, AttrType[] type1,
-                               Tuple Jtuple, FldSpec[] perm_mat,
+    public static void Project(Map t1, AttrType[] type1,
+                               Map Jtuple, FldSpec[] perm_mat,
                                int nOutFlds
     )
             throws UnknowAttrType,
