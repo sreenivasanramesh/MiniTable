@@ -55,7 +55,8 @@ public class Stream {
         this.rowFilter = rowFilter;
         this.columnFilter = columnFilter;
         this.valueFilter = valueFilter;
-        this.type = bigTable.type;
+//        this.type = bigTable.type;
+        this.type = 1;
         this.orderType = orderType;
         this.starFilter = "*";
         this.lastChar = "Z";
@@ -218,7 +219,7 @@ public class Stream {
         }
 
         if (!this.scanAll) {
-            this.btreeScanner = bigtable.indexFile.new_scan(start, end);
+            this.btreeScanner = bigtable.indexFiles[1].new_scan(start, end);
         }
 
 
@@ -242,7 +243,8 @@ public class Stream {
         MID midObj = new MID();
         if (this.scanAll) {
             //scanning whole bigt file.
-            mapScan = bigtable.heapfile.openMapScan();
+//            mapScan = bigtable.heapfile.openMapScan();
+            mapScan = bigtable.heapfiles[1].openMapScan();
 
             //mapObj.setHeader();
             Map mapObj = null;
@@ -270,7 +272,7 @@ public class Stream {
                 RID rid = ((LeafData) entry.data).getData();
                 if (rid != null) {
                     MID midFromRid = new MID(rid.pageNo, rid.slotNo);
-                    Map mapObj = bigtable.heapfile.getMap(midFromRid);
+                    Map mapObj = bigtable.heapfiles[1].getMap(midFromRid);
                     if (genericMatcher(mapObj, "row", rowFilter) && genericMatcher(mapObj, "column", columnFilter) && genericMatcher(mapObj, "value", valueFilter)) {
                         tempHeapFile.insertMap(mapObj.getMapByteArray());
                     }

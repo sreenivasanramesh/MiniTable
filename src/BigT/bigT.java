@@ -99,6 +99,7 @@ public class bigT {
 
 
     public void insertMap(byte[] mapPtr, int type) throws Exception {
+        type -= 1;
         boolean inserted = false;
         MID oldestMID = null;
         int oldestType = -1;
@@ -147,6 +148,7 @@ public class bigT {
             tempHeapFile.insertMap(map1.getMapByteArray());
             map1 = mapScan.getNext(mid);
         }
+        mapScan.closescan();
         FileScan fscan = null;
         FldSpec[] projection = new FldSpec[4];
         RelSpec rel = new RelSpec(RelSpec.outer);
@@ -219,6 +221,9 @@ public class bigT {
                 this.indexFiles[type].insert(stringKey, MapUtils.ridFromMid(mid1));
                 map2 = sortObj.get_next();
             }
+            sortObj.close();
+            tempHeapFile.deleteFile();
+            
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -243,6 +248,7 @@ public class bigT {
             addToArrayList(newMap, map, searchResults, mid, 0);
             map = mapScan.getNext(mid);
         }
+        mapScan.closescan();
         for (short i = 1; i < 5; i++) {
             StringKey stringKey;
             switch (i) {
