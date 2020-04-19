@@ -19,11 +19,8 @@ public class Projection {
      * we know that this two tuple can join in the common field
      *
      * @param t1         The Tuple will be joined with t2
-     * @param type1[]    The array used to store the each attribute type
      * @param t2         The Tuple will be joined with t1
-     * @param type2[]    The array used to store the each attribute type
      * @param Jtuple     the returned Tuple
-     * @param perm_mat[] shows what input fields go where in the output tuple
      * @param nOutFlds   number of outer relation field
      * @throws UnknowAttrType                 attrbute type does't match
      * @throws FieldNumberOutOfBoundException field number exceeds limit
@@ -88,9 +85,7 @@ public class Projection {
      * the result will be stored in Tuple Jtuple
      *
      * @param t1         The Tuple will be projected
-     * @param type1[]    The array used to store the each attribute type
      * @param Jtuple     the returned Tuple
-     * @param perm_mat[] shows what input fields go where in the output tuple
      * @param nOutFlds   number of outer relation field
      * @throws UnknowAttrType                 attrbute type doesn't match
      * @throws WrongPermat                    wrong FldSpec argument
