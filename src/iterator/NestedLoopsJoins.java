@@ -20,7 +20,7 @@ import java.io.*;
  * if (ri == sj) then add (r, s) to the result.
  */
 
-public class NestedLoopsJoins extends Iterator {
+public class NestedLoopsJoins extends MapIterator {
     private AttrType _in1[], _in2[];
     private int in1_len, in2_len;
     private MapIterator outer;
@@ -192,7 +192,6 @@ public class NestedLoopsJoins extends Iterator {
                 if (PredEval.Eval(RightFilter, inner_map, null, _in2, null)) {
                     if (PredEval.Eval(OutputFilter, outer_map, inner_map, _in1, _in2)) {
                         // Apply a projection on the outer and inner tuples.
-                        // TODO: Need to modify projection to work with maps.
                         Projection.Join(outer_map, _in1,
                                 inner_map, _in2,
                                 joined_map, perm_mat, nOutFlds);
