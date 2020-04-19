@@ -112,10 +112,7 @@ public class SortMerge extends MapIterator implements GlobalConst {
         perm_mat = proj_list;
         nOutFlds = n_out_flds;
         try {
-            ts_size = TupleUtils.setup_op_tuple(Jtuple, Jtypes,
-                    in1, len_in1, in2, len_in2,
-                    s1_sizes, s2_sizes,
-                    proj_list, n_out_flds);
+            ts_size = MapUtils.setup_op_tuple(JMap, Jtypes, in1, len_in1, s1_sizes, proj_list,n_out_flds);
         } catch (Exception e) {
             throw new TupleUtilsException(e, "Exception is caught by SortMerge.java");
         }
