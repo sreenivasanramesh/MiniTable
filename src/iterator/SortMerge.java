@@ -1,8 +1,9 @@
 package iterator;
 
+import BigT.Map;
+import cmdline.MiniTable;
 import heap.*;
 import global.*;
-import diskmgr.*;
 import bufmgr.*;
 import index.*;
 
@@ -16,10 +17,10 @@ import java.io.*;
  * sorting utility to generate runs, and then uses the iterator interface to
  * get successive tuples for the final merge.
  */
-public class SortMerge extends Iterator implements GlobalConst {
+public class SortMerge extends MapIterator implements GlobalConst {
     private AttrType _in1[], _in2[];
     private int in1_len, in2_len;
-    private Iterator p_i1,        // pointers to the two iterators. If the
+    private MapIterator p_i1,        // pointers to the two iterators. If the
             p_i2;               // inputs are sorted, then no sorting is done
     private TupleOrder _order;                      // The sorting order.
     private CondExpr OutputFilter[];
@@ -29,25 +30,25 @@ public class SortMerge extends Iterator implements GlobalConst {
     private boolean process_next_block;
     private short inner_str_sizes[];
     private IoBuf io_buf1, io_buf2;
-    private Tuple TempTuple1, TempTuple2;
-    private Tuple tuple1, tuple2;
+    private Map TempMap1, TempMap2;
+    private Map map1, map2;
     private boolean done;
     private byte _bufs1[][], _bufs2[][];
     private int _n_pages;
     private Heapfile temp_file_fd1, temp_file_fd2;
     private AttrType sortFldType;
     private int t1_size, t2_size;
-    private Tuple Jtuple;
+    private Map JMap;
     private FldSpec perm_mat[];
     private int nOutFlds;
 
     /**
      * constructor,initialization
      *
-     * @param in1[]        Array containing field types of R
+     * @param in1        Array containing field types of R
      * @param len_in1      # of columns in R
      * @param s1_sizes     shows the length of the string fields in R.
-     * @param in2[]        Array containing field types of S
+     * @param in2        Array containing field types of S
      * @param len_in2      # of columns in S
      * @param s2_sizes     shows the length of the string fields in S
      * @param sortFld1Len  the length of sorted field in R
@@ -60,7 +61,7 @@ public class SortMerge extends Iterator implements GlobalConst {
      * @param in1_sorted   is am1 sorted?
      * @param in2_sorted   is am2 sorted?
      * @param order        the order of the tuple: assending or desecnding?
-     * @param outFilter[]  Ptr to the output filter
+     * @param outFilter  Ptr to the output filter
      * @param proj_list    shows what input fields go where in the output tuple
      * @param n_out_flds   number of outer relation fileds
      * @throws JoinNewFailed       allocate failed
@@ -82,8 +83,8 @@ public class SortMerge extends Iterator implements GlobalConst {
                      int sortFld2Len,
 
                      int amt_of_mem,
-                     Iterator am1,
-                     Iterator am2,
+                     MapIterator am1,
+                     MapIterator am2,
 
                      boolean in1_sorted,
                      boolean in2_sorted,
@@ -105,7 +106,7 @@ public class SortMerge extends Iterator implements GlobalConst {
         in1_len = len_in1;
         in2_len = len_in2;
 
-        Jtuple = new Tuple();
+        JMap = new Map();
         AttrType[] Jtypes = new AttrType[n_out_flds];
         short[] ts_size = null;
         perm_mat = proj_list;
@@ -131,17 +132,15 @@ public class SortMerge extends Iterator implements GlobalConst {
 
         if (!in1_sorted) {
             try {
-                p_i1 = new Sort(in1, (short) len_in1, s1_sizes, am1, join_col_in1,
-                        order, sortFld1Len, amt_of_mem / 2);
-            } catch (Exception e) {
+                p_i1 = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, am1, join_col_in1, order, amt_of_mem / 2, sortFld1Len);
+        } catch (Exception e) {
                 throw new SortException(e, "Sort failed");
             }
         }
 
         if (!in2_sorted) {
             try {
-                p_i2 = new Sort(in2, (short) len_in2, s2_sizes, am2, join_col_in2,
-                        order, sortFld2Len, amt_of_mem / 2);
+                p_i2 = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, am2, join_col_in2, order, amt_of_mem/2, sortFld2Len);
             } catch (Exception e) {
                 throw new SortException(e, "Sort failed");
             }
@@ -159,29 +158,29 @@ public class SortMerge extends Iterator implements GlobalConst {
         io_buf2 = new IoBuf();
 
         // Allocate memory for the temporary tuples
-        TempTuple1 = new Tuple();
-        TempTuple2 = new Tuple();
-        tuple1 = new Tuple();
-        tuple2 = new Tuple();
+        TempMap1 = new Map();
+        TempMap2 = new Map();
+        map1 = new Map();
+        map2 = new Map();
 
 
         if (io_buf1 == null || io_buf2 == null ||
-                TempTuple1 == null || TempTuple2 == null ||
-                tuple1 == null || tuple2 == null)
+                TempMap1 == null || TempMap2 == null ||
+                map1 == null || map2 == null)
             throw new JoinNewFailed("SortMerge.java: allocate failed");
         if (amt_of_mem < 2)
             throw new JoinLowMemory("SortMerge.java: memory not enough");
 
         try {
-            TempTuple1.setHdr((short) in1_len, _in1, s1_sizes);
-            tuple1.setHdr((short) in1_len, _in1, s1_sizes);
-            TempTuple2.setHdr((short) in2_len, _in2, s2_sizes);
-            tuple2.setHdr((short) in2_len, _in2, s2_sizes);
+            TempMap1.setHeader( _in1, s1_sizes);
+            map1.setHeader(_in1, s1_sizes);
+            TempMap2.setHeader(_in2, s2_sizes);
+            map2.setHeader(_in2, s2_sizes);
         } catch (Exception e) {
             throw new SortException(e, "Set header failed");
         }
-        t1_size = tuple1.size();
-        t2_size = tuple2.size();
+        t1_size = map1.size();
+        t2_size = map2.size();
 
         process_next_block = true;
         done = false;
@@ -235,7 +234,7 @@ public class SortMerge extends Iterator implements GlobalConst {
      * @throws Exception                 other exceptions
      */
 
-    public Tuple get_next()
+    public Map get_next()
             throws IOException,
             JoinsException,
             IndexException,
@@ -251,19 +250,18 @@ public class SortMerge extends Iterator implements GlobalConst {
             Exception {
 
         int comp_res;
-        Tuple _tuple1, _tuple2;
+        Map _map1, _map2;
         if (done) return null;
 
         while (true) {
             if (process_next_block) {
                 process_next_block = false;
                 if (get_from_in1)
-                    if ((tuple1 = p_i1.get_next()) == null) {
+                    if ((map1 = p_i1.get_next()) == null) {
                         done = true;
-                        return null;
                     }
                 if (get_from_in2)
-                    if ((tuple2 = p_i2.get_next()) == null) {
+                    if ((map2 = p_i2.get_next()) == null) {
                         done = true;
                         return null;
                     }
@@ -272,30 +270,25 @@ public class SortMerge extends Iterator implements GlobalConst {
                 // Note that depending on whether the sort order
                 // is ascending or descending,
                 // this loop will be modified.
-                comp_res = TupleUtils.CompareTupleWithTuple(sortFldType, tuple1,
-                        jc_in1, tuple2, jc_in2);
+                comp_res = MapUtils.CompareMapWithMap(map1, map2, jc_in1);
                 while ((comp_res < 0 && _order.tupleOrder == TupleOrder.Ascending) ||
                         (comp_res > 0 && _order.tupleOrder == TupleOrder.Descending)) {
-                    if ((tuple1 = p_i1.get_next()) == null) {
+                    if ((map1 = p_i1.get_next()) == null) {
                         done = true;
                         return null;
                     }
 
-                    comp_res = TupleUtils.CompareTupleWithTuple(sortFldType, tuple1,
-                            jc_in1, tuple2, jc_in2);
+                    comp_res =  MapUtils.CompareMapWithMap(map1, map2, jc_in1);
                 }
 
-                comp_res = TupleUtils.CompareTupleWithTuple(sortFldType, tuple1,
-                        jc_in1, tuple2, jc_in2);
+                comp_res =  MapUtils.CompareMapWithMap(map1, map2, jc_in1);
                 while ((comp_res > 0 && _order.tupleOrder == TupleOrder.Ascending) ||
                         (comp_res < 0 && _order.tupleOrder == TupleOrder.Descending)) {
-                    if ((tuple2 = p_i2.get_next()) == null) {
+                    if ((map2 = p_i2.get_next()) == null) {
                         done = true;
                         return null;
                     }
-
-                    comp_res = TupleUtils.CompareTupleWithTuple(sortFldType, tuple1,
-                            jc_in1, tuple2, jc_in2);
+                    comp_res =  MapUtils.CompareMapWithMap(map1, map2, jc_in1);
                 }
 
                 if (comp_res != 0) {
@@ -303,36 +296,34 @@ public class SortMerge extends Iterator implements GlobalConst {
                     continue;
                 }
 
-                TempTuple1.tupleCopy(tuple1);
-                TempTuple2.tupleCopy(tuple2);
+                TempMap1.copyMap(map1);
+                TempMap2.copyMap(map2);
 
                 io_buf1.init(_bufs1, 1, t1_size, temp_file_fd1);
                 io_buf2.init(_bufs2, 1, t2_size, temp_file_fd2);
 
-                while (TupleUtils.CompareTupleWithTuple(sortFldType, tuple1,
-                        jc_in1, TempTuple1, jc_in1) == 0) {
+                while (MapUtils.CompareMapWithMap(map1, TempMap1, jc_in1) == 0) {
                     // Insert tuple1 into io_buf1
                     try {
-                        io_buf1.Put(tuple1);
+                        io_buf1.Put(map1);
                     } catch (Exception e) {
                         throw new JoinsException(e, "IoBuf error in sortmerge");
                     }
-                    if ((tuple1 = p_i1.get_next()) == null) {
+                    if ((map1 = p_i1.get_next()) == null) {
                         get_from_in1 = true;
                         break;
                     }
                 }
 
-                while (TupleUtils.CompareTupleWithTuple(sortFldType, tuple2,
-                        jc_in2, TempTuple2, jc_in2) == 0) {
+                while (MapUtils.CompareMapWithMap(map2,TempMap2, jc_in1)  == 0) {
                     // Insert tuple2 into io_buf2
 
                     try {
-                        io_buf2.Put(tuple2);
+                        io_buf2.Put(map2);
                     } catch (Exception e) {
                         throw new JoinsException(e, "IoBuf error in sortmerge");
                     }
-                    if ((tuple2 = p_i2.get_next()) == null) {
+                    if ((map2 = p_i2.get_next()) == null) {
                         get_from_in2 = true;
                         break;
                     }
@@ -345,24 +336,24 @@ public class SortMerge extends Iterator implements GlobalConst {
                 // Another optimization that can be made is to choose the inner and outer
                 // by checking the number of tuples in each equivalence class.
 
-                if ((_tuple1 = io_buf1.Get(TempTuple1)) == null)                // Should not occur
+                if ((_map1 = io_buf1.Get(TempMap1)) == null)                // Should not occur
                     System.out.println("Equiv. class 1 in sort-merge has no tuples");
             }
 
-            if ((_tuple2 = io_buf2.Get(TempTuple2)) == null) {
-                if ((_tuple1 = io_buf1.Get(TempTuple1)) == null) {
+            if ((_map2 = io_buf2.Get(TempMap2)) == null) {
+                if ((_map1 = io_buf1.Get(TempMap1)) == null) {
                     process_next_block = true;
                     continue;                                // Process next equivalence class
                 } else {
                     io_buf2.reread();
-                    _tuple2 = io_buf2.Get(TempTuple2);
+                    map2 = io_buf2.Get(TempMap2);
                 }
             }
-            if (PredEval.Eval(OutputFilter, TempTuple1, TempTuple2, _in1, _in2) == true) {
-                Projection.Join(TempTuple1, _in1,
-                        TempTuple2, _in2,
-                        Jtuple, perm_mat, nOutFlds);
-                return Jtuple;
+            if (PredEval.Eval(OutputFilter, TempMap1, TempMap2, _in1, _in2) == true) {
+                Projection.Join(TempMap1, _in1,
+                        TempMap2, _in2,
+                        JMap, perm_mat, nOutFlds);
+                return JMap;
             }
         }
     }
