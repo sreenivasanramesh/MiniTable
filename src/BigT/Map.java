@@ -293,6 +293,35 @@ public class Map implements GlobalConst {
 
     }
 
+    public int getIntFld(int fldNo) throws IOException, FieldNumberOutOfBoundException {
+        int val;
+        if ((fldNo > 0) && (fldNo <= fieldCount)) {
+            val = Convert.getIntValue(fieldOffset[fldNo - 1], data);
+            return val;
+        } else
+            throw new FieldNumberOutOfBoundException(null, "Map:Map_FLDNO_OUT_OF_BOUND");
+    }
+
+    public float getFloFld(int fldNo)
+            throws IOException, FieldNumberOutOfBoundException {
+        float val;
+        if ((fldNo > 0) && (fldNo <= fieldCount)) {
+            val = Convert.getFloValue(fieldOffset[fldNo - 1], data);
+            return val;
+        } else
+            throw new FieldNumberOutOfBoundException(null, "Map:Map_FLDNO_OUT_OF_BOUND");
+    }
+
+    public String getStrFld(int fldNo)
+            throws IOException, FieldNumberOutOfBoundException {
+        String val;
+        if ((fldNo > 0) && (fldNo <= fieldCount)) {
+            val = Convert.getStrValue(fieldOffset[fldNo - 1], data,
+                    fieldOffset[fldNo] - fieldOffset[fldNo - 1]); //strlen+2
+            return val;
+        } else
+            throw new FieldNumberOutOfBoundException(null, "Map:Map_FLDNO_OUT_OF_BOUND");
+    }
 //    public String getStringField(short fieldNumber) throws IOException, FieldNumberOutOfBoundException {
 //        if (fieldNumber == 3) {
 //            throw new FieldNumberOutOfBoundException(null, "MAP: INVALID_FIELD PASSED");
