@@ -18,7 +18,20 @@ import static global.GlobalConst.NUMBUF;
 
 public class BigTTest {
     
+    public void testMID(MID mid){
+        mid.setPageNo(new PageId(10));
+        mid.setSlotNo(20);
+    }
+    
     public static void main(String[] args) throws Exception {
+        MID midtest = new MID();
+        BigTTest bigTTest = new BigTTest();
+        bigTTest.testMID(midtest);
+        System.out.println("midtest = " + midtest);
+        int test = 0;
+        if (test == 0){
+            return;
+        }
 //        java.util.Map<Integer, ArrayList<Integer>> test = new HashMap<>();
 //        System.out.println(test.get(0));
         
@@ -30,7 +43,7 @@ public class BigTTest {
 //
 //        final long startTime = System.currentTimeMillis();
 //
-         boolean isNewDb = false;
+        boolean isNewDb = false;
         int numPages = isNewDb ? MINIBASE_DB_SIZE : 0;
         new SystemDefs("/tmp/ash.db", numPages, NUMBUF, "Clock");
         
@@ -40,10 +53,15 @@ public class BigTTest {
         } else {
             bigT = new bigT("test1", false);
         }
-
-        BigTTest bigTTest = new BigTTest();
+        
         Map map;
-        map = bigTTest.formMap("11", "234", 5, "3");
+        map = bigTTest.formMap("10", "23", 10, "6");
+        bigT.insertMap(map.getMapByteArray(), 2);
+        map = bigTTest.formMap("10", "23", 15, "9");
+        bigT.insertMap(map.getMapByteArray(), 2);
+        map = bigTTest.formMap("10", "23", 20, "12");
+        bigT.insertMap(map.getMapByteArray(), 2);
+        map = bigTTest.formMap("10", "23", 25, "15");
         bigT.insertMap(map.getMapByteArray(), 2);
         
 //        bigT = new bigT("test1", false);

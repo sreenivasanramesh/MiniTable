@@ -109,6 +109,10 @@ public class bigT {
         java.util.Map<Integer, ArrayList<MID>> searchResults = searchForRecords(map);
         ArrayList<MID> arrayList = new ArrayList<>();
         searchResults.values().forEach(arrayList::addAll);
+        if(arrayList.size() > 3){
+            throw new Exception("This list size cannot be greater than 3");
+        }
+        System.out.println("searchResults = " + searchResults.toString());
         if (arrayList.size() == 3) {
             for (Integer key : searchResults.keySet()) {
                 for (MID mid : searchResults.get(key)) {
@@ -128,13 +132,16 @@ public class bigT {
                     return;
                 }
             }
-            if (type != 0) {
+            if (oldestType != 0) {
                 insertMapFile(oldestType);
             }
         }
         if (!inserted) {
-            this.heapfiles[type].insertMap(mapPtr);
-            insertMapFile(type);
+            MID mid = this.heapfiles[type].insertMap(mapPtr);
+            System.out.println("Inserted mid = " + mid);
+            if (type != 0) {
+                insertMapFile(type);
+            }
         }
     }
 
@@ -244,6 +251,7 @@ public class bigT {
         MapScan mapScan = this.heapfiles[0].openMapScan();
         MID mid = new MID();
         Map map = mapScan.getNext(mid);
+        System.out.println("Searched mid = " + mid);
         while (map != null) {
             addToArrayList(newMap, map, searchResults, mid, 0);
             map = mapScan.getNext(mid);
