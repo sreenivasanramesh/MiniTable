@@ -5,17 +5,12 @@ import BigT.Stream;
 import BigT.bigT;
 import bufmgr.*;
 import diskmgr.pcounter;
-import global.AttrOperator;
-import global.AttrType;
-import global.MID;
-import global.SystemDefs;
+import global.*;
 import heap.HFBufMgrException;
 import heap.HFDiskMgrException;
 import heap.HFException;
 import heap.Heapfile;
-import iterator.CondExpr;
-import iterator.FldSpec;
-import iterator.RelSpec;
+import iterator.*;
 
 import java.io.*;
 
@@ -26,8 +21,8 @@ class Utils {
     private static final int NUM_PAGES = 100000;
 
     static void batchInsert(String dataFile, String tableName, int type) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException, HFDiskMgrException, HFBufMgrException, HFException {
-        String dbPath = getDBPath(tableName);
-        System.out.println(dbPath);
+        String dbPath = getDBPath();
+        System.out.println("DB name =>" + dbPath);
         File f = new File(dbPath);
         Integer numPages = NUM_PAGES;
         new SystemDefs(dbPath, numPages, NUMBUF, "Clock");
@@ -64,7 +59,35 @@ class Utils {
                 hf.insertMap(map.getMapByteArray());
                 mapCount++;
             }
-            
+    
+            FldSpec[] projlist = new FldSpec[4];
+            RelSpec rel = new RelSpec(RelSpec.outer);
+            projlist[0] = new FldSpec(rel, 1);
+            projlist[1] = new FldSpec(rel, 2);
+            projlist[2] = new FldSpec(rel, 3);
+            projlist[3] = new FldSpec(rel, 4);
+    
+//            FileScan fscan = null;
+//
+//            try {
+//                fscan = new FileScan(tableName + "tempfile", MiniTable.BIGT_ATTR_TYPES,
+//                        MiniTable.BIGT_STR_SIZES, (short) 4, 4, projlist, null);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//
+//            MapSort sort = null;
+//            try {
+//                sort = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, 1, new TupleOrder(TupleOrder.Ascending), 10, 25);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//            Map m = sort.get_next();
+//            while(m != null){
+//                m = sort.get_next();
+//            }
+//            System.out.println("Sorting done");
+            System.out.println("hf.getRecCnt() = " + hf.getRecCnt());
             bigTable.batchInsert(hf, type);
             System.out.println("=======================================\n");
             System.out.println("map count: " + bigTable.getMapCnt());
@@ -92,7 +115,7 @@ class Utils {
 
     static void query(String tableName, Integer type, Integer orderType, String rowFilter, String colFilter, String valFilter, Integer NUMBUF) throws Exception {
         //String dbPath = getDBPath(tableName, type);
-        String dbPath = getDBPath(tableName);
+        String dbPath = getDBPath();
         new SystemDefs(dbPath, 0, NUMBUF, "Clock");
         pcounter.initialize();
         int resultCount = 0;
@@ -125,8 +148,11 @@ class Utils {
 
     }
 
-    public static String getDBPath(String tableName) {
-        return "/tmp/" + tableName + ".db";
+    public static String getDBPath() {
+        String useId = "user.name";
+        String userAccName;
+        userAccName = System.getProperty(useId);
+        return "/tmp/" + userAccName + ".db";
     }
 
 

@@ -5,10 +5,7 @@ import global.AttrType;
 import global.MID;
 import global.PageId;
 import global.SystemDefs;
-import heap.InvalidMapSizeException;
-import heap.InvalidTupleSizeException;
-import heap.InvalidTypeException;
-import heap.MapScan;
+import heap.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,8 +20,50 @@ public class BigTTest {
         mid.setPageNo(new PageId(10));
         mid.setSlotNo(20);
     }
+    public void addArrayList(java.util.Map<Integer, ArrayList<MID>> searchResults, MID mid){
+        Integer key = 1;
+        ArrayList<MID> arrayList = searchResults.get(key) == null ? new ArrayList<>() : searchResults.get(key);
+        System.out.println(arrayList);
+        arrayList.add(mid);
+        System.out.println(arrayList);
+        searchResults.put(key, arrayList);
+    }
     
+    public void testHashMid(){
+        java.util.Map<Integer, ArrayList<MID>> searchResults = new HashMap<>();
+        Integer key = 1;
+        MID mid = new MID();
+        mid.setSlotNo(10);
+        mid.setPageNo(new PageId(20));
+        addArrayList(searchResults, mid);
+        
+        mid.setSlotNo(20);
+        mid.setPageNo(new PageId(30));
+        addArrayList(searchResults, mid);
+        
+        mid.setSlotNo(30);
+        mid.setPageNo(new PageId(40));
+        addArrayList(searchResults, mid);
+        
+        System.out.println(searchResults);
+    }
     
+    public void checkHeap() throws Exception {
+        Heapfile hf = new Heapfile("testtttt");
+        Map map = new Map();
+        map.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
+        map.setColumnLabel("2");
+        map.setRowLabel("1");
+        map.setTimeStamp(1);
+        map.setValue("45");
+        MID mid = hf.insertMap(map.getMapByteArray());
+        MID mid1 = new MID();
+        mid1.setSlotNo(mid.getSlotNo());
+        mid1.setPageNo(mid.getPageNo());
+        Map map2 = hf.getMap(mid);
+        System.out.println("Check");
+        map2.print();
+    }
     
     public void printHeapFiles(bigT bigT) throws InvalidTupleSizeException, IOException {
         Map map;
@@ -50,8 +89,18 @@ public class BigTTest {
     }
     
     public static void main(String[] args) throws Exception {
+        boolean isNewDb = true;
+        int numPages = isNewDb ? MINIBASE_DB_SIZE : 0;
+        System.out.println("numPages = " + numPages);
+        new SystemDefs("/tmp/ash_test.db", numPages, NUMBUF, "Clock");
+        
         MID midtest = new MID();
         BigTTest bigTTest = new BigTTest();
+        bigTTest.checkHeap();
+        int test = 0;
+        if (test == 0){
+            return;
+        }
         bigTTest.testMID(midtest);
         System.out.println("midtest = " + midtest);
         
@@ -68,10 +117,6 @@ public class BigTTest {
 //
 //        final long startTime = System.currentTimeMillis();
 //
-        boolean isNewDb = false;
-        int numPages = isNewDb ? MINIBASE_DB_SIZE : 0;
-        System.out.println("numPages = " + numPages);
-        new SystemDefs("/tmp/ash.db", numPages, NUMBUF, "Clock");
         
         bigT bigT;
         if (isNewDb) {

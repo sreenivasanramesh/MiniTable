@@ -64,12 +64,13 @@ public class bigT {
         type -= 1;
         MID oldestMID = null;
         int oldestType = -1;
-        int oldestTimestamp = Integer.MAX_VALUE;
+        
         MapScan mapScan = heapfile.openMapScan();
         MID mid = new MID();
         Map map = mapScan.getNext(mid);
         int count = 1;
         while (map != null) {
+            int oldestTimestamp = Integer.MAX_VALUE;
             System.out.print("\r" + count);
             count += 1;
             java.util.Map<Integer, ArrayList<MID>> searchResults = searchForRecords(map);
@@ -91,13 +92,13 @@ public class bigT {
                     }
                 }
                 if (map.getTimeStamp() < oldestTimestamp) {
-                    return;
+                    map = mapScan.getNext(mid);
+                    continue;
                 }
                 this.heapfiles[oldestType].deleteMap(oldestMID);
                 deletedTypes.add(oldestType);
             }
             this.heapfiles[type].insertMap(map.getMapByteArray());
-
             map = mapScan.getNext(mid);
         }
         deletedTypes.add(type);
@@ -252,8 +253,6 @@ public class bigT {
                     throw new Exception("Undefined value");
             }
             this.heapfiles[type] = new Heapfile(this.heapfileNames[type]);
-            System.out.println("sortField = " + sortField);
-            System.out.println("sortFieldLength = " + sortFieldLength);
             sortObj = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, sortField, new TupleOrder(TupleOrder.Ascending), num_pages, sortFieldLength, true);
             Map map2 = sortObj.get_next();
             while (map2 != null) {
@@ -289,54 +288,60 @@ public class bigT {
 
     private void addToArrayList(Map newMap, Map oldMap, java.util.Map<Integer, ArrayList<MID>> searchResults, MID mid, int key) throws IOException {
         if (MapUtils.checkSameMap(newMap, oldMap)) {
+            MID tempMid = new MID();
+            tempMid.setSlotNo(mid.getSlotNo());
+            tempMid.setPageNo(mid.getPageNo());
             ArrayList<MID> arrayList = searchResults.get(key) == null ? new ArrayList<>() : searchResults.get(key);
-            arrayList.add(mid);
+            arrayList.add(tempMid);
             searchResults.put(key, arrayList);
         }
     }
 
     private java.util.Map<Integer, ArrayList<MID>> searchForRecords(Map newMap) throws Exception {
         java.util.Map<Integer, ArrayList<MID>> searchResults = new HashMap<>();
-
-        MapScan mapScan = this.heapfiles[0].openMapScan();
-        MID mid = new MID();
-        Map map = mapScan.getNext(mid);
-
-        while (map != null) {
-            addToArrayList(newMap, map, searchResults, mid, 0);
-            map = mapScan.getNext(mid);
-        }
-        mapScan.closescan();
-        for (short i = 1; i < 5; i++) {
-            StringKey stringKey;
-            switch (i) {
-                case 1:
-                    stringKey = new StringKey(newMap.getRowLabel());
-                    break;
-                case 2:
-                    stringKey = new StringKey(newMap.getColumnLabel());
-                    break;
-                case 3:
-                    stringKey = new StringKey(newMap.getColumnLabel() + "$" + newMap.getRowLabel());
-                    break;
-                case 4:
-                    stringKey = new StringKey(newMap.getRowLabel() + "$" + newMap.getValue());
-                    break;
-                default:
-                    throw new Exception("Invalid Case");
+        
+        for(int i=0; i < 5; i++){
+            MapScan mapScan = this.heapfiles[i].openMapScan();
+            MID mid = new MID();
+            Map map = mapScan.getNext(mid);
+    
+            while (map != null) {
+                addToArrayList(newMap, map, searchResults, mid, i);
+                map = mapScan.getNext(mid);
             }
-            BTFileScan btFileScan = this.indexFiles[i].new_scan(stringKey, new StringKey(stringKey.getKey() + "a"));
-            KeyDataEntry keyDataEntry = btFileScan.get_next();
-            while (keyDataEntry != null) {
-                RID rid = ((LeafData) keyDataEntry.data).getData();
-                if (rid != null) {
-                    MID midFromRid = MapUtils.midFromRid(rid);
-                    map = this.heapfiles[i].getMap(midFromRid);
-                    addToArrayList(newMap, map, searchResults, midFromRid, i);
-                }
-                keyDataEntry = btFileScan.get_next();
-            }
+            mapScan.closescan();
         }
+        
+//        for (short i = 1; i < 5; i++) {
+//            StringKey stringKey;
+//            switch (i) {
+//                case 1:
+//                    stringKey = new StringKey(newMap.getRowLabel());
+//                    break;
+//                case 2:
+//                    stringKey = new StringKey(newMap.getColumnLabel());
+//                    break;
+//                case 3:
+//                    stringKey = new StringKey(newMap.getColumnLabel() + "$" + newMap.getRowLabel());
+//                    break;
+//                case 4:
+//                    stringKey = new StringKey(newMap.getRowLabel() + "$" + newMap.getValue());
+//                    break;
+//                default:
+//                    throw new Exception("Invalid Case");
+//            }
+//            BTFileScan btFileScan = this.indexFiles[i].new_scan(stringKey, new StringKey(stringKey.getKey() + "a"));
+//            KeyDataEntry keyDataEntry = btFileScan.get_next();
+//            while (keyDataEntry != null) {
+//                RID rid = ((LeafData) keyDataEntry.data).getData();
+//                if (rid != null) {
+//                    MID midFromRid = MapUtils.midFromRid(rid);
+//                    map = this.heapfiles[i].getMap(midFromRid);
+//                    addToArrayList(newMap, map, searchResults, midFromRid, i);
+//                }
+//                keyDataEntry = btFileScan.get_next();
+//            }
+//        }
         return searchResults;
     }
 

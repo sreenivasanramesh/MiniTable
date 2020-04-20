@@ -3,6 +3,7 @@
 package diskmgr;
 
 import global.*;
+import java.util.Arrays;
 
 /**
  * class Page
@@ -45,7 +46,11 @@ public class Page implements GlobalConst {
     public void setpage(byte[] array) {
         data = array;
     }
-
+    
+    public void emptyPage() {
+        Arrays.fill(data, (byte)0);
+    }
+    
     /**
      * protected field: An array of bytes (for the page).
      */

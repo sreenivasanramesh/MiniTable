@@ -21,7 +21,7 @@ public interface GlobalConst {
      * in Pages => the DBMS Manager tells the DB how much disk
      * space is available for the database.
      */
-    int MINIBASE_DB_SIZE = 10000;
+    int MINIBASE_DB_SIZE = 100000;
     int MINIBASE_MAX_TRANSACTIONS = 100;
     int MINIBASE_DEFAULT_SHAREDMEM_SIZE = 1000;
 

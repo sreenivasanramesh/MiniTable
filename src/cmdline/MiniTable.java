@@ -76,7 +76,6 @@ public class MiniTable {
                     String colFilter = inputStr[5].trim();
                     String valFilter = inputStr[6].trim();
                     Integer NUMBUF = Integer.parseInt(inputStr[7]);
-                    checkDBMissing(tableName);
                     Utils.query(tableName, type, orderType, rowFilter, colFilter, valFilter, NUMBUF);
                 } else {
                     System.out.println("Invalid input. Type exit to quit.\n\n");
@@ -134,23 +133,5 @@ public class MiniTable {
             ex.printStackTrace();
         }
         return new short[0];
-    }
-
-    private static void checkDBExists(String dbName) {
-        String dbPath = Utils.getDBPath(dbName);
-        File f = new File(dbPath);
-        if (f.exists()) {
-            System.out.println("DB already exists. Exiting.");
-            System.exit(0);
-        }
-    }
-
-    private static void checkDBMissing(String dbName) {
-        String dbPath = Utils.getDBPath(dbName);
-        File f = new File(dbPath);
-        if (!f.exists()) {
-            System.out.println("DB does not exist. Exiting.");
-            System.exit(0);
-        }
     }
 }
