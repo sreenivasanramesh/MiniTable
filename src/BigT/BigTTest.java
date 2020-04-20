@@ -24,6 +24,8 @@ public class BigTTest {
         mid.setSlotNo(20);
     }
     
+    
+    
     public void printHeapFiles(bigT bigT) throws InvalidTupleSizeException, IOException {
         Map map;
         System.out.println("=========================");
@@ -40,11 +42,20 @@ public class BigTTest {
         System.out.println("=========================");
     }
     
+    public void printSameLine(){
+        
+        for(int i=0; i<Integer.MAX_VALUE;i++){
+            System.out.print("\r" + i);
+        }
+    }
+    
     public static void main(String[] args) throws Exception {
         MID midtest = new MID();
         BigTTest bigTTest = new BigTTest();
         bigTTest.testMID(midtest);
         System.out.println("midtest = " + midtest);
+        
+        bigTTest.printSameLine();
        
 //        java.util.Map<Integer, ArrayList<Integer>> test = new HashMap<>();
 //        System.out.println(test.get(0));
@@ -131,7 +142,7 @@ public class BigTTest {
 //        bigT.close();
     
     }
-
+    
     private Map formMap(String row, String col, int timestamp, String value) throws IOException, InvalidMapSizeException, InvalidStringSizeArrayException, InvalidTypeException {
         Map map = new Map();
         short[] strSizes = new short[]{(short) row.getBytes().length, (short) col.getBytes().length, (short) value.getBytes().length};

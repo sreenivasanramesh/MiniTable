@@ -9,6 +9,10 @@ import global.AttrOperator;
 import global.AttrType;
 import global.MID;
 import global.SystemDefs;
+import heap.HFBufMgrException;
+import heap.HFDiskMgrException;
+import heap.HFException;
+import heap.Heapfile;
 import iterator.CondExpr;
 import iterator.FldSpec;
 import iterator.RelSpec;
@@ -21,7 +25,7 @@ class Utils {
 
     private static final int NUM_PAGES = 100000;
 
-    static void batchInsert(String dataFile, String tableName, int type) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException {
+    static void batchInsert(String dataFile, String tableName, int type) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException, HFDiskMgrException, HFBufMgrException, HFException {
         String dbPath = getDBPath(tableName);
         System.out.println(dbPath);
         File f = new File(dbPath);
@@ -31,6 +35,7 @@ class Utils {
 
         FileInputStream fileStream = null;
         BufferedReader br = null;
+        Heapfile hf = new Heapfile(tableName + "tempfile");
         try {
             bigT bigTable = new bigT(tableName, true);
             fileStream = new FileInputStream(dataFile);
@@ -56,9 +61,11 @@ class Utils {
                 map.setColumnLabel(input[1]);
                 map.setTimeStamp(Integer.parseInt(input[2]));
                 map.setValue(input[3]);
-                bigTable.insertMap(map.getMapByteArray(), 0);
+                hf.insertMap(map.getMapByteArray());
                 mapCount++;
             }
+            
+            bigTable.batchInsert(hf, type);
             System.out.println("=======================================\n");
             System.out.println("map count: " + bigTable.getMapCnt());
             System.out.println("Distinct Rows = " + bigTable.getRowCnt());

@@ -68,7 +68,10 @@ public class bigT {
         MapScan mapScan = heapfile.openMapScan();
         MID mid = new MID();
         Map map = mapScan.getNext(mid);
+        int count = 1;
         while (map != null) {
+            System.out.print("\r" + count);
+            count += 1;
             java.util.Map<Integer, ArrayList<MID>> searchResults = searchForRecords(map);
             ArrayList<MID> arrayList = new ArrayList<>();
             searchResults.values().forEach(arrayList::addAll);
@@ -190,6 +193,7 @@ public class bigT {
 
     private void insertMapFile(int type) throws HFDiskMgrException, InvalidTupleSizeException, InvalidMapSizeException, IOException, InvalidSlotNumberException, SpaceNotAvailableException, HFException, HFBufMgrException {
         MiniTable.insertType = type;
+        System.out.println("type = " + type);
         MID mid = new MID();
         MapScan mapScan = this.heapfiles[type].openMapScan();
         Heapfile tempHeapFile = new Heapfile(String.format("%s.%d.tmp.heap", this.name, type));
@@ -206,6 +210,7 @@ public class bigT {
         projection[1] = new FldSpec(rel, 2);
         projection[2] = new FldSpec(rel, 3);
         projection[3] = new FldSpec(rel, 4);
+        System.out.println("tempHeapFile.getRecCnt() = " + tempHeapFile.getRecCnt());
         try {
             fscan = new FileScan(String.format("%s.%d.tmp.heap", this.name, type), MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, (short) 4, 4, projection, null);
         } catch (Exception e) {
@@ -247,6 +252,8 @@ public class bigT {
                     throw new Exception("Undefined value");
             }
             this.heapfiles[type] = new Heapfile(this.heapfileNames[type]);
+            System.out.println("sortField = " + sortField);
+            System.out.println("sortFieldLength = " + sortFieldLength);
             sortObj = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, sortField, new TupleOrder(TupleOrder.Ascending), num_pages, sortFieldLength, true);
             Map map2 = sortObj.get_next();
             while (map2 != null) {

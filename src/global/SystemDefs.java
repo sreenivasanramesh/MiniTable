@@ -69,7 +69,13 @@ public class SystemDefs {
         MINIBASE_DBNAME = JavabaseDBName;
 
 //        // create or open the DB
-
+    
+        File file = new File(dbname);
+        if(file.exists()){
+            System.out.println("DB file exists, so just reopening");
+            MINIBASE_RESTART_FLAG = true;
+        }
+        
         if ((MINIBASE_RESTART_FLAG) || (num_pgs == 0)) {//open an existing database
             try {
                 JavabaseDB.openDB(dbname);
@@ -80,8 +86,6 @@ public class SystemDefs {
             }
         } else {
             try {
-                System.out.println("Opening New DB");
-                System.out.println("num_pgs = " + num_pgs);
                 JavabaseDB.openDB(dbname, num_pgs);
                 JavabaseBM.flushAllPages();
             } catch (Exception e) {
