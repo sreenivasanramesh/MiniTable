@@ -13,6 +13,8 @@ import iterator.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import static global.GlobalConst.MINIBASE_PAGESIZE;
 
@@ -57,8 +59,48 @@ public class bigT {
         }
     }
 
-    public void batchInsert() {
+    public void batchInsert(Heapfile heapfile, int type) throws Exception {
+        Set<Integer> deletedTypes = new HashSet<>();
+        type -= 1;
+        MID oldestMID = null;
+        int oldestType = -1;
+        int oldestTimestamp = Integer.MAX_VALUE;
+        MapScan mapScan = heapfile.openMapScan();
+        MID mid = new MID();
+        Map map = mapScan.getNext(mid);
+        while (map != null) {
+            java.util.Map<Integer, ArrayList<MID>> searchResults = searchForRecords(map);
+            ArrayList<MID> arrayList = new ArrayList<>();
+            searchResults.values().forEach(arrayList::addAll);
 
+            if (arrayList.size() > 3) {
+                throw new Exception("This list size cannot be greater than 3");
+            }
+            if (arrayList.size() == 3) {
+                for (Integer key : searchResults.keySet()) {
+                    for (MID mid1 : searchResults.get(key)) {
+                        Map map1 = this.heapfiles[key].getMap(mid1);
+                        if (map1.getTimeStamp() < oldestTimestamp) {
+                            oldestMID = mid1;
+                            oldestTimestamp = map1.getTimeStamp();
+                            oldestType = key;
+                        }
+                    }
+                }
+                if (map.getTimeStamp() < oldestTimestamp) {
+                    return;
+                }
+                this.heapfiles[oldestType].deleteMap(oldestMID);
+                deletedTypes.add(oldestType);
+            }
+            this.heapfiles[type].insertMap(map.getMapByteArray());
+
+            map = mapScan.getNext(mid);
+        }
+        deletedTypes.add(type);
+        for (int i : deletedTypes) {
+            insertMapFile(i);
+        }
     }
 
     // Return number of maps in the bigtable.
@@ -109,7 +151,7 @@ public class bigT {
         java.util.Map<Integer, ArrayList<MID>> searchResults = searchForRecords(map);
         ArrayList<MID> arrayList = new ArrayList<>();
         searchResults.values().forEach(arrayList::addAll);
-        if(arrayList.size() > 3){
+        if (arrayList.size() > 3) {
             throw new Exception("This list size cannot be greater than 3");
         }
         if (arrayList.size() == 3) {
@@ -123,7 +165,7 @@ public class bigT {
                     }
                 }
             }
-            if (map.getTimeStamp() < oldestTimestamp){
+            if (map.getTimeStamp() < oldestTimestamp) {
                 return;
             }
             this.heapfiles[oldestType].deleteMap(oldestMID);
@@ -231,7 +273,7 @@ public class bigT {
             }
             sortObj.close();
             tempHeapFile.deleteFile();
-            
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -252,7 +294,7 @@ public class bigT {
         MapScan mapScan = this.heapfiles[0].openMapScan();
         MID mid = new MID();
         Map map = mapScan.getNext(mid);
-        
+
         while (map != null) {
             addToArrayList(newMap, map, searchResults, mid, 0);
             map = mapScan.getNext(mid);
