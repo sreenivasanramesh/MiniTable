@@ -6,6 +6,7 @@ import global.MID;
 import global.PageId;
 import global.SystemDefs;
 import heap.InvalidMapSizeException;
+import heap.InvalidTupleSizeException;
 import heap.InvalidTypeException;
 import heap.MapScan;
 
@@ -23,15 +24,28 @@ public class BigTTest {
         mid.setSlotNo(20);
     }
     
+    public void printHeapFiles(bigT bigT) throws InvalidTupleSizeException, IOException {
+        Map map;
+        System.out.println("=========================");
+        for(int i=0;i<5;i++){
+            System.out.println("=====Heap file " + i);
+            MapScan mapScan = bigT.heapfiles[i].openMapScan();
+            MID mid = new MID();
+            map = mapScan.getNext(mid);
+            while(map != null){
+                map.print();
+                map = mapScan.getNext(mid);
+            }
+        }
+        System.out.println("=========================");
+    }
+    
     public static void main(String[] args) throws Exception {
         MID midtest = new MID();
         BigTTest bigTTest = new BigTTest();
         bigTTest.testMID(midtest);
         System.out.println("midtest = " + midtest);
-        int test = 0;
-        if (test == 0){
-            return;
-        }
+       
 //        java.util.Map<Integer, ArrayList<Integer>> test = new HashMap<>();
 //        System.out.println(test.get(0));
         
@@ -45,6 +59,7 @@ public class BigTTest {
 //
         boolean isNewDb = false;
         int numPages = isNewDb ? MINIBASE_DB_SIZE : 0;
+        System.out.println("numPages = " + numPages);
         new SystemDefs("/tmp/ash.db", numPages, NUMBUF, "Clock");
         
         bigT bigT;
@@ -57,21 +72,26 @@ public class BigTTest {
         Map map;
         map = bigTTest.formMap("10", "23", 10, "6");
         bigT.insertMap(map.getMapByteArray(), 2);
+//        bigTTest.printHeapFiles(bigT);
         map = bigTTest.formMap("10", "23", 15, "9");
-        bigT.insertMap(map.getMapByteArray(), 2);
+        bigT.insertMap(map.getMapByteArray(), 3);
+//        bigTTest.printHeapFiles(bigT);
         map = bigTTest.formMap("10", "23", 20, "12");
         bigT.insertMap(map.getMapByteArray(), 2);
-        map = bigTTest.formMap("10", "23", 25, "15");
+//        bigTTest.printHeapFiles(bigT);
+        map = bigTTest.formMap("10", "23", 25, "200");
+        bigT.insertMap(map.getMapByteArray(), 4);
+//        bigTTest.printHeapFiles(bigT);
+        map = bigTTest.formMap("10", "23", 27, "400");
         bigT.insertMap(map.getMapByteArray(), 2);
+//        bigTTest.printHeapFiles(bigT);
+        map = bigTTest.formMap("10", "23", 30, "60");
+        bigT.insertMap(map.getMapByteArray(), 2);
+        bigTTest.printHeapFiles(bigT);
         
 //        bigT = new bigT("test1", false);
-        MapScan mapScan = bigT.heapfiles[2].openMapScan();
-        MID mid = new MID();
-        map = mapScan.getNext(mid);
-        while(map != null){
-            map.print();
-            map = mapScan.getNext(mid);
-        }
+        
+        
     
         bigT.close();
         SystemDefs.JavabaseBM.flushAllPages();

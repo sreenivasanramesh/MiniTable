@@ -112,7 +112,6 @@ public class bigT {
         if(arrayList.size() > 3){
             throw new Exception("This list size cannot be greater than 3");
         }
-        System.out.println("searchResults = " + searchResults.toString());
         if (arrayList.size() == 3) {
             for (Integer key : searchResults.keySet()) {
                 for (MID mid : searchResults.get(key)) {
@@ -123,6 +122,9 @@ public class bigT {
                         oldestType = key;
                     }
                 }
+            }
+            if (map.getTimeStamp() < oldestTimestamp){
+                return;
             }
             this.heapfiles[oldestType].deleteMap(oldestMID);
             if (oldestType == type) {
@@ -137,8 +139,7 @@ public class bigT {
             }
         }
         if (!inserted) {
-            MID mid = this.heapfiles[type].insertMap(mapPtr);
-            System.out.println("Inserted mid = " + mid);
+            this.heapfiles[type].insertMap(mapPtr);
             if (type != 0) {
                 insertMapFile(type);
             }
@@ -251,7 +252,7 @@ public class bigT {
         MapScan mapScan = this.heapfiles[0].openMapScan();
         MID mid = new MID();
         Map map = mapScan.getNext(mid);
-        System.out.println("Searched mid = " + mid);
+        
         while (map != null) {
             addToArrayList(newMap, map, searchResults, mid, 0);
             map = mapScan.getNext(mid);
@@ -282,7 +283,7 @@ public class bigT {
                 if (rid != null) {
                     MID midFromRid = MapUtils.midFromRid(rid);
                     map = this.heapfiles[i].getMap(midFromRid);
-                    addToArrayList(newMap, map, searchResults, mid, i);
+                    addToArrayList(newMap, map, searchResults, midFromRid, i);
                 }
                 keyDataEntry = btFileScan.get_next();
             }
