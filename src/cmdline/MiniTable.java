@@ -14,7 +14,7 @@ public class MiniTable {
             (short) 25}; //keyValue;
     public static int orderType = 1;
 
-    public static void main(String[] args) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException {
+    public static void main(String[] args) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException, Exception {
 
         String input = null;
         String[] inputStr = null;
@@ -92,7 +92,7 @@ public class MiniTable {
         System.out.print("exiting...");
     }
 
-    private static short[] setBigTConstants(String dataFileName) {
+    protected static short[] setBigTConstants(String dataFileName) {
         try (BufferedReader br = new BufferedReader(new FileReader(dataFileName))) {
             String line;
             int maxRowKeyLength = Short.MIN_VALUE;
@@ -131,7 +131,7 @@ public class MiniTable {
         return new short[0];
     }
 
-    private static void checkDBExists(String dbName) {
+    protected static void checkDBExists(String dbName) {
         String dbPath = Utils.getDBPath(dbName);
         File f = new File(dbPath);
         if (f.exists()) {

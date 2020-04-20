@@ -1526,6 +1526,7 @@ public class Heapfile implements Filetype, GlobalConst {
         PageId tmpId = new PageId();
 
         try {
+            System.out.println(filename);
             tmpId = SystemDefs.JavabaseDB.get_file_entry(filename);
         } catch (Exception e) {
             throw new HFDiskMgrException(e, "Heapfile.java: get_file_entry() failed");

@@ -10,7 +10,7 @@ import index.*;
 import java.io.*;
 
 /**
- * This file contains the interface for the sort_merg joins.
+ * This file contains the interface for the sort_merge joins.
  * We name the two relations being joined as R and S.
  * This file contains an implementation of the sort merge join
  * algorithm as described in the Shapiro paper. It makes use of the external

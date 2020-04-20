@@ -557,6 +557,7 @@ public class bigDB implements GlobalConst {
             FileIOException,
             InvalidPageNumberException,
             DiskMgrException {
+        System.out.println(name);
 
         Page apage = new Page();
         boolean found = false;

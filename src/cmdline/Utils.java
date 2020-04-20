@@ -17,11 +17,11 @@ import java.io.*;
 
 import static global.GlobalConst.NUMBUF;
 
-class Utils {
+public class Utils {
 
-    private static final int NUM_PAGES = 100000;
+    public static final int NUM_PAGES = 100000;
 
-    static void batchInsert(String dataFile, String tableName, int type) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException {
+    public static void batchInsert(String dataFile, String tableName, int type) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException {
         String dbPath = getDBPath(tableName);
         System.out.println(dbPath);
         File f = new File(dbPath);
@@ -74,7 +74,7 @@ class Utils {
     }
 
 
-    static void query(String tableName, Integer type, Integer orderType, String rowFilter, String colFilter, String valFilter, Integer NUMBUF) throws Exception {
+    public static void query(String tableName, Integer type, Integer orderType, String rowFilter, String colFilter, String valFilter, Integer NUMBUF) throws Exception {
         //String dbPath = getDBPath(tableName, type);
         String dbPath = getDBPath(tableName);
         new SystemDefs(dbPath, 0, NUMBUF, "Clock");
@@ -115,7 +115,7 @@ class Utils {
     }
 
     public static String getDBPath(String tableName) {
-        return "/tmp/" + tableName  + ".db";
+        return "/tmp/" + "ganesh" + ".db";
     }
 
 

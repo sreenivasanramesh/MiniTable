@@ -7,9 +7,6 @@ import global.TupleOrder;
 import heap.Heapfile;
 import iterator.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class rowJoin {
     private String columnName;
     private int NUM_BUF;
@@ -22,26 +19,37 @@ public class rowJoin {
     private TupleOrder sortOrder = new TupleOrder(TupleOrder.Ascending);
     private SortMerge sm = null;
     private FileScan leftIterator, rightIterator;
+    private String outBigTName;
 
-    public rowJoin(int amt_of_mem, Stream leftStream, String RightBigTName, String ColumnName)  throws Exception {
+
+    public rowJoin(int amt_of_mem, Stream leftStream, String RightBigTName, String ColumnName, String outBigTName)  throws Exception {
         this.columnName = ColumnName;
         this.NUM_BUF = amt_of_mem;
         this.rightBigT = new bigT(RightBigTName);
         this.leftStream = leftStream;
+        // Left stream should be filtered on column
         this.rightStream = this.rightBigT.openStream(1, "*", this.columnName, "*");
         this.leftHeapFile = new Heapfile(LEFT_HEAP);
         this.rightHeapFile = new Heapfile(RIGHT_HEAP);
+        this.outBigTName = outBigTName;
+
+        storeLeftColMatch();
+        storeRightColMatch();
+        SortMergeJoin();
+        StoreJoinResult();
+        cleanUp();
+        //return new Stream(new bigT(this.outBigTName), 1, "*", "*", "*");
     }
 
 
     public void storeLeftColMatch() throws Exception {
-        Map matchingMap = new Map();
         Map tempMap = this.leftStream.getNext();
         while (tempMap!= null) {
-            if(tempMap.getColumnLabel().equals(this.columnName)) {
-                matchingMap = tempMap;
-                this.leftHeapFile.insertMap(matchingMap.getMapByteArray());
-            }
+//            if(tempMap.getColumnLabel().equals(this.columnName)) {
+//                matchingMap = tempMap;
+//                this.leftHeapFile.insertMap(matchingMap.getMapByteArray());
+//            }
+            this.leftHeapFile.insertMap(tempMap.getMapByteArray());
             tempMap = this.leftStream.getNext();
         }
         leftStream.closeStream();
@@ -52,6 +60,7 @@ public class rowJoin {
         Map tempMap = this.rightStream.getNext();
         while (tempMap!= null) {
             this.rightHeapFile.insertMap(tempMap.getMapByteArray());
+            tempMap = this.rightStream.getNext();
         }
         rightStream.closeStream();
         // Now we have two heapfiles with same column names
@@ -81,11 +90,6 @@ public class rowJoin {
         try {
             this.leftIterator = new FileScan(LEFT_HEAP, MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, (short) 4, 4, projection, null);
             this.rightIterator = new FileScan(RIGHT_HEAP, MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, (short) 4, 4, projection, null);
-        } catch (Exception e) {
-            System.err.println(e);
-        }
-
-        try {
             this.sm = new SortMerge(MiniTable.BIGT_ATTR_TYPES, 4, MiniTable.BIGT_STR_SIZES, MiniTable.BIGT_ATTR_TYPES,
                     4, MiniTable.BIGT_STR_SIZES, 4, 4, 4,4,this.NUM_BUF,
                     this.leftIterator, this.rightIterator, false, false, sortOrder, outFilter,
@@ -107,7 +111,7 @@ public class rowJoin {
         // TODO: set self bigTName
         String bigTName = "dummy";
         String JOIN_BT_NAME = leftRowLabel + rightRowLabel;
-        resultantBigT = new bigT(JOIN_BT_NAME);
+        resultantBigT = new bigT(this.outBigTName);
         Stream tempStream = new bigT(bigTName).openStream(0, leftRowLabel, "*", "*");
         Map tempMap = tempStream.getNext();
         while (tempMap != null) {
