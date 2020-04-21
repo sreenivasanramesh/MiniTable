@@ -21,17 +21,16 @@ public class RowSort {
         this.outTable = outTable;
         this.column = column;
         this.numBuffers = numBuffers;
-
         this.bigTable = new bigT(this.outTable, true);
         this.heapfile = new Heapfile("temp_sort_file");
-        tempHeapFile();
-        Map map = sortTempHeapFile();
-        this.mapStream = this.bigTable.openStream(9999, map.getRowLabel(), "*", "*");
+
+        insertTempHeapFile();
+        createMapStream();
 
     }
 
 
-    private void tempHeapFile() throws Exception {
+    private void insertTempHeapFile() throws Exception {
 
         Stream mapStream = this.bigTable.openStream(1, "*", "*", "*");
         Map map = mapStream.getNext();
@@ -62,7 +61,6 @@ public class RowSort {
 
         mapStream.closeStream();
 
-
         Map tempMap = new Map();
         tempMap.setRowLabel(row);
         tempMap.setColumnLabel("temp_column");
@@ -71,7 +69,7 @@ public class RowSort {
         this.heapfile.insertMap(tempMap.getMapByteArray());
     }
 
-    private Map sortTempHeapFile() throws Exception {
+    private void createMapStream() throws Exception {
         FldSpec[] projection = new FldSpec[4];
         RelSpec rel = new RelSpec(RelSpec.outer);
         projection[0] = new FldSpec(rel, 1);
@@ -86,7 +84,6 @@ public class RowSort {
             e.printStackTrace();
         }
 
-
         try {
             int num_pages = 10;
             this.sortObj = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, 4, new TupleOrder(TupleOrder.Ascending), num_pages, MiniTable.BIGT_STR_SIZES[1], false);
@@ -95,7 +92,7 @@ public class RowSort {
         }
 
         Map map = sortObj.get_next();
-        return map;
+        this.mapStream = this.bigTable.openStream(9999, map.getRowLabel(), "*", "*");
 
     }
 
@@ -113,6 +110,11 @@ public class RowSort {
         }
 
         return map;
+    }
+
+    public void closeStream() throws Exception{
+        this.sortObj.close();
+        heapfile.deleteFile();
     }
 
 
