@@ -12,9 +12,11 @@ public class RowSort {
     private bigT bigTable;
     private Heapfile heapfile;
     private MapSort sortObj;
+    private int numBuffers;
 
-    public RowSort(String column, String outTable) throws Exception {
+    public RowSort(String column, String outTable, int numBuffers) throws Exception {
         this.column = column;
+        this.numBuffers = numBuffers;
         this.bigTable = new bigT(outTable, true);
         this.heapfile = new Heapfile("temp_sort_file");
         insertTempHeapFile();
@@ -77,8 +79,7 @@ public class RowSort {
         }
 
         try {
-            int num_pages = 10;
-            this.sortObj = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, 4, new TupleOrder(TupleOrder.Ascending), num_pages, MiniTable.BIGT_STR_SIZES[1], false);
+            this.sortObj = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, 4, new TupleOrder(TupleOrder.Ascending), this.numBuffers, MiniTable.BIGT_STR_SIZES[1], false);
         } catch (Exception e) {
             e.printStackTrace();
         }
