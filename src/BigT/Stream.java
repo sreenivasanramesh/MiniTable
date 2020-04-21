@@ -413,6 +413,7 @@ public class Stream {
         if (btreeScanner != null) {
             btreeScanner.DestroyBTreeFileScan();
         }
+        tempHeapFile.deleteFile();
     }
 
     /**
@@ -434,7 +435,6 @@ public class Stream {
             closeStream();
         }
         if (m == null) {
-            tempHeapFile.deleteFile();
             closeStream();
             return null;
         }
