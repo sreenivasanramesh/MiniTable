@@ -6,10 +6,7 @@ import BigT.bigT;
 import bufmgr.*;
 import diskmgr.pcounter;
 import global.*;
-import heap.HFBufMgrException;
-import heap.HFDiskMgrException;
-import heap.HFException;
-import heap.Heapfile;
+import heap.*;
 import iterator.*;
 
 import java.io.*;
@@ -27,6 +24,7 @@ class Utils {
         Integer numPages = NUM_PAGES;
         new SystemDefs(dbPath, numPages, NUMBUF, "Clock");
         pcounter.initialize();
+        String UTF8_BOM = "\uFEFF";
 
         FileInputStream fileStream = null;
         BufferedReader br = null;
@@ -43,8 +41,12 @@ class Utils {
                 //set the map
                 Map map = new Map();
                 map.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
+                
                 if (input[0].length() > 25) {
                     input[0] = input[0].substring(0, 25);
+                }
+                if(input[0].startsWith(UTF8_BOM)){
+                    input[0] = input[0].substring(1).trim();
                 }
                 if (input[1].length() > 25) {
                     input[1] = input[1].substring(0, 25);
@@ -67,28 +69,48 @@ class Utils {
             projlist[2] = new FldSpec(rel, 3);
             projlist[3] = new FldSpec(rel, 4);
     
-//            FileScan fscan = null;
-//
-//            try {
-//                fscan = new FileScan(tableName + "tempfile", MiniTable.BIGT_ATTR_TYPES,
-//                        MiniTable.BIGT_STR_SIZES, (short) 4, 4, projlist, null);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//
-//            MapSort sort = null;
-//            try {
-//                sort = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, 1, new TupleOrder(TupleOrder.Ascending), 10, 25);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//            Map m = sort.get_next();
-//            while(m != null){
-//                m = sort.get_next();
-//            }
-//            System.out.println("Sorting done");
+            FileScan fscan = null;
+
+            try {
+                fscan = new FileScan(tableName + "tempfile", MiniTable.BIGT_ATTR_TYPES,
+                        MiniTable.BIGT_STR_SIZES, (short) 4, 4, projlist, null);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            MapSort sort = null;
+            try {
+                sort = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, 1, new TupleOrder(TupleOrder.Ascending), 10, 25, true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            Map m = sort.get_next();
+            while(m != null){
+//                m.print();
+                m = sort.get_next();
+            }
+    
+            
+            
+            System.out.println("Sorting done");
             System.out.println("hf.getRecCnt() = " + hf.getRecCnt());
             bigTable.batchInsert(hf, type);
+    
+    
+            System.out.println("Final Records =>");
+            for(int i=0;i<5;i++){
+                System.out.println("===========================");
+                System.out.println("Heapfile " + i);
+                System.out.println("===========================");
+                MapScan mapScan = bigTable.heapfiles[i].openMapScan();
+                MID mid = new MID();
+                Map map = mapScan.getNext(mid);
+                while(map != null){
+                    map.print();
+                    map = mapScan.getNext(mid);
+                }
+            }
+            
             System.out.println("=======================================\n");
             System.out.println("map count: " + bigTable.getMapCnt());
             System.out.println("Distinct Rows = " + bigTable.getRowCnt());
@@ -98,6 +120,7 @@ class Utils {
             System.out.println("Writes: " + pcounter.wcounter);
             System.out.println("NumBUFS: " + NUMBUF);
             System.out.println("\n=======================================\n");
+            hf.deleteFile();
             bigTable.close();
 
 
