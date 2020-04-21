@@ -7,23 +7,16 @@ import iterator.*;
 
 public class RowSort {
 
-    private String inTable;
-    private String outTable;
     private String column;
-    private int numBuffers;
     private Stream mapStream;
     private bigT bigTable;
     private Heapfile heapfile;
     private MapSort sortObj;
 
-    public RowSort(String inTable, String outTable, String column, int numBuffers) throws Exception {
-        this.inTable = inTable;
-        this.outTable = outTable;
+    public RowSort(String column, String outTable) throws Exception {
         this.column = column;
-        this.numBuffers = numBuffers;
-        this.bigTable = new bigT(this.outTable, true);
+        this.bigTable = new bigT(outTable, true);
         this.heapfile = new Heapfile("temp_sort_file");
-
         insertTempHeapFile();
         createMapStream();
 
@@ -32,9 +25,8 @@ public class RowSort {
 
     private void insertTempHeapFile() throws Exception {
 
-        Stream mapStream = this.bigTable.openStream(1, "*", "*", "*");
-        Map map = mapStream.getNext();
-
+        Stream tempStream = this.bigTable.openStream(1, "*", "*", "*");
+        Map map = tempStream.getNext();
         String value = "";
         String row = "";
 
@@ -56,10 +48,10 @@ public class RowSort {
             if(map.getColumnLabel().equals(this.column)){
                 value = map.getValue();
             }
-            map = mapStream.getNext();
+            map = tempStream.getNext();
         }
 
-        mapStream.closeStream();
+        tempStream.closeStream();
 
         Map tempMap = new Map();
         tempMap.setRowLabel(row);
