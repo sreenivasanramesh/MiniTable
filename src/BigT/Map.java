@@ -80,6 +80,7 @@ public class Map implements GlobalConst {
         this.fieldCount = 4;
     }
 
+
     public byte[] getData() {
         return data;
     }
