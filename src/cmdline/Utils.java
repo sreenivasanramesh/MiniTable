@@ -77,21 +77,29 @@ class Utils {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
+    
             MapSort sort = null;
             try {
-                sort = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, 1, new TupleOrder(TupleOrder.Ascending), 10, 25, true);
+                MiniTable.orderType = 1;
+                sort = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, 1, new TupleOrder(TupleOrder.Ascending), 10, 25, false);
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            Heapfile duplicateRemoved = new Heapfile(tableName + "_duplicate_removed");
             Map m = sort.get_next();
-            while(m != null){
-//                m.print();
-                m = sort.get_next();
+            // TODO: Add duplicate elimination logic
+            String oldRowLabel;
+            String oldColumnLabel;
+            if (m != null) {
+                oldRowLabel = m.getRowLabel();
+                oldColumnLabel = m.getColumnLabel();
             }
     
-            
-            
+            while (m != null) {
+//                m.print();
+                m = sort.get_next();
+        
+            }
             System.out.println("Sorting done");
             System.out.println("hf.getRecCnt() = " + hf.getRecCnt());
             bigTable.batchInsert(hf, type);
@@ -121,6 +129,7 @@ class Utils {
             System.out.println("NumBUFS: " + NUMBUF);
             System.out.println("\n=======================================\n");
             hf.deleteFile();
+            sort.close();
             bigTable.close();
 
 
@@ -134,17 +143,17 @@ class Utils {
         SystemDefs.JavabaseBM.flushAllPages();
         SystemDefs.JavabaseDB.closeDB();
     }
-
-
-    static void query(String tableName, Integer type, Integer orderType, String rowFilter, String colFilter, String valFilter, Integer NUMBUF) throws Exception {
+    
+    
+    static void query(String tableName, Integer orderType, String rowFilter, String colFilter, String valFilter, Integer NUMBUF) throws Exception {
         //String dbPath = getDBPath(tableName, type);
         String dbPath = getDBPath();
         new SystemDefs(dbPath, 0, NUMBUF, "Clock");
         pcounter.initialize();
         int resultCount = 0;
-
+        
         try {
-
+            
             bigT bigTable = new bigT(tableName, false);
             Stream mapStream = bigTable.openStream(orderType, rowFilter, colFilter, valFilter);
             MID mapId = null;

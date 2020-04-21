@@ -1,11 +1,12 @@
 package BigT;
 
-import btree.*;
+import btree.BTreeFile;
+import btree.DeleteFashion;
+import btree.StringKey;
 import bufmgr.*;
 import cmdline.MiniTable;
 import global.AttrType;
 import global.MID;
-import global.RID;
 import global.TupleOrder;
 import heap.*;
 import iterator.*;
@@ -119,7 +120,9 @@ public class bigT {
         }
         deletedTypes.add(type);
         for (int i : deletedTypes) {
-            insertMapFile(i);
+            if (i != 0) {
+                insertMapFile(i);
+            }
         }
     }
 
