@@ -41,7 +41,7 @@ public class joinTest extends MiniTable {
     
     public static void rowJoin(Integer type) throws Exception {
         rowJoin rj;
-        String colName = "Anatidae";
+        String colName = "Zebra";
         new SystemDefs(Utils.getDBPath(Utils.getDBPath("ganesh")), Utils.NUM_PAGES, NUMBUF, "Clock");
 
 //        rj = new rowJoin(10, new Stream(new bigT("ganesh1"), type, "*", colName, "*"), "ganesh2", colName, "res_ganesh");
@@ -57,17 +57,20 @@ public class joinTest extends MiniTable {
         
         // batch insert 1
         Integer type = Integer.parseInt("1");
-        String dataFile = "/Users/sumukhashwinkamath/Downloads/test/as1.csv";
-        String tableName = "ganesh1";
-        batchInsert(dataFile, tableName, type);
-        getCount(tableName);
-    
-        // batch insert 2
-        dataFile = "/Users/sumukhashwinkamath/Downloads/test/as1.csv";
-        tableName = "ganesh2";
-        batchInsert(dataFile, tableName, type);
-        getCount(tableName);
-        
+
+//        String dataFile = "/Users/sumukhashwinkamath/Downloads/test/as1.csv";
+          String dataFile = "/home/ganesh/Documents/Documents/DBMSI/phase3/as1.csv";
+//        String tableName = "ganesh1";
+//        batchInsert(dataFile, tableName, type);
+//        getCount(tableName);
+//
+//        // batch insert 2
+          dataFile = "/Users/sumukhashwinkamath/Downloads/test/as1.csv";
+//        dataFile = "/home/ganesh/Documents/Documents/DBMSI/phase3/as1.csv";
+//        tableName = "ganesh2";
+//        batchInsert(dataFile, tableName, type);
+//        getCount(tableName);
+
         rowJoin(type);
         
     }

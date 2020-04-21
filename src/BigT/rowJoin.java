@@ -7,6 +7,10 @@ import global.TupleOrder;
 import heap.Heapfile;
 import iterator.*;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 public class rowJoin {
     private String columnName;
     private int NUM_BUF;
@@ -44,32 +48,39 @@ public class rowJoin {
 
     public void storeLeftColMatch() throws Exception {
         Map tempMap = this.leftStream.getNext();
+        Map newMap = tempMap;
+        String tempRow = tempMap.getRowLabel();
         System.out.println("Left Stream results => ");
         while (tempMap!= null) {
-            tempMap.print();
-//            if(tempMap.getColumnLabel().equals(this.columnName)) {
-//                matchingMap = tempMap;
-//                this.leftHeapFile.insertMap(matchingMap.getMapByteArray());
-//            }
-            this.leftHeapFile.insertMap(tempMap.getMapByteArray());
+            if (!tempMap.getRowLabel().equals(tempRow)) {
+                this.leftHeapFile.insertMap(newMap.getMapByteArray());
+            }
+            tempRow = tempMap.getRowLabel();
+            newMap = tempMap;
             tempMap = this.leftStream.getNext();
         }
+        this.leftHeapFile.insertMap(newMap.getMapByteArray());
         System.out.println("left count = " + this.leftHeapFile.getRecCnt());
         leftStream.closeStream();
-        // Now we have all maps with that matches the column label
     }
+
 
     public void storeRightColMatch() throws Exception {
         Map tempMap = this.rightStream.getNext();
+        Map newMap = tempMap;
+        String tempRow = tempMap.getRowLabel();
         System.out.println("Right Stream results => ");
         while (tempMap!= null) {
-            tempMap.print();
-            this.rightHeapFile.insertMap(tempMap.getMapByteArray());
+            if (!tempMap.getRowLabel().equals(tempRow)) {
+                this.rightHeapFile.insertMap(tempMap.getMapByteArray());
+            }
+            tempRow = tempMap.getRowLabel();
+            newMap = tempMap;
             tempMap = this.rightStream.getNext();
         }
+        this.rightHeapFile.insertMap(newMap.getMapByteArray());
         System.out.println("right count = " + this.rightHeapFile.getRecCnt());
         rightStream.closeStream();
-        // Now we have two heapfiles with same column names
     }
 
     public void SortMergeJoin() throws Exception {
@@ -110,14 +121,42 @@ public class rowJoin {
         System.out.println("Store Join Results = " + tempMap);
         while (tempMap != null) {
             tempMap.print();
-//            storeToBigT(tempMap.getRowLabel(), tempMap.getColumnLabel());
+            storeToBigT(tempMap.getRowLabel(), tempMap.getColumnLabel());
             tempMap = sm.get_next();
         }
         sm.close();
     }
 
+    public static Map getJoinMap(String rowKey, String columnKey, String value, Integer timestamp) {
+
+        short[] attrSizes = new short[3];
+        attrSizes[0] = (short) (MiniTable.BIGT_STR_SIZES[0]*2 + 1);
+        attrSizes[1] = (short) (MiniTable.BIGT_STR_SIZES[0] + MiniTable.BIGT_STR_SIZES[1] + 1);
+        attrSizes[2] = MiniTable.BIGT_STR_SIZES[2];
+
+        Map map = new Map();
+        try {
+            map.setHeader(MiniTable.BIGT_ATTR_TYPES, attrSizes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Map map1 = new Map(map.size());
+        try {
+            map1.setHeader(MiniTable.BIGT_ATTR_TYPES, attrSizes);
+            map1.setRowLabel(rowKey);
+            map1.setColumnLabel(columnKey);
+            map1.setTimeStamp(timestamp);
+            map1.setValue(value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return map1;
+    }
+
+
     public void storeToBigT(String leftRowLabel, String rightRowLabel) throws Exception {
         // TODO: set self bigTName
+        List<Map> joinedMaps = new ArrayList<>();
         String bigTName = "dummy";
         String JOIN_BT_NAME = leftRowLabel + rightRowLabel;
         resultantBigT = new bigT(this.outBigTName);
@@ -125,20 +164,70 @@ public class rowJoin {
         Map tempMap = tempStream.getNext();
         while (tempMap != null) {
             if (tempMap.getColumnLabel().equals(this.columnName)) {
-                resultantBigT.insertMap(tempMap.getMapByteArray());
+                joinedMaps.add(tempMap);
+            } else {
+                String rowLabel = leftRowLabel + ":" + rightRowLabel;
+                String columnLabel = leftRowLabel + ":" + tempMap.getColumnLabel();
+                String ValueLabel = tempMap.getValue();
+                Integer timeStampVal = tempMap.getTimeStamp();
+
+                Map tempMap2 = getJoinMap(rowLabel, columnLabel, ValueLabel, timeStampVal);
+                resultantBigT.insertMap(tempMap2.getMapByteArray());
             }
             tempMap = tempStream.getNext();
         }
         tempStream.closeStream();
+
+
         tempStream = new bigT(bigTName).openStream(0, rightRowLabel, "*", "*");
         tempMap = tempStream.getNext();
         while (tempMap != null) {
             if (tempMap.getColumnLabel().equals(this.columnName)) {
-                resultantBigT.insertMap(tempMap.getMapByteArray());
+                joinedMaps.add(tempMap);
+            } else {
+                String rowLabel = leftRowLabel + ":" + rightRowLabel;
+                String columnLabel = leftRowLabel + ":" + tempMap.getColumnLabel();
+                String ValueLabel = tempMap.getValue();
+                Integer timeStampVal = tempMap.getTimeStamp();
+
+                Map tempMap2 = getJoinMap(rowLabel, columnLabel, ValueLabel, timeStampVal);
+                resultantBigT.insertMap(tempMap2.getMapByteArray());
             }
             tempMap = tempStream.getNext();
         }
         tempStream.closeStream();
+
+        // Remove duplicates
+        getFirstThree(joinedMaps);
+        for (Map tempMap3 : joinedMaps) {
+            String rowLabel = leftRowLabel + ":" + rightRowLabel;
+            String columnLabel = leftRowLabel + ":" + tempMap3.getColumnLabel();
+            String ValueLabel = tempMap3.getValue();
+            Integer timeStampVal = tempMap3.getTimeStamp();
+
+            Map tempMap4 = getJoinMap(rowLabel, columnLabel, ValueLabel, timeStampVal);
+            resultantBigT.insertMap(tempMap4.getMapByteArray());
+        }
+    }
+
+    public void getFirstThree(List<Map> mapList) throws Exception {
+        if (mapList.size() <= 3) {
+            return;
+        }
+
+        do {
+            int minIndex = 0;
+            int minTimeStamp = mapList.get(0).getTimeStamp();
+            for (int i = 1; i < mapList.size(); i++) {
+                if (mapList.get(i).getTimeStamp() < minTimeStamp) {
+                    minTimeStamp = mapList.get(i).getTimeStamp();
+                    minIndex = i;
+                }
+            }
+
+            mapList.remove(minIndex);
+        } while (mapList.size() != 3);
+
     }
 
     public void cleanUp() throws Exception {
