@@ -1,6 +1,7 @@
 package iterator;
 
 import BigT.Map;
+import BigT.rowJoin;
 import cmdline.MiniTable;
 import heap.*;
 import global.*;
@@ -348,10 +349,7 @@ public class SortMerge extends MapIterator implements GlobalConst {
                 }
             }
             if (PredEval.Eval(OutputFilter, TempMap1, TempMap2, _in1, _in2) == true) {
-                Projection.Join(TempMap1, _in1,
-                        TempMap2, _in2,
-                        JMap, perm_mat, nOutFlds);
-                return JMap;
+                return rowJoin.getJoinMap(TempMap1.getRowLabel(), TempMap2.getRowLabel(), "1", 1);
             }
         }
     }

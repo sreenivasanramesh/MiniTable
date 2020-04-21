@@ -24,15 +24,17 @@ public class rowJoin {
     private SortMerge sm = null;
     private FileScan leftIterator, rightIterator;
     private String outBigTName;
+    private String rightBigTName;
 
 
     public rowJoin(int amt_of_mem, Stream leftStream, String RightBigTName, String ColumnName, String outBigTName)  throws Exception {
         this.columnName = ColumnName;
         this.NUM_BUF = amt_of_mem;
+        this.rightBigTName = RightBigTName;
         this.rightBigT = new bigT(RightBigTName);
         this.leftStream = leftStream;
         // Left stream should be filtered on column
-        this.rightStream = this.rightBigT.openStream(1, "*", this.columnName, "*");
+        this.rightStream = this.rightBigT.openStream(1, "*", columnName, "*");
         this.leftHeapFile = new Heapfile(LEFT_HEAP);
         this.rightHeapFile = new Heapfile(RIGHT_HEAP);
         this.outBigTName = outBigTName;
@@ -48,39 +50,49 @@ public class rowJoin {
 
     public void storeLeftColMatch() throws Exception {
         Map tempMap = this.leftStream.getNext();
-        Map newMap = tempMap;
+        Map oldMap = new Map();
+        oldMap.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
+        oldMap.copyMap(tempMap);
         String tempRow = tempMap.getRowLabel();
-        System.out.println("Left Stream results => ");
+//        System.out.println("Left Stream results => ");
         while (tempMap!= null) {
             if (!tempMap.getRowLabel().equals(tempRow)) {
-                this.leftHeapFile.insertMap(newMap.getMapByteArray());
+//                oldMap.print();
+                this.leftHeapFile.insertMap(oldMap.getMapByteArray());
             }
             tempRow = tempMap.getRowLabel();
-            newMap = tempMap;
+            oldMap.copyMap(tempMap);
             tempMap = this.leftStream.getNext();
         }
-        this.leftHeapFile.insertMap(newMap.getMapByteArray());
+//        oldMap.print();
+        this.leftHeapFile.insertMap(oldMap.getMapByteArray());
         System.out.println("left count = " + this.leftHeapFile.getRecCnt());
-        leftStream.closeStream();
+    
+        this.leftStream.closeStream();
     }
 
 
     public void storeRightColMatch() throws Exception {
         Map tempMap = this.rightStream.getNext();
-        Map newMap = tempMap;
+        Map oldMap = new Map();
+        oldMap.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
+        oldMap.copyMap(tempMap);
         String tempRow = tempMap.getRowLabel();
-        System.out.println("Right Stream results => ");
+//        System.out.println("Right Stream results => ");
         while (tempMap!= null) {
             if (!tempMap.getRowLabel().equals(tempRow)) {
-                this.rightHeapFile.insertMap(tempMap.getMapByteArray());
+//                oldMap.print();
+                this.rightHeapFile.insertMap(oldMap.getMapByteArray());
             }
             tempRow = tempMap.getRowLabel();
-            newMap = tempMap;
+            oldMap.copyMap(tempMap);
             tempMap = this.rightStream.getNext();
         }
-        this.rightHeapFile.insertMap(newMap.getMapByteArray());
+//        oldMap.print();
+        this.rightHeapFile.insertMap(oldMap.getMapByteArray());
         System.out.println("right count = " + this.rightHeapFile.getRecCnt());
-        rightStream.closeStream();
+    
+        this.rightStream.closeStream();
     }
 
     public void SortMergeJoin() throws Exception {
@@ -92,9 +104,9 @@ public class rowJoin {
         outFilter[0].next = null;
         outFilter[0].op = new AttrOperator(AttrOperator.aopEQ);
         outFilter[0].type1 = new AttrType(AttrType.attrSymbol);
-        outFilter[0].operand1.symbol = new FldSpec(new RelSpec(RelSpec.outer), 4);
+        outFilter[0].operand1.symbol = new FldSpec(new RelSpec(RelSpec.outer), 3);
         outFilter[0].type2 = new AttrType(AttrType.attrSymbol);
-        outFilter[0].operand2.symbol = new FldSpec(new RelSpec(RelSpec.innerRel), 4);
+        outFilter[0].operand2.symbol = new FldSpec(new RelSpec(RelSpec.innerRel), 3);
         outFilter[1] = null;
 
         FldSpec[] projection = new FldSpec[4];
@@ -118,9 +130,7 @@ public class rowJoin {
 
     public void StoreJoinResult() throws Exception {
         Map tempMap = sm.get_next();
-        System.out.println("Store Join Results = " + tempMap);
         while (tempMap != null) {
-            tempMap.print();
             storeToBigT(tempMap.getRowLabel(), tempMap.getColumnLabel());
             tempMap = sm.get_next();
         }
@@ -129,20 +139,20 @@ public class rowJoin {
 
     public static Map getJoinMap(String rowKey, String columnKey, String value, Integer timestamp) {
 
-        short[] attrSizes = new short[3];
-        attrSizes[0] = (short) (MiniTable.BIGT_STR_SIZES[0]*2 + 1);
-        attrSizes[1] = (short) (MiniTable.BIGT_STR_SIZES[0] + MiniTable.BIGT_STR_SIZES[1] + 1);
-        attrSizes[2] = MiniTable.BIGT_STR_SIZES[2];
+//        short[] attrSizes = new short[3];
+//        attrSizes[0] = (short) (MiniTable.BIGT_STR_SIZES[0]*2 + 1);
+//        attrSizes[1] = (short) (MiniTable.BIGT_STR_SIZES[0] + MiniTable.BIGT_STR_SIZES[1] + 1);
+//        attrSizes[2] = MiniTable.BIGT_STR_SIZES[2];
 
         Map map = new Map();
         try {
-            map.setHeader(MiniTable.BIGT_ATTR_TYPES, attrSizes);
+            map.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
         } catch (Exception e) {
             e.printStackTrace();
         }
         Map map1 = new Map(map.size());
         try {
-            map1.setHeader(MiniTable.BIGT_ATTR_TYPES, attrSizes);
+            map1.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
             map1.setRowLabel(rowKey);
             map1.setColumnLabel(columnKey);
             map1.setTimeStamp(timestamp);
@@ -157,14 +167,17 @@ public class rowJoin {
     public void storeToBigT(String leftRowLabel, String rightRowLabel) throws Exception {
         // TODO: set self bigTName
         List<Map> joinedMaps = new ArrayList<>();
-        String bigTName = "dummy";
+        String bigTName = "ganesh1";
         String JOIN_BT_NAME = leftRowLabel + rightRowLabel;
-        resultantBigT = new bigT(this.outBigTName);
-        Stream tempStream = new bigT(bigTName).openStream(0, leftRowLabel, "*", "*");
+        resultantBigT = new bigT(this.outBigTName, 1);
+        Stream tempStream = new bigT(bigTName).openStream(1, leftRowLabel, "*", "*");
         Map tempMap = tempStream.getNext();
         while (tempMap != null) {
-            if (tempMap.getColumnLabel().equals(this.columnName)) {
-                joinedMaps.add(tempMap);
+            if (tempMap.getColumnLabel().equals(this.columnName) == true) {
+                Map m2 = new Map();
+                m2.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
+                m2.copyMap(tempMap);
+                joinedMaps.add(m2);
             } else {
                 String rowLabel = leftRowLabel + ":" + rightRowLabel;
                 String columnLabel = leftRowLabel + ":" + tempMap.getColumnLabel();
@@ -172,6 +185,7 @@ public class rowJoin {
                 Integer timeStampVal = tempMap.getTimeStamp();
 
                 Map tempMap2 = getJoinMap(rowLabel, columnLabel, ValueLabel, timeStampVal);
+                tempMap2.print();
                 resultantBigT.insertMap(tempMap2.getMapByteArray());
             }
             tempMap = tempStream.getNext();
@@ -179,18 +193,22 @@ public class rowJoin {
         tempStream.closeStream();
 
 
-        tempStream = new bigT(bigTName).openStream(0, rightRowLabel, "*", "*");
+        tempStream = new bigT(rightBigTName).openStream(1, rightRowLabel, "*", "*");
         tempMap = tempStream.getNext();
         while (tempMap != null) {
             if (tempMap.getColumnLabel().equals(this.columnName)) {
-                joinedMaps.add(tempMap);
+                Map m2 = new Map();
+                m2.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
+                m2.copyMap(tempMap);
+                joinedMaps.add(m2);
             } else {
                 String rowLabel = leftRowLabel + ":" + rightRowLabel;
-                String columnLabel = leftRowLabel + ":" + tempMap.getColumnLabel();
+                String columnLabel = rightRowLabel + ":" + tempMap.getColumnLabel();
                 String ValueLabel = tempMap.getValue();
                 Integer timeStampVal = tempMap.getTimeStamp();
 
                 Map tempMap2 = getJoinMap(rowLabel, columnLabel, ValueLabel, timeStampVal);
+                tempMap2.print();
                 resultantBigT.insertMap(tempMap2.getMapByteArray());
             }
             tempMap = tempStream.getNext();
@@ -199,18 +217,24 @@ public class rowJoin {
 
         // Remove duplicates
         getFirstThree(joinedMaps);
+        
         for (Map tempMap3 : joinedMaps) {
             String rowLabel = leftRowLabel + ":" + rightRowLabel;
-            String columnLabel = leftRowLabel + ":" + tempMap3.getColumnLabel();
+            String columnLabel = tempMap3.getColumnLabel();
             String ValueLabel = tempMap3.getValue();
             Integer timeStampVal = tempMap3.getTimeStamp();
 
             Map tempMap4 = getJoinMap(rowLabel, columnLabel, ValueLabel, timeStampVal);
+            tempMap4.print();
             resultantBigT.insertMap(tempMap4.getMapByteArray());
         }
     }
 
     public void getFirstThree(List<Map> mapList) throws Exception {
+        // TODO: add concatenate TS
+//        for(Map map: mapList){
+//            map.print();
+//        }
         if (mapList.size() <= 3) {
             return;
         }
@@ -231,6 +255,7 @@ public class rowJoin {
     }
 
     public void cleanUp() throws Exception {
+        resultantBigT.close();
         this.leftHeapFile.deleteFile();
         this.rightHeapFile.deleteFile();
     }

@@ -50,28 +50,28 @@ public class MiniTable {
                     //query BIGTABLENAME TYPE ORDERTYPE ROWFILTER COLUMNFILTER VALUEFILTER NUMBUF
                     String tableName = inputStr[1].trim();
                     String filename = "/tmp/" + tableName + "_metadata.txt";
-
-                    FileReader fileReader;
-                    BufferedReader bufferedReader = null;
-                    try {
-                        fileReader = new FileReader(filename);
-                        bufferedReader = new BufferedReader(fileReader);
-                    }
-                    catch (FileNotFoundException e){
-                        System.out.println("Given tableName does not exist\n\n");
-                        continue;
-                    }
-                    String metadataFile = bufferedReader.readLine();
-                    // Always close files.
-                    bufferedReader.close();
-                    BIGT_STR_SIZES = setBigTConstants(metadataFile);
+//
+//                    FileReader fileReader;
+//                    BufferedReader bufferedReader = null;
+//                    try {
+//                        fileReader = new FileReader(filename);
+//                        bufferedReader = new BufferedReader(fileReader);
+//                    }
+//                    catch (FileNotFoundException e){
+//                        System.out.println("Given tableName does not exist\n\n");
+//                        continue;
+//                    }
+//                    String metadataFile = bufferedReader.readLine();
+//                    // Always close files.
+//                    bufferedReader.close();
+//                    BIGT_STR_SIZES = setBigTConstants(metadataFile);
                     Integer type = Integer.parseInt(inputStr[2]);
                     orderType = Integer.parseInt(inputStr[3]);
                     String rowFilter = inputStr[4].trim();
                     String colFilter = inputStr[5].trim();
                     String valFilter = inputStr[6].trim();
                     Integer NUMBUF = Integer.parseInt(inputStr[7]);
-                    checkDBMissing(tableName);
+//                    checkDBMissing(tableName);
                     Utils.query(tableName, type, orderType, rowFilter, colFilter, valFilter, NUMBUF);
                 } else {
                     System.out.println("Invalid input. Type exit to quit.\n\n");

@@ -45,10 +45,11 @@ public class joinTest extends MiniTable {
         new SystemDefs(Utils.getDBPath(Utils.getDBPath("ganesh")), Utils.NUM_PAGES, NUMBUF, "Clock");
 
 //        rj = new rowJoin(10, new Stream(new bigT("ganesh1"), type, "*", colName, "*"), "ganesh2", colName, "res_ganesh");
-        rj = new rowJoin(10, new bigT("ganesh1").openStream(type, "*", colName, "*"), "ganesh2", colName, "res_ganesh");
+        Stream leftstream = new bigT("ganesh1").openStream(1, "*", colName, "*");
+        rj = new rowJoin(10, leftstream, "ganesh2", colName, "ash5");
         SystemDefs.JavabaseBM.flushAllPages();
         SystemDefs.JavabaseDB.closeDB();
-//        Utils.query("res_ganesh", type, 1, "*", "*", "*", NUMBUF);
+        Utils.query("ash5", type, 1, "*", "*", "*", NUMBUF);
     }
     
     public static void main(String[] args) throws Exception {
@@ -58,15 +59,15 @@ public class joinTest extends MiniTable {
         // batch insert 1
         Integer type = Integer.parseInt("1");
 
-//        String dataFile = "/Users/sumukhashwinkamath/Downloads/test/as1.csv";
-          String dataFile = "/home/ganesh/Documents/Documents/DBMSI/phase3/as1.csv";
+//        String dataFile = "/Users/sumukhashwinkamath/Downloads/test/ts1.csv";
+//////         String dataFile = "/home/ganesh/Documents/Documents/DBMSI/phase3/as1.csv";
 //        String tableName = "ganesh1";
 //        batchInsert(dataFile, tableName, type);
 //        getCount(tableName);
-//
-//        // batch insert 2
-          dataFile = "/Users/sumukhashwinkamath/Downloads/test/as1.csv";
-//        dataFile = "/home/ganesh/Documents/Documents/DBMSI/phase3/as1.csv";
+////
+////        // batch insert 2
+//          dataFile = "/Users/sumukhashwinkamath/Downloads/test/ts2.csv";
+//////        dataFile = "/home/ganesh/Documents/Documents/DBMSI/phase3/as1.csv";
 //        tableName = "ganesh2";
 //        batchInsert(dataFile, tableName, type);
 //        getCount(tableName);

@@ -237,7 +237,7 @@ public class Stream {
         · 6, then results are ordered in time stamp
         * */
 
-        tempHeapFile = new Heapfile("tempSort4");
+        tempHeapFile = new Heapfile(this.bigtable.name + "tempSort4");
 
         MID midObj = new MID();
         if (this.scanAll) {
@@ -291,7 +291,7 @@ public class Stream {
         FileScan fscan = null;
 
         try {
-            fscan = new FileScan("tempSort4", MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, (short) 4, 4, projection, null);
+            fscan = new FileScan(this.bigtable.name + "tempSort4", MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, (short) 4, 4, projection, null);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -403,7 +403,7 @@ public class Stream {
      * @throws Exception Throws generic exception.
      */
     public void closeStream() throws Exception {
-
+        tempHeapFile.deleteFile();
         if (this.sortObj != null) {
             this.sortObj.close();
         }
@@ -413,7 +413,6 @@ public class Stream {
         if (btreeScanner != null) {
             btreeScanner.DestroyBTreeFileScan();
         }
-        tempHeapFile.deleteFile();
     }
 
     /**
@@ -435,7 +434,7 @@ public class Stream {
             closeStream();
         }
         if (m == null) {
-            closeStream();
+//            closeStream();
             return null;
         }
         return m;

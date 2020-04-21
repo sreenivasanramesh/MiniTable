@@ -22,6 +22,7 @@ public class Utils {
     public static final int NUM_PAGES = 100000;
 
     public static void batchInsert(String dataFile, String tableName, int type) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException {
+        String UTF8_BOM = "\uFEFF";
         String dbPath = getDBPath(tableName);
         System.out.println(dbPath);
         File f = new File(dbPath);
@@ -43,10 +44,14 @@ public class Utils {
                 //set the map
                 Map map = new Map();
                 map.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
+                if(input[0].startsWith(UTF8_BOM)){
+                    input[0] = input[0].substring(1).trim();
+                }
+                
                 map.setRowLabel(input[0]);
                 map.setColumnLabel(input[1]);
-                map.setTimeStamp(Integer.parseInt(input[3]));
-                map.setValue(input[2]);
+                map.setTimeStamp(Integer.parseInt(input[2]));
+                map.setValue(input[3]);
                 MID mid = bigTable.insertMap(map.getMapByteArray());
                 mapCount++;
             }
