@@ -46,7 +46,7 @@ public class joinTest extends MiniTable {
 
 //        rj = new rowJoin(10, new Stream(new bigT("ganesh1"), type, "*", colName, "*"), "ganesh2", colName, "res_ganesh");
         Stream leftstream = new bigT("ganesh1").openStream(1, "*", colName, "*");
-        rj = new rowJoin(10, leftstream, "ganesh2", colName, "ash5");
+        rj = new rowJoin(10, leftstream, "ganesh2", colName, "ash5", "ganesh1");
         SystemDefs.JavabaseBM.flushAllPages();
         SystemDefs.JavabaseDB.closeDB();
         Utils.query("ash5", type, 1, "*", "*", "*", NUMBUF);

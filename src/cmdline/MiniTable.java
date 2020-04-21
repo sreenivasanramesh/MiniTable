@@ -73,6 +73,16 @@ public class MiniTable {
                     Integer NUMBUF = Integer.parseInt(inputStr[7]);
 //                    checkDBMissing(tableName);
                     Utils.query(tableName, type, orderType, rowFilter, colFilter, valFilter, NUMBUF);
+                } else if (inputStr[0].equalsIgnoreCase("rowjoin")) {
+
+                    String btName1 = inputStr[1].trim();
+                    String btName2 = inputStr[2].trim();
+                    String outBtName = inputStr[3].trim();
+                    String columnFilter = inputStr[4].trim();
+                    int num_buf = Integer.parseInt(inputStr[5].trim());
+                    //GlobalConst.NUMBUF = num_buf;
+                    Utils.rowJoinWrapper(num_buf, btName1, btName2, outBtName, columnFilter);
+
                 } else {
                     System.out.println("Invalid input. Type exit to quit.\n\n");
                     continue;

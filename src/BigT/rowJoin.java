@@ -24,10 +24,10 @@ public class rowJoin {
     private SortMerge sm = null;
     private FileScan leftIterator, rightIterator;
     private String outBigTName;
-    private String rightBigTName;
+    private String rightBigTName, leftBigTName;
 
 
-    public rowJoin(int amt_of_mem, Stream leftStream, String RightBigTName, String ColumnName, String outBigTName)  throws Exception {
+    public rowJoin(int amt_of_mem, Stream leftStream, String RightBigTName, String ColumnName, String outBigTName, String leftBigTName)  throws Exception {
         this.columnName = ColumnName;
         this.NUM_BUF = amt_of_mem;
         this.rightBigTName = RightBigTName;
@@ -38,6 +38,7 @@ public class rowJoin {
         this.leftHeapFile = new Heapfile(LEFT_HEAP);
         this.rightHeapFile = new Heapfile(RIGHT_HEAP);
         this.outBigTName = outBigTName;
+        this.leftBigTName = leftBigTName;
 
         storeLeftColMatch();
         storeRightColMatch();
@@ -167,10 +168,9 @@ public class rowJoin {
     public void storeToBigT(String leftRowLabel, String rightRowLabel) throws Exception {
         // TODO: set self bigTName
         List<Map> joinedMaps = new ArrayList<>();
-        String bigTName = "ganesh1";
         String JOIN_BT_NAME = leftRowLabel + rightRowLabel;
         resultantBigT = new bigT(this.outBigTName, 1);
-        Stream tempStream = new bigT(bigTName).openStream(1, leftRowLabel, "*", "*");
+        Stream tempStream = new bigT(leftBigTName).openStream(1, leftRowLabel, "*", "*");
         Map tempMap = tempStream.getNext();
         while (tempMap != null) {
             if (tempMap.getColumnLabel().equals(this.columnName) == true) {

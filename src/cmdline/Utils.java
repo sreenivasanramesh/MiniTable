@@ -3,6 +3,7 @@ package cmdline;
 import BigT.Map;
 import BigT.Stream;
 import BigT.bigT;
+import BigT.rowJoin;
 import bufmgr.*;
 import diskmgr.pcounter;
 import global.AttrOperator;
@@ -123,6 +124,16 @@ public class Utils {
         return "/tmp/" + "ganesh" + ".db";
     }
 
+    public static void rowJoinWrapper(int NUMBUF, String btName1, String btName2, String outBtName, String columnFilter) throws Exception {
+        int type = 1;
+        // TODO: change type as stream changes
+        new SystemDefs(Utils.getDBPath(Utils.getDBPath("ganesh")), Utils.NUM_PAGES, NUMBUF, "Clock");
+        Stream leftStream = new bigT(btName1).openStream(type, "*", columnFilter, "*");
+        rowJoin rj = new rowJoin(NUMBUF, leftStream, btName2, columnFilter, outBtName, btName1);
+        SystemDefs.JavabaseBM.flushAllPages();
+        SystemDefs.JavabaseDB.closeDB();
+        //Utils.query("res_ganesh", type, 1, "*", "*", "*", NUMBUF);
+    }
 
     static CondExpr[] getCondExpr(String filter) {
         if (filter.equals("*")) {
