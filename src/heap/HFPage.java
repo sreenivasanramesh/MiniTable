@@ -732,7 +732,6 @@ public class HFPage extends Page
         // length of record being returned
         recLen = getSlotLength(slotNo);
         slotCnt = Convert.getShortValue(SLOT_CNT, data);
-        System.out.println("slotCount is " + slotCnt + " -- slot no" + slotNo);
         if ((slotNo >= 0) && (slotNo < slotCnt) && (recLen > 0)
                 && (pageNo.pid == curPage.pid)) {
             offset = getSlotOffset(slotNo);

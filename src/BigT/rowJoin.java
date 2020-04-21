@@ -44,7 +44,9 @@ public class rowJoin {
 
     public void storeLeftColMatch() throws Exception {
         Map tempMap = this.leftStream.getNext();
+        System.out.println("Left Stream results => ");
         while (tempMap!= null) {
+            tempMap.print();
 //            if(tempMap.getColumnLabel().equals(this.columnName)) {
 //                matchingMap = tempMap;
 //                this.leftHeapFile.insertMap(matchingMap.getMapByteArray());
@@ -52,16 +54,20 @@ public class rowJoin {
             this.leftHeapFile.insertMap(tempMap.getMapByteArray());
             tempMap = this.leftStream.getNext();
         }
+        System.out.println("left count = " + this.leftHeapFile.getRecCnt());
         leftStream.closeStream();
         // Now we have all maps with that matches the column label
     }
 
     public void storeRightColMatch() throws Exception {
         Map tempMap = this.rightStream.getNext();
+        System.out.println("Right Stream results => ");
         while (tempMap!= null) {
+            tempMap.print();
             this.rightHeapFile.insertMap(tempMap.getMapByteArray());
             tempMap = this.rightStream.getNext();
         }
+        System.out.println("right count = " + this.rightHeapFile.getRecCnt());
         rightStream.closeStream();
         // Now we have two heapfiles with same column names
     }
@@ -91,7 +97,7 @@ public class rowJoin {
             this.leftIterator = new FileScan(LEFT_HEAP, MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, (short) 4, 4, projection, null);
             this.rightIterator = new FileScan(RIGHT_HEAP, MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, (short) 4, 4, projection, null);
             this.sm = new SortMerge(MiniTable.BIGT_ATTR_TYPES, 4, MiniTable.BIGT_STR_SIZES, MiniTable.BIGT_ATTR_TYPES,
-                    4, MiniTable.BIGT_STR_SIZES, 4, 4, 4,4,this.NUM_BUF,
+                    4, MiniTable.BIGT_STR_SIZES, 3, 4, 3,4,this.NUM_BUF,
                     this.leftIterator, this.rightIterator, false, false, sortOrder, outFilter,
                     projection, 1);
         } catch (Exception e) {
@@ -101,10 +107,13 @@ public class rowJoin {
 
     public void StoreJoinResult() throws Exception {
         Map tempMap = sm.get_next();
+        System.out.println("Store Join Results = " + tempMap);
         while (tempMap != null) {
-            storeToBigT(tempMap.getRowLabel(), tempMap.getColumnLabel());
+            tempMap.print();
+//            storeToBigT(tempMap.getRowLabel(), tempMap.getColumnLabel());
             tempMap = sm.get_next();
         }
+        sm.close();
     }
 
     public void storeToBigT(String leftRowLabel, String rightRowLabel) throws Exception {
@@ -133,7 +142,6 @@ public class rowJoin {
     }
 
     public void cleanUp() throws Exception {
-        this.sm.close();
         this.leftHeapFile.deleteFile();
         this.rightHeapFile.deleteFile();
     }

@@ -256,6 +256,7 @@ public class SortMerge extends MapIterator implements GlobalConst {
                 if (get_from_in1)
                     if ((map1 = p_i1.get_next()) == null) {
                         done = true;
+                        return null;
                     }
                 if (get_from_in2)
                     if ((map2 = p_i2.get_next()) == null) {

@@ -455,7 +455,7 @@ public class bigDB implements GlobalConst {
 
             pinPage(hpid, apage, true/*no diskIO*/);
             dp = new DBDirectoryPage(apage);
-
+            apage.emptyPage();
             free_slot = 0;
         }
 

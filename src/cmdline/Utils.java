@@ -45,8 +45,8 @@ public class Utils {
                 map.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
                 map.setRowLabel(input[0]);
                 map.setColumnLabel(input[1]);
-                map.setTimeStamp(Integer.parseInt(input[2]));
-                map.setValue(input[3]);
+                map.setTimeStamp(Integer.parseInt(input[3]));
+                map.setValue(input[2]);
                 MID mid = bigTable.insertMap(map.getMapByteArray());
                 mapCount++;
             }
