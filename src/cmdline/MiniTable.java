@@ -77,7 +77,7 @@ public class MiniTable {
                     String valFilter = inputStr[6].trim();
                     Integer NUMBUF = Integer.parseInt(inputStr[7]);
 //                    checkDBMissing(tableName);
-                    Utils.query(tableName, type, orderType, rowFilter, colFilter, valFilter, NUMBUF);
+                    Utils.query(tableName, orderType, rowFilter, colFilter, valFilter, NUMBUF);
                 } else if (inputStr[0].equalsIgnoreCase("rowjoin")) {
 
                     String btName1 = inputStr[1].trim();

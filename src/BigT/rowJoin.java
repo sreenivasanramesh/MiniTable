@@ -3,7 +3,6 @@ package BigT;
 import cmdline.MiniTable;
 import global.AttrOperator;
 import global.AttrType;
-import global.MID;
 import global.TupleOrder;
 import heap.Heapfile;
 import iterator.*;
@@ -32,7 +31,7 @@ public class rowJoin {
         this.columnName = ColumnName;
         this.NUM_BUF = amt_of_mem;
         this.rightBigTName = RightBigTName;
-        bigT rightBigT = new bigT(RightBigTName);
+        bigT rightBigT = new bigT(RightBigTName, false);
         this.leftStream = leftStream;
         this.rightStream = rightBigT.openStream(1, "*", columnName, "*");
         this.leftHeapFile = new Heapfile(LEFT_HEAP);
@@ -186,8 +185,8 @@ public class rowJoin {
 
     public void storeToBigT(String leftRowLabel, String rightRowLabel) throws Exception {
         List<Map> joinedMaps = new ArrayList<>();
-        resultantBigT = new bigT(this.outBigTName, 1);
-        Stream tempStream = new bigT(leftBigTName).openStream(1, leftRowLabel, "*", "*");
+        resultantBigT = new bigT(this.outBigTName, true);
+        Stream tempStream = new bigT(leftBigTName, false).openStream(1, leftRowLabel, "*", "*");
         Map tempMap = tempStream.getNext();
         while (tempMap != null) {
             if (!this.columnName.equals(tempMap.getColumnLabel())) {
@@ -195,19 +194,19 @@ public class rowJoin {
                 String columnLabel = leftRowLabel + ":" + tempMap.getColumnLabel();
                 String ValueLabel = tempMap.getValue();
                 Integer timeStampVal = tempMap.getTimeStamp();
-
+            
                 Map tempMap2 = joinMapRows(rowLabel, columnLabel, ValueLabel, timeStampVal);
                 tempMap2.print();
-                resultantBigT.insertMap(tempMap2.getMapByteArray());
+                resultantBigT.insertMap(tempMap2.getMapByteArray(), 1);
             } else {
                 joinedMaps.add(copyMapObj(tempMap));
             }
             tempMap = tempStream.getNext();
         }
         tempStream.closeStream();
-
-
-        tempStream = new bigT(rightBigTName).openStream(1, rightRowLabel, "*", "*");
+    
+    
+        tempStream = new bigT(rightBigTName, false).openStream(1, rightRowLabel, "*", "*");
         tempMap = tempStream.getNext();
         while (tempMap != null) {
             if (!this.columnName.equals(tempMap.getColumnLabel())) {
@@ -218,7 +217,7 @@ public class rowJoin {
 
                 Map tempMap2 = joinMapRows(rowLabel, columnLabel, ValueLabel, timeStampVal);
                 tempMap2.print();
-                resultantBigT.insertMap(tempMap2.getMapByteArray());
+                resultantBigT.insertMap(tempMap2.getMapByteArray(), 1);
             } else {
                 joinedMaps.add(copyMapObj(tempMap));
             }
@@ -237,7 +236,7 @@ public class rowJoin {
 
             Map tempMap4 = joinMapRows(rowLabel, columnLabel, ValueLabel, timeStampVal);
             tempMap4.print();
-            resultantBigT.insertMap(tempMap4.getMapByteArray());
+            resultantBigT.insertMap(tempMap4.getMapByteArray(), 1);
         }
     }
 

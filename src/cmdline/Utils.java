@@ -132,7 +132,6 @@ public class Utils {
             evictingQueue.clear();
     
     
-            System.out.println("Sorting done");
             System.out.println("duplicateRemoved.getRecCnt() = " + duplicateRemoved.getRecCnt());
             bigTable.batchInsert(duplicateRemoved, type);
             duplicateRemoved.deleteFile();
@@ -222,12 +221,12 @@ public class Utils {
     public static void rowJoinWrapper(int NUMBUF, String btName1, String btName2, String outBtName, String columnFilter) throws Exception {
         int type = 1;
         // TODO: change type as stream changes
-        new SystemDefs(Utils.getDBPath(Utils.getDBPath("ganesh")), Utils.NUM_PAGES, NUMBUF, "Clock");
-        Stream leftStream = new bigT(btName1).openStream(type, "*", columnFilter, "*");
+        new SystemDefs(Utils.getDBPath(), Utils.NUM_PAGES, NUMBUF, "Clock");
+        Stream leftStream = new bigT(btName1, false).openStream(type, "*", columnFilter, "*");
         rowJoin rj = new rowJoin(NUMBUF, leftStream, btName2, columnFilter, outBtName, btName1);
         SystemDefs.JavabaseBM.flushAllPages();
         SystemDefs.JavabaseDB.closeDB();
-        //Utils.query("res_ganesh", type, 1, "*", "*", "*", NUMBUF);
+        Utils.query(outBtName, 1, "*", "*", "*", NUMBUF);
     }
 
     static CondExpr[] getCondExpr(String filter) {
