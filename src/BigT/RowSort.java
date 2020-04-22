@@ -17,7 +17,7 @@ public class RowSort {
     public RowSort(String bigTable, String column, int numBuffers) throws Exception {
         this.column = column;
         this.numBuffers = numBuffers;
-        this.bigTable = new bigT(bigTable, true);
+        this.bigTable = new bigT(bigTable, false);
         this.heapfile = new Heapfile("temp_sort_file");
         insertTempHeapFile();
         createMapStream();
