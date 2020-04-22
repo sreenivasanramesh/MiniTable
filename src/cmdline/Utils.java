@@ -4,11 +4,11 @@ import BigT.Map;
 import BigT.Stream;
 import BigT.bigT;
 import BigT.rowJoin;
-import bufmgr.*;
 import commonutils.EvictingQueue;
 import diskmgr.pcounter;
 import global.*;
-import heap.*;
+import heap.Heapfile;
+import heap.MapScan;
 import iterator.*;
 
 import java.io.*;
@@ -19,7 +19,7 @@ public class Utils {
     
     public static final int NUM_PAGES = 100000;
     
-    public static void batchInsert(String dataFile, String tableName, int type) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException, HFDiskMgrException, HFBufMgrException, HFException {
+    public static void batchInsert(String dataFile, String tableName, int type) throws Exception {
         String UTF8_BOM = "\uFEFF";
         String dbPath = getDBPath();
         System.out.println("DB name =>" + dbPath);
@@ -27,11 +27,12 @@ public class Utils {
         Integer numPages = NUM_PAGES;
         new SystemDefs(dbPath, numPages, NUMBUF, "Clock");
         pcounter.initialize();
-
+        
         FileInputStream fileStream = null;
         BufferedReader br = null;
         Heapfile hf = new Heapfile(tableName + "tempfile");
         try {
+    
             bigT bigTable = new bigT(tableName, true);
             fileStream = new FileInputStream(dataFile);
             br = new BufferedReader(new InputStreamReader(fileStream));
@@ -174,8 +175,9 @@ public class Utils {
             br.close();
         }
         
-        SystemDefs.JavabaseBM.flushAllPages();
-        SystemDefs.JavabaseDB.closeDB();
+        SystemDefs.JavabaseBM.setNumBuffers(0);
+//        SystemDefs.JavabaseBM.flushAllPages();
+//        SystemDefs.JavabaseDB.closeDB();
     }
     
     
@@ -268,6 +270,11 @@ public class Utils {
             expr[1] = null;
             return expr;
         }
+    }
+    
+    public static void getCounts(Integer numBufs) {
+    
+    
     }
 }
 

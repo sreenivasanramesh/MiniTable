@@ -5,9 +5,7 @@ import btree.DeleteFashion;
 import btree.StringKey;
 import bufmgr.*;
 import cmdline.MiniTable;
-import global.AttrType;
-import global.MID;
-import global.TupleOrder;
+import global.*;
 import heap.*;
 import iterator.*;
 
@@ -30,10 +28,18 @@ public class bigT {
     BTreeFile[] indexFiles;
 
     public bigT(String name, boolean createNew) {
-
+    
         this.name = name;
         try {
-            if (createNew) {
+            Boolean tableExists;
+            this.heapfileNames = new String[]{name + ".no.heap", name + ".row.heap", name + ".col.heap", name + ".col_row.heap", name + ".row_val.heap"};
+            this.indexfileNames = new String[]{null, name + ".row.idx", name + ".col.idx", name + ".col_row.idx", name + ".row_val.idx"};
+            PageId heapFilePageId = SystemDefs.JavabaseDB.get_file_entry(this.heapfileNames[0]);
+    
+            tableExists = heapFilePageId != null;
+            System.out.println(tableExists);
+    
+            if (!tableExists) {
                 this.indexFiles = new BTreeFile[]{null, new BTreeFile(name + ".row.idx", AttrType.attrString, MiniTable.BIGT_STR_SIZES[0], DeleteFashion.NAIVE_DELETE),
                         new BTreeFile(name + ".col.idx", AttrType.attrString, MiniTable.BIGT_STR_SIZES[1], DeleteFashion.NAIVE_DELETE),
                         new BTreeFile(name + ".col_row.idx", AttrType.attrString, MiniTable.BIGT_STR_SIZES[0] + MiniTable.BIGT_STR_SIZES[1] + "$".getBytes().length, DeleteFashion.NAIVE_DELETE),
@@ -41,10 +47,8 @@ public class bigT {
             } else {
                 this.indexFiles = new BTreeFile[]{null, new BTreeFile(name + ".row.idx"), new BTreeFile(name + ".col.idx"), new BTreeFile(name + ".col_row.idx"), new BTreeFile(name + ".row_val.idx")};
             }
-
+    
             this.heapfiles = new Heapfile[]{new Heapfile(name + ".no.heap"), new Heapfile(name + ".row.heap"), new Heapfile(name + ".col.heap"), new Heapfile(name + ".col_row.heap"), new Heapfile(name + ".row_val.heap")};
-            this.heapfileNames = new String[]{name + ".no.heap", name + ".row.heap", name + ".col.heap", name + ".col_row.heap", name + ".row_val.heap"};
-            this.indexfileNames = new String[]{null, name + ".row.idx", name + ".col.idx", name + ".col_row.idx", name + ".row_val.idx"};
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -296,10 +300,12 @@ public class bigT {
                 this.indexFiles[type].insert(stringKey, MapUtils.ridFromMid(mid1));
                 map2 = sortObj.get_next();
             }
+            assert fscan != null;
+            fscan.close();
             sortObj.close();
             tempHeapFile.deleteFile();
-
-
+    
+    
         } catch (Exception e) {
             e.printStackTrace();
         }
