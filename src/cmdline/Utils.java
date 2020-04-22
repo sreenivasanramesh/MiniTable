@@ -242,20 +242,35 @@ public class Utils {
         RowSort rowSort = new RowSort(inTableName, columnName, NUMBUF);
         bigT bigTable = new bigT(outTableName, true);
         Map map = rowSort.getNext();
-        while(map != null){
+        while (map != null) {
+//            map.print();
             bigTable.insertMap(map.getMapByteArray(), 1);
             map = rowSort.getNext();
         }
-
+    
         System.out.println("\n=======================================\n");
         System.out.println("Reads : " + pcounter.rcounter);
         System.out.println("Writes: " + pcounter.wcounter);
         System.out.println("\n=======================================\n");
-
+    
+        bigTable.close();
         rowSort.closeStream();
+    
+        // Print Final results
+//        new SystemDefs(dbPath, 0, NUMBUF, "Clock");
+        System.out.println("Row Sort results=>");
+        bigT result = new bigT(outTableName, false);
+        MapScan mapScan = result.heapfiles[0].openMapScan();
+        MID mid = new MID();
+        Map map1 = mapScan.getNext(mid);
+        while (map1 != null) {
+            map1.print();
+            map1 = mapScan.getNext(mid);
+        
+        }
         SystemDefs.JavabaseBM.setNumBuffers(0);
-//        SystemDefs.JavabaseBM.flushAllPages();
-//        SystemDefs.JavabaseDB.closeDB();
+    
+    
     }
 
 

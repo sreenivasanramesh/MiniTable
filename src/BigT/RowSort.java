@@ -21,7 +21,6 @@ public class RowSort {
         this.column = column;
         this.numBuffers = numBuffers;
         this.bigTable = new bigT(bigTable, false);
-        System.out.println("bigTable = " + bigTable);
         this.heapfile = new Heapfile("temp_sort_file");
         insertTempHeapFile();
         createMapStream();
@@ -34,14 +33,13 @@ public class RowSort {
         MiniTable.orderType = 1;
         Stream tempStream = this.bigTable.openStream(1, "*", "*", "*");
         Map map = tempStream.getNext();
-        System.out.println("map = " + map);
         String value = "";
-        String row = ""; //previous row
+        String row = map.getRowLabel(); //previous row
 
         while(map != null)
         {
             if(!map.getRowLabel().equals(row)){
-                if(value.isEmpty()){
+                if (value.equals("")) {
                     value = "99999";
                 }
                 Map tempMap = new Map();
@@ -51,7 +49,6 @@ public class RowSort {
                 tempMap.setValue(value);
                 tempMap.setTimeStamp(1);
                 this.heapfile.insertMap(tempMap.getMapByteArray());
-                map.print();
                 row = map.getRowLabel();
                 value = "";
             }
@@ -89,6 +86,7 @@ public class RowSort {
         }
 
         try {
+            MiniTable.orderType = 9;
             this.sortObj = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, 4, new TupleOrder(TupleOrder.Ascending), 20, MiniTable.BIGT_STR_SIZES[1], false);
         } catch (Exception e) {
             e.printStackTrace();
@@ -97,7 +95,8 @@ public class RowSort {
         Map map = sortObj.get_next();
         MiniTable.orderType = 1;
         this.mapStream = this.bigTable.openStream(1, map.getRowLabel(), "*", "*");
-
+    
+    
     }
 
     public Map getNext() throws Exception {
@@ -105,8 +104,9 @@ public class RowSort {
         if(map == null){
             this.mapStream.closeStream();
             Map nextVal = this.sortObj.get_next();
-            if (nextVal == null)
+            if (nextVal == null) {
                 return null;
+            }
             this.mapStream = this.bigTable.openStream(1, nextVal.getRowLabel(), "*", "*");
             map = this.mapStream.getNext();
             if(map == null)
