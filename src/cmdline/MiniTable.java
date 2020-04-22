@@ -15,7 +15,7 @@ public class MiniTable {
     public static int orderType = 1;
     public static boolean mapInsertOrder = false;
     public static int insertType = 0;
-    
+
     public static void main(String[] args) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException, Exception {
 
         String input = null;
@@ -50,8 +50,7 @@ public class MiniTable {
                     bufferedWriter.write(dataFile);
                     bufferedWriter.close();
                     Utils.batchInsert(dataFile, tableName, type, Integer.parseInt(inputStr[4]));
-                }
-                else if (inputStr[0].equalsIgnoreCase("query")) {
+                } else if (inputStr[0].equalsIgnoreCase("query")) {
 
                     //query BIGTABLENAME TYPE ORDERTYPE ROWFILTER COLUMNFILTER VALUEFILTER NUMBUF
                     String tableName = inputStr[1].trim();
@@ -77,9 +76,7 @@ public class MiniTable {
                     String valFilter = inputStr[5].trim();
                     Integer NUMBUF = Integer.parseInt(inputStr[6]);
                     Utils.query(tableName, orderType, rowFilter, colFilter, valFilter, NUMBUF);
-                }
-                else if (inputStr[0].equalsIgnoreCase("rowjoin")) {
-
+                } else if (inputStr[0].equalsIgnoreCase("rowjoin")) {
                     String btName1 = inputStr[1].trim();
                     String btName2 = inputStr[2].trim();
                     String outBtName = inputStr[3].trim();
@@ -88,30 +85,24 @@ public class MiniTable {
                     //GlobalConst.NUMBUF = num_buf;
                     Utils.rowJoinWrapper(num_buf, btName1, btName2, outBtName, columnFilter);
 
-                }
-                else if (inputStr[0].equalsIgnoreCase("rowsort")) {
-                    //rowsort INBTNAME OUTBTNAME COLUMNNAME NUMBUF
-                    //rowSort(String inTableName, String outTableName, String columnName, int NUMBUF) throws Exception
+                } else if (inputStr[0].equalsIgnoreCase("rowsort")) {
                     String inTableName = inputStr[1].trim();
                     String outTableName = inputStr[2].trim();
                     String columnName = inputStr[3].trim();
                     Integer NUMBUF = Integer.parseInt(inputStr[4].trim());
                     Utils.rowSort(inTableName, outTableName, columnName, NUMBUF);
 
-                }
-                else if (inputStr[0].equalsIgnoreCase("getCounts")) {
+                } else if (inputStr[0].equalsIgnoreCase("getCounts")) {
                     Integer numBufs = Integer.parseInt(inputStr[1].trim());
                     Utils.getCounts(numBufs);
 
-                }
-                else {
+                } else {
                     System.out.println("Invalid input. Type exit to quit.\n\n");
                     continue;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Invalid parameters. Try again.\n\n");
-                continue;
             }
             SystemDefs.JavabaseBM.flushAllPages();
 

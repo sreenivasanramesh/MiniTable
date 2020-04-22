@@ -1,11 +1,6 @@
 package cmdline;
 
-import BigT.Map;
-import BigT.Stream;
-import BigT.bigT;
-import BigT.RowSort;
-import BigT.rowJoin;
-import bufmgr.*;
+import BigT.*;
 import commonutils.EvictingQueue;
 import diskmgr.pcounter;
 import global.*;
@@ -24,11 +19,6 @@ public class Utils {
 
     public static void batchInsert(String dataFile, String tableName, int type, int numBufs) throws Exception {
         String UTF8_BOM = "\uFEFF";
-class Utils {
-
-    private static final int NUM_PAGES = 100000;
-
-    static void batchInsert(String dataFile, String tableName, int type) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException, HFDiskMgrException, HFBufMgrException, HFException {
         String dbPath = getDBPath();
         System.out.println("DB name =>" + dbPath);
         File f = new File(dbPath);
@@ -46,7 +36,7 @@ class Utils {
             br = new BufferedReader(new InputStreamReader(fileStream));
             String inputStr;
             int mapCount = 0;
-    
+
             while ((inputStr = br.readLine()) != null) {
                 String[] input = inputStr.split(",");
                 //set the map
@@ -73,23 +63,23 @@ class Utils {
                 hf.insertMap(map.getMapByteArray());
                 mapCount++;
             }
-    
+
             FldSpec[] projlist = new FldSpec[4];
             RelSpec rel = new RelSpec(RelSpec.outer);
             projlist[0] = new FldSpec(rel, 1);
             projlist[1] = new FldSpec(rel, 2);
             projlist[2] = new FldSpec(rel, 3);
             projlist[3] = new FldSpec(rel, 4);
-    
+
             FileScan fscan = null;
-    
+
             try {
                 fscan = new FileScan(tableName + "tempfile", MiniTable.BIGT_ATTR_TYPES,
                         MiniTable.BIGT_STR_SIZES, (short) 4, 4, projlist, null);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-    
+
             MapSort sort = null;
             try {
                 MiniTable.orderType = 1;
@@ -139,12 +129,12 @@ class Utils {
             System.out.println("count = " + count);
             fileWriter.close();
             evictingQueue.clear();
-    
+
 
             System.out.println("duplicateRemoved.getRecCnt() = " + duplicateRemoved.getRecCnt());
             bigTable.batchInsert(duplicateRemoved, type);
             duplicateRemoved.deleteFile();
-    
+
             System.out.println("Final Records =>");
             for (int i = 0; i < 5; i++) {
                 System.out.println("===========================");
@@ -174,34 +164,34 @@ class Utils {
             hf.deleteFile();
             sort.close();
             bigTable.close();
-    
-    
+
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             fileStream.close();
             br.close();
         }
-        
+
         SystemDefs.JavabaseBM.setNumBuffers(0);
 //        SystemDefs.JavabaseBM.flushAllPages();
 //        SystemDefs.JavabaseDB.closeDB();
     }
-    
-    
+
+
     public static void query(String tableName, Integer orderType, String rowFilter, String colFilter, String valFilter, Integer NUMBUF) throws Exception {
         //String dbPath = getDBPath(tableName, type);
         String dbPath = getDBPath();
         new SystemDefs(dbPath, 0, NUMBUF, "Clock");
         pcounter.initialize();
         int resultCount = 0;
-        
+
         try {
-            
+
             bigT bigTable = new bigT(tableName, false);
             Stream mapStream = bigTable.openStream(orderType, rowFilter, colFilter, valFilter);
             MID mapId = null;
-    
+
             while (true) {
                 Map mapObj = mapStream.getNext();
                 if (mapObj == null)
@@ -211,19 +201,19 @@ class Utils {
             }
             bigTable.close();
             mapStream.closeStream();
-    
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-    
+
         System.out.println("\n=======================================\n");
         System.out.println("Matched Records: " + resultCount);
         System.out.println("Reads : " + pcounter.rcounter);
         System.out.println("Writes: " + pcounter.wcounter);
         System.out.println("\n=======================================\n");
-    
+
     }
-    
+
     public static String getDBPath() {
         String useId = "user.name";
         String userAccName;
@@ -241,6 +231,32 @@ class Utils {
         SystemDefs.JavabaseDB.closeDB();
         Utils.query(outBtName, 1, "*", "*", "*", NUMBUF);
     }
+
+    public static void rowSort(String inTableName, String outTableName, String columnName, int NUMBUF) throws Exception {
+
+        String dbPath = getDBPath();
+        new SystemDefs(dbPath, 0, NUMBUF, "Clock");
+        pcounter.initialize();
+
+
+        RowSort rowSort = new RowSort(inTableName, columnName, NUMBUF);
+        bigT bigTable = new bigT(outTableName, true);
+        Map map = rowSort.getNext();
+        while(map != null){
+            bigTable.insertMap(map.getMapByteArray(), 1);
+            map = rowSort.getNext();
+        }
+
+        System.out.println("\n=======================================\n");
+        System.out.println("Reads : " + pcounter.rcounter);
+        System.out.println("Writes: " + pcounter.wcounter);
+        System.out.println("\n=======================================\n");
+
+        rowSort.closeStream();
+        SystemDefs.JavabaseBM.flushAllPages();
+        SystemDefs.JavabaseDB.closeDB();
+    }
+
 
     static CondExpr[] getCondExpr(String filter) {
         if (filter.equals("*")) {
@@ -334,5 +350,4 @@ class Utils {
 
     }
 }
-
 
