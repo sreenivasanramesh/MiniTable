@@ -49,7 +49,7 @@ public class MiniTable {
                             new BufferedWriter(fileWriter);
                     bufferedWriter.write(dataFile);
                     bufferedWriter.close();
-                    Utils.batchInsert(dataFile, tableName, type);
+                    Utils.batchInsert(dataFile, tableName, type, Integer.parseInt(inputStr[4]));
                 } else if (inputStr[0].equalsIgnoreCase("query")) {
 
                     //query BIGTABLENAME TYPE ORDERTYPE ROWFILTER COLUMNFILTER VALUEFILTER NUMBUF
@@ -77,7 +77,7 @@ public class MiniTable {
                     Integer NUMBUF = Integer.parseInt(inputStr[6]);
                     Utils.query(tableName, orderType, rowFilter, colFilter, valFilter, NUMBUF);
                 } else if (inputStr[0].equalsIgnoreCase("rowjoin")) {
-
+    
                     String btName1 = inputStr[1].trim();
                     String btName2 = inputStr[2].trim();
                     String outBtName = inputStr[3].trim();
@@ -85,7 +85,11 @@ public class MiniTable {
                     int num_buf = Integer.parseInt(inputStr[5].trim());
                     //GlobalConst.NUMBUF = num_buf;
                     Utils.rowJoinWrapper(num_buf, btName1, btName2, outBtName, columnFilter);
-
+    
+                } else if (inputStr[0].equalsIgnoreCase("getCounts")) {
+                    Integer numBufs = Integer.parseInt(inputStr[1].trim());
+                    Utils.getCounts(numBufs);
+    
                 } else {
                     System.out.println("Invalid input. Type exit to quit.\n\n");
                     continue;
