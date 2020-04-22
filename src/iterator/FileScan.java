@@ -36,8 +36,8 @@ public class FileScan extends MapIterator {
      * constructor
      *
      * @param file_name  heapfile to be opened
-     * @param in1[]      array showing what the attributes of the input fields are.
-     * @param s1_sizes[] shows the length of the string fields.
+     * @param in1        array showing what the attributes of the input fields are.
+     * @param s1_sizes   shows the length of the string fields.
      * @param len_in1    number of attributes in the input tuple
      * @param n_out_flds number of fields in the out tuple
      * @param proj_list  shows what input fields go where in the output tuple
@@ -129,12 +129,12 @@ public class FileScan extends MapIterator {
             if ((tempMap = scan.getNext(mid)) == null) {
                 return null;
             }
-            return tempMap;
-//            tempMap.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
-//            if (PredEval.Eval(OutputFilter, tempMap, null, _in1, null)) {
-//                Projection.Project(tempMap, _in1, mapObj, perm_mat);
-//                return mapObj;
-//            }
+//            return tempMap;
+            tempMap.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
+            if (PredEval.Eval(OutputFilter, tempMap, null, _in1, null) == true) {
+                Projection.Project(tempMap, _in1, mapObj, perm_mat);
+                return mapObj;
+            }
         }
     }
 

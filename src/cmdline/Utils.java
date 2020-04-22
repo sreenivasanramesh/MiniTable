@@ -119,7 +119,6 @@ class Utils {
                 evictingQueue.add(insertMap);
                 oldRowLabel = new String(m.getRowLabel());
                 oldColumnLabel = new String(m.getColumnLabel());
-                m.print();
                 m = sort.get_next();
             }
 
@@ -137,9 +136,8 @@ class Utils {
     
             System.out.println("Sorting done");
             System.out.println("duplicateRemoved.getRecCnt() = " + duplicateRemoved.getRecCnt());
-            if (true) return;
             bigTable.batchInsert(duplicateRemoved, type);
-    
+            duplicateRemoved.deleteFile();
     
             System.out.println("Final Records =>");
             for (int i = 0; i < 5; i++) {
