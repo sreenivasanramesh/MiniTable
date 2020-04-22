@@ -349,7 +349,7 @@ public class SortMerge extends MapIterator implements GlobalConst {
                 }
             }
             if (PredEval.Eval(OutputFilter, TempMap1, TempMap2, _in1, _in2) == true) {
-                return rowJoin.getJoinMap(TempMap1.getRowLabel(), TempMap2.getRowLabel(), "1", 1);
+                return rowJoin.joinMapRows(TempMap1.getRowLabel(), TempMap2.getRowLabel(), "1", 1);
             }
         }
     }

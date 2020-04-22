@@ -36,7 +36,7 @@ public class MiniTable {
                     BIGT_STR_SIZES = setBigTConstants(dataFile);
                     Integer type = Integer.parseInt(inputStr[2]);
                     String tableName = inputStr[3];
-                    checkDBExists(tableName);
+                    //checkDBExists(tableName);
                     // Set the metadata name for the given DB. This is used to set the headers for the Maps
                     File file = new File("/tmp/" + tableName + "_metadata.txt");
                     FileWriter fileWriter = new FileWriter(file);
