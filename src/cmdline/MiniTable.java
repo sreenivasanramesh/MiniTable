@@ -136,7 +136,7 @@ public class MiniTable {
         File f = new File(dbPath);
         if (f.exists()) {
             System.out.println("DB already exists. Exiting.");
-            System.exit(0);
+            //System.exit(0);
         }
     }
 

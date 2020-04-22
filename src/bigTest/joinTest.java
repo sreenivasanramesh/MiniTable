@@ -39,40 +39,38 @@ public class joinTest extends MiniTable {
         bigT.close();
     }
     
-    public static void rowJoin(Integer type) throws Exception {
+    public static void rowJoin(Integer type, String dbName, String leftName, String rightName, String outName) throws Exception {
         rowJoin rj;
         String colName = "Zebra";
-        new SystemDefs(Utils.getDBPath(Utils.getDBPath("ganesh")), Utils.NUM_PAGES, NUMBUF, "Clock");
-
-//        rj = new rowJoin(10, new Stream(new bigT("ganesh1"), type, "*", colName, "*"), "ganesh2", colName, "res_ganesh");
-        Stream leftstream = new bigT("ganesh1").openStream(1, "*", colName, "*");
-        rj = new rowJoin(10, leftstream, "ganesh2", colName, "ash5");
+        new SystemDefs(Utils.getDBPath(Utils.getDBPath(dbName)), Utils.NUM_PAGES, NUMBUF, "Clock");
+        Stream leftstream = new bigT(leftName).openStream(1, "*", colName, "*");
+        rj = new rowJoin(10, leftstream, rightName, colName, outName, leftName);
         SystemDefs.JavabaseBM.flushAllPages();
         SystemDefs.JavabaseDB.closeDB();
-        Utils.query("ash5", type, 1, "*", "*", "*", NUMBUF);
+        Utils.query(outName, type, 1, "*", "*", "*", NUMBUF);
     }
     
     public static void main(String[] args) throws Exception {
 
 //        batchinsert DATAFILENAME TYPE BIGTABLENAME
-        
-        // batch insert 1
+
         Integer type = Integer.parseInt("1");
 
-//        String dataFile = "/Users/sumukhashwinkamath/Downloads/test/ts1.csv";
-//////         String dataFile = "/home/ganesh/Documents/Documents/DBMSI/phase3/as1.csv";
+//        // batch insert 1
+//        // String dataFile = "/Users/sumukhashwinkamath/Downloads/test/ts1.csv";
+//        String dataFile = "/home/ganesh/Documents/Documents/DBMSI/phase3/test/test/xaa";
 //        String tableName = "ganesh1";
 //        batchInsert(dataFile, tableName, type);
 //        getCount(tableName);
-////
-////        // batch insert 2
-//          dataFile = "/Users/sumukhashwinkamath/Downloads/test/ts2.csv";
-//////        dataFile = "/home/ganesh/Documents/Documents/DBMSI/phase3/as1.csv";
+//
+//        // batch insert 2
+//        // dataFile = "/Users/sumukhashwinkamath/Downloads/test/ts2.csv";
+//        dataFile = "/home/ganesh/Documents/Documents/DBMSI/phase3/test/test/xaa";
 //        tableName = "ganesh2";
 //        batchInsert(dataFile, tableName, type);
 //        getCount(tableName);
 
-        rowJoin(type);
+        rowJoin(type, "ganesh", "ganesh1", "ganesh2", "outGanesh");
         
     }
 }
