@@ -96,6 +96,16 @@ public class MiniTable {
                     Integer numBufs = Integer.parseInt(inputStr[1].trim());
                     Utils.getCounts(numBufs);
 
+                } else  if (inputStr[0].equalsIgnoreCase("mapinsert")) {
+                    String rowLabel = inputStr[1].trim();
+                    String columnLabel = inputStr[2].trim();
+                    String ValueInfo = inputStr[3].trim();
+                    int timeStampVal = Integer.parseInt(inputStr[4].trim());
+                    int indextype = Integer.parseInt(inputStr[5].trim());
+                    String bigtName = inputStr[6].trim();
+                    int NUMBUF = Integer.parseInt(inputStr[4].trim());
+                    Utils.insertMap(bigtName, indextype, rowLabel, columnLabel, ValueInfo, timeStampVal, NUMBUF);
+
                 } else {
                     System.out.println("Invalid input. Type exit to quit.\n\n");
                     continue;
