@@ -277,8 +277,9 @@ public class rowJoin {
     public void cleanUp() throws Exception {
         try {
             resultantBigT.close();
+            System.out.println("resultane closed");
         } catch (Exception e) {
-            ;
+            System.out.println("resultane did not closed");
         }
 
         this.leftHeapFile.deleteFile();

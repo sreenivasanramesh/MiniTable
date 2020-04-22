@@ -47,27 +47,28 @@ public class joinTest extends MiniTable {
 //        rj = new rowJoin(10, new Stream(new bigT("ganesh1"), type, "*", colName, "*"), "ganesh2", colName, "res_ganesh");
         Stream leftstream = new bigT("ganesh1", false).openStream(1, "*", colName, "*");
         rj = new rowJoin(10, leftstream, "ganesh2", colName, "ash5", "ganesh1");
-        SystemDefs.JavabaseBM.flushAllPages();
-        SystemDefs.JavabaseDB.closeDB();
+//        SystemDefs.JavabaseBM.setNumBuffers(0);
+//        SystemDefs.JavabaseBM.flushAllPages();
+//        SystemDefs.JavabaseDB.closeDB();
         Utils.query("ash5", 1, "*", "*", "*", NUMBUF);
+        SystemDefs.JavabaseBM.setNumBuffers(0);
     }
     
     public static void main(String[] args) throws Exception {
 
 //        batchinsert DATAFILENAME TYPE BIGTABLENAME
         
-        // batch insert 1
+//        // batch insert 1
         Integer type = Integer.parseInt("1");
 
-//        String dataFile = "/Users/sumukhashwinkamath/Downloads/test/ts1.csv";
-//////         String dataFile = "/home/ganesh/Documents/Documents/DBMSI/phase3/as1.csv";
+//        String dataFile = "/home/ganesh/Documents/Documents/DBMSI/phase3/test/test/ts1.csv";
 //        String tableName = "ganesh1";
 //        batchInsert(dataFile, tableName, type);
 //        getCount(tableName);
 ////
 ////        // batch insert 2
-//          dataFile = "/Users/sumukhashwinkamath/Downloads/test/ts2.csv";
-//////        dataFile = "/home/ganesh/Documents/Documents/DBMSI/phase3/as1.csv";
+//
+//        dataFile = "/home/ganesh/Documents/Documents/DBMSI/phase3/test/test/ts2.csv";
 //        tableName = "ganesh2";
 //        batchInsert(dataFile, tableName, type);
 //        getCount(tableName);
