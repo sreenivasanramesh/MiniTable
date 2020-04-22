@@ -75,7 +75,18 @@ public class MiniTable {
                     String valFilter = inputStr[5].trim();
                     Integer NUMBUF = Integer.parseInt(inputStr[6]);
                     Utils.query(tableName, orderType, rowFilter, colFilter, valFilter, NUMBUF);
-                } else {
+                }
+                else if (inputStr[0].equalsIgnoreCase("rowsort")) {
+                    //rowsort INBTNAME OUTBTNAME COLUMNNAME NUMBUF
+                    //rowSort(String inTableName, String outTableName, String columnName, int NUMBUF) throws Exception
+                    String inTableName = inputStr[1].trim();
+                    String outTableName = inputStr[2].trim();
+                    String columnName = inputStr[3].trim();
+                    Integer NUMBUF = Integer.parseInt(inputStr[4].trim());
+                    Utils.rowSort(inTableName, outTableName, columnName, NUMBUF);
+
+                }
+                else {
                     System.out.println("Invalid input. Type exit to quit.\n\n");
                     continue;
                 }
