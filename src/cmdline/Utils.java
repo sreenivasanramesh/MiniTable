@@ -365,5 +365,23 @@ public class Utils {
         }
 
     }
+    public static void insertMap(String bigtName, int indextype, String rowLabel, String columnLabel, String ValueInfo, int timeStampVal, int NUMBUF) throws Exception {
+        new SystemDefs(Utils.getDBPath(), Utils.NUM_PAGES, NUMBUF, "Clock");
+        try{
+            bigT inBigTName = new bigT(bigtName, false);
+            Map mapObj = new Map();
+            mapObj.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
+            mapObj.setRowLabel(rowLabel);
+            mapObj.setColumnLabel(columnLabel);
+            mapObj.setValue(ValueInfo);
+            mapObj.setTimeStamp(timeStampVal);
+            inBigTName.insertMap(mapObj.getMapByteArray(), indextype);
+            mapObj.print();
+            System.out.println("Inserted Successfully.");
+        } catch (Exception exp) {
+            exp.printStackTrace();
+            throw new Exception("Table "+bigtName+"does not exist!!");
+        }
+    }
 }
 
