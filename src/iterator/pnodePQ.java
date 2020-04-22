@@ -100,9 +100,9 @@ public abstract class pnodePQ {
         }
         if (a.map != null ) {
             if (MiniTable.mapInsertOrder) {
-                return MapUtils.CompareMapsOnOrderType(a.map, b.map);
-            } else {
                 return MapUtils.CompareMapsOnInsertType(a.map, b.map);
+            } else {
+                return MapUtils.CompareMapsOnOrderType(a.map, b.map);
             }
 
 //            int ans = MapUtils.CompareMapWithMap(a.map, b.map, fld_no);

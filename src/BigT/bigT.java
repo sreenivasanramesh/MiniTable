@@ -1,11 +1,12 @@
 package BigT;
 
-import btree.*;
+import btree.BTreeFile;
+import btree.DeleteFashion;
+import btree.StringKey;
 import bufmgr.*;
 import cmdline.MiniTable;
 import global.AttrType;
 import global.MID;
-import global.RID;
 import global.TupleOrder;
 import heap.*;
 import iterator.*;
@@ -21,7 +22,7 @@ import static global.GlobalConst.MINIBASE_PAGESIZE;
 
 public class bigT {
     public static final int MAX_SIZE = MINIBASE_PAGESIZE;
-    Heapfile[] heapfiles;
+    public Heapfile[] heapfiles;
     String[] heapfileNames;
     String[] indexfileNames;
     // Name of the BigT file
@@ -63,7 +64,7 @@ public class bigT {
         Set<Integer> deletedTypes = new HashSet<>();
         type -= 1;
         MID oldestMID = null;
-        int oldestType = -1;
+        
         
         MapScan mapScan = heapfile.openMapScan();
         MID mid = new MID();
@@ -71,6 +72,9 @@ public class bigT {
         int count = 1;
         while (map != null) {
             int oldestTimestamp = Integer.MAX_VALUE;
+            int oldestType = -1;
+            int updateType = -1;
+            MID updateMID = null;
             System.out.print("\r" + count);
             count += 1;
             java.util.Map<Integer, ArrayList<MID>> searchResults = searchForRecords(map);
@@ -80,30 +84,45 @@ public class bigT {
             if (arrayList.size() > 3) {
                 throw new Exception("This list size cannot be greater than 3");
             }
-            if (arrayList.size() == 3) {
                 for (Integer key : searchResults.keySet()) {
                     for (MID mid1 : searchResults.get(key)) {
                         Map map1 = this.heapfiles[key].getMap(mid1);
-                        if (map1.getTimeStamp() < oldestTimestamp) {
-                            oldestMID = mid1;
-                            oldestTimestamp = map1.getTimeStamp();
-                            oldestType = key;
+                        if (arrayList.size() == 3){
+                            if (map1.getTimeStamp() < oldestTimestamp) {
+                                oldestMID = mid1;
+                                oldestTimestamp = map1.getTimeStamp();
+                                oldestType = key;
+                            }
+                        }
+                        if(map1.getTimeStamp() == map.getTimeStamp()){
+                            updateMID = mid1;
+                            updateType = key;
                         }
                     }
                 }
-                if (map.getTimeStamp() < oldestTimestamp) {
-                    map = mapScan.getNext(mid);
-                    continue;
+                if(oldestType != -1){
+                    if (map.getTimeStamp() < oldestTimestamp) {
+                        map = mapScan.getNext(mid);
+                        continue;
+                    }
                 }
-                this.heapfiles[oldestType].deleteMap(oldestMID);
-                deletedTypes.add(oldestType);
-            }
+                if (updateMID != null){
+                    this.heapfiles[updateType].deleteMap(updateMID);
+                }
+                else{
+                    if(oldestType != -1){
+                        this.heapfiles[oldestType].deleteMap(oldestMID);
+                        deletedTypes.add(oldestType);
+                    }
+                }
             this.heapfiles[type].insertMap(map.getMapByteArray());
             map = mapScan.getNext(mid);
         }
         deletedTypes.add(type);
         for (int i : deletedTypes) {
-            insertMapFile(i);
+            if (i != 0) {
+                insertMapFile(i);
+            }
         }
     }
 

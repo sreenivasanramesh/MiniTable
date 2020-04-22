@@ -39,6 +39,7 @@ public class Stream {
     private boolean versionEnabled = true;
     private MapScan mapScan;
     private int type, orderType;
+    private String tempHeapFileName = "tempSort4";
 
 
     /**
@@ -50,38 +51,39 @@ public class Stream {
      * @throws Exception Throws generic Exception.
      */
     public Stream(bigT bigTable, int orderType, String rowFilter, String columnFilter, String valueFilter) throws Exception {
-
+    
         this.bigtable = bigTable;
         this.rowFilter = rowFilter;
         this.columnFilter = columnFilter;
         this.valueFilter = valueFilter;
-//        this.type = bigTable.type;
-        this.type = 1;
         this.orderType = orderType;
         this.starFilter = "*";
         this.lastChar = "Z";
-
-
-        queryConditions();
-        filterAndSortData(this.orderType);
-
-
-
+        this.tempHeapFile = new Heapfile(tempHeapFileName);
+    
+    
+        for (int i = 0; i < 5; i++) {
+            queryConditions(i);
+            filterAndSortData(i);
+        }
+        sortResultsbyOrderType(orderType);
+    
     }
-
+    
     /**
      * This type value for each type to use index or file.
+     *
      * @throws Exception Throws generic exception.
      */
-    public void queryConditions() throws Exception {
-
-
+    public void queryConditions(int indexType) throws Exception {
+        
+        
         StringKey start = null, end = null;
 
         /*
         type is an integer denoting the different clustering and indexing strategies you will use for the graph database.
          */
-        switch (this.type) {
+        switch (indexType) {
             case 1:
             default:
                 // same as case 1
@@ -219,17 +221,16 @@ public class Stream {
         }
 
         if (!this.scanAll) {
-            this.btreeScanner = bigtable.indexFiles[1].new_scan(start, end);
+            this.btreeScanner = bigtable.indexFiles[indexType].new_scan(start, end);
         }
-
-
+        
+        
     }
-
+    
     /**
-     * @param orderType Ordertype for sorting data.
      * @throws Exception
      */
-    public void filterAndSortData(int orderType) throws Exception {
+    public void filterAndSortData(int indexType) throws Exception {
         /* orderType is for ordering by
         · 1, then results are first ordered in row label, then column label, then time stamp
         · 2, then results are first ordered in column label, then row label, then time stamp
@@ -237,15 +238,13 @@ public class Stream {
         · 4, then results are first ordered in column label, then time stamp
         · 6, then results are ordered in time stamp
         * */
-
-        tempHeapFile = new Heapfile("tempSort4");
-
+        
         MID midObj = new MID();
         if (this.scanAll) {
             //scanning whole bigt file.
 //            mapScan = bigtable.heapfile.openMapScan();
-            mapScan = bigtable.heapfiles[1].openMapScan();
-
+            mapScan = bigtable.heapfiles[indexType].openMapScan();
+            
             //mapObj.setHeader();
             Map mapObj = null;
 
@@ -253,7 +252,7 @@ public class Stream {
 //                System.out.println("rowFilter = " + rowFilter);
 //                tempHeapFile = this.bigtable.heapfile;
 //            } else {
-
+            
             int count = 0;
             mapObj = this.mapScan.getNext(midObj);
             while (mapObj != null) {
@@ -264,9 +263,9 @@ public class Stream {
                 }
                 mapObj = mapScan.getNext(midObj);
             }
-
+            
         } else {
-
+            
             KeyDataEntry entry = btreeScanner.get_next();
             while (entry != null) {
                 RID rid = ((LeafData) entry.data).getData();
@@ -276,24 +275,25 @@ public class Stream {
                     if (genericMatcher(mapObj, "row", rowFilter) && genericMatcher(mapObj, "column", columnFilter) && genericMatcher(mapObj, "value", valueFilter)) {
                         tempHeapFile.insertMap(mapObj.getMapByteArray());
                     }
-
+                    
                 }
                 entry = btreeScanner.get_next();
             }
         }
-
-
+    }
+    
+    public void sortResultsbyOrderType(int orderType) {
         FldSpec[] projection = new FldSpec[4];
         RelSpec rel = new RelSpec(RelSpec.outer);
         projection[0] = new FldSpec(rel, 1);
         projection[1] = new FldSpec(rel, 2);
         projection[2] = new FldSpec(rel, 3);
         projection[3] = new FldSpec(rel, 4);
-
+        
         FileScan fscan = null;
-
+        
         try {
-            fscan = new FileScan("tempSort4", MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, (short) 4, 4, projection, null);
+            fscan = new FileScan(tempHeapFileName, MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, (short) 4, 4, projection, null);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -321,13 +321,11 @@ public class Stream {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
-
-
+    
     /**
-     * @param map Map object to compare field with filter.
-     * @param field field type to be compared - row, column or value.
+     * @param map           Map object to compare field with filter.
+     * @param field         field type to be compared - row, column or value.
      * @param genericFilter Filter on fields - row, column or value.
      * @return
      * @throws Exception

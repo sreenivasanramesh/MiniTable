@@ -194,8 +194,8 @@ public class MapUtils {
         int mapRowCompare = mapObj1.getRowLabel().compareTo(mapObj2.getRowLabel());
         int mapColumnCompare = mapObj1.getColumnLabel().compareTo(mapObj2.getColumnLabel());
         int mapValueCompare = mapObj1.getValue().compareTo(mapObj2.getValue());
-
-        switch (MiniTable.orderType) {
+    
+        switch (MiniTable.insertType) {
             case 1:
                 return mapRowCompare;
             case 2:
