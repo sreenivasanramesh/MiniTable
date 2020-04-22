@@ -17,6 +17,7 @@ import iterator.MapSort;
 import iterator.RelSpec;
 
 import java.io.IOException;
+import java.util.Random;
 
 /**
  * Stream Class to initialize a stream of maps on bigTable.
@@ -40,14 +41,13 @@ public class Stream {
     private MapScan mapScan;
     private int type, orderType;
     private String tempHeapFileName = null;
-
-
+    
     /**
-     * @param bigTable Object containing all the maps in bigt table.
-     * @param orderType Ordertype for sorting/ ordering of output.
-     * @param rowFilter Filtering based on row values.
+     * @param bigTable     Object containing all the maps in bigt table.
+     * @param orderType    Ordertype for sorting/ ordering of output.
+     * @param rowFilter    Filtering based on row values.
      * @param columnFilter Filtering based on column values.
-     * @param valueFilter Filtering based on value field.
+     * @param valueFilter  Filtering based on value field.
      * @throws Exception Throws generic Exception.
      */
     public Stream(bigT bigTable, int orderType, String rowFilter, String columnFilter, String valueFilter) throws Exception {
@@ -59,7 +59,8 @@ public class Stream {
         this.orderType = orderType;
         this.starFilter = "*";
         this.lastChar = "Z";
-        this.tempHeapFileName = this.bigtable.name + "tempSort4";
+        Random random = new Random();
+        this.tempHeapFileName = this.bigtable.name + "tempSort4" + random.nextInt(1000);
         this.tempHeapFile = new Heapfile(tempHeapFileName);
     
     
@@ -73,6 +74,7 @@ public class Stream {
     
     /**
      * This type value for each type to use index or file.
+     *
      * @throws Exception Throws generic exception.
      */
     public void queryConditions(int indexType) throws Exception {
@@ -123,15 +125,15 @@ public class Stream {
                 if ((rowFilter.equals("*")) && (columnFilter.equals("*"))) {
                     scanAll = true;
                 } else {
-
+    
                     // check if both range
                     if ((rowFilter.matches(rangeRegex)) && (columnFilter.matches(rangeRegex))) {
-
+    
                         String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
                         String[] columnRange = columnFilter.replaceAll("[\\[ \\]]", "").split(",");
                         start = new StringKey(columnRange[0] + "$" + rowRange[0]);
                         end = new StringKey(columnRange[1] + "$" + rowRange[1] + this.lastChar);
-
+    
                         //check row range and column fixed/*
                     } else if ((rowFilter.matches(rangeRegex)) && (!columnFilter.matches(rangeRegex))) {
                         String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
@@ -148,11 +150,11 @@ public class Stream {
                             start = new StringKey(columnRange[0]);
                             end = new StringKey(columnRange[1] + this.lastChar);
                         } else {
-
+    
                             start = new StringKey(columnRange[0] + "$" + rowFilter);
                             end = new StringKey(columnRange[1] + "$" + rowFilter + this.lastChar);
                         }
-
+    
                         //row and col are fixed val or *,fixed fixed,*
                     } else {
                         if (columnFilter.equals(starFilter)) {
@@ -171,15 +173,15 @@ public class Stream {
                 if ((valueFilter.equals(starFilter)) && (rowFilter.equals(starFilter))) {
                     scanAll = true;
                 } else {
-
+    
                     // check if both range
                     if ((valueFilter.matches(rangeRegex)) && (rowFilter.matches(rangeRegex))) {
-
+    
                         String[] valueRange = valueFilter.replaceAll("[\\[ \\]]", "").split(",");
                         String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
                         start = new StringKey(rowRange[0] + "$" + valueRange[0]);
                         end = new StringKey(rowRange[1] + "$" + valueRange[1] + this.lastChar);
-
+    
                         //check row range and column fixed/*
                     } else if ((valueFilter.matches(rangeRegex)) && (!rowFilter.matches(rangeRegex))) {
                         String[] valueRange = valueFilter.replaceAll("[\\[ \\]]", "").split(",");
@@ -196,11 +198,11 @@ public class Stream {
                             start = new StringKey(rowRange[0]);
                             end = new StringKey(rowRange[1] + this.lastChar);
                         } else {
-
+    
                             start = new StringKey(rowRange[0] + "$" + valueFilter);
                             end = new StringKey(rowRange[1] + "$" + valueFilter + this.lastChar);
                         }
-
+    
                         //row and col are fixed val or *,fixed fixed,*
                     } else {
                         if (rowFilter.equals("*")) {
@@ -219,7 +221,7 @@ public class Stream {
                 }
                 break;
         }
-
+    
         if (!this.scanAll) {
             this.btreeScanner = bigtable.indexFiles[indexType].new_scan(start, end);
         }
@@ -347,11 +349,11 @@ public class Stream {
             return genericFilter.equals(starFilter);
         }
     }
-
+    
     public boolean setFilter(Map map, String rowFilter, String columnFilter, String valueFilter) throws IOException {
-
+        
         boolean ret_val = true;
-
+        
         if (rowFilter.matches(rangeRegex)) {
             String[] rowRange = rowFilter.replaceAll("[\\[ \\]]", "").split(",");
             if (map.getRowLabel().compareTo(rowRange[0]) < 0 || map.getRowLabel().compareTo(rowRange[1]) > 0)
@@ -366,7 +368,7 @@ public class Stream {
                 }
             }
         }
-
+        
         if (columnFilter.matches(rangeRegex)) {
             String[] columnRange = columnFilter.replaceAll("[\\[ \\]]", "").split(",");
             if (map.getRowLabel().compareTo(columnRange[0]) < 0 || map.getRowLabel().compareTo(columnRange[1]) > 0)
@@ -380,7 +382,7 @@ public class Stream {
                 }
             }
         }
-
+        
         if (valueFilter.matches(rangeRegex)) {
             String[] valueRange = valueFilter.replaceAll("[\\[ \\]]", "").split(",");
             if (map.getRowLabel().compareTo(valueRange[0]) < 0 || map.getRowLabel().compareTo(valueRange[1]) > 0)
@@ -396,14 +398,15 @@ public class Stream {
         }
         return ret_val;
     }
-
-
+    
+    
     /**
      * Closes the stream object.
+     *
      * @throws Exception Throws generic exception.
      */
     public void closeStream() throws Exception {
-
+    
         if (this.sortObj != null) {
             this.sortObj.close();
         }
@@ -414,7 +417,7 @@ public class Stream {
             btreeScanner.DestroyBTreeFileScan();
         }
     }
-
+    
     /**
      * @return returns the Map in the Stream based on query conditions.
      * @throws Exception throws generic exception.
@@ -427,7 +430,7 @@ public class Stream {
         Map m = null;
         try {
             m = this.sortObj.get_next();
-
+    
         } catch (OutOfSpaceException e) {
             System.out.println("outofspace");
             e.printStackTrace();
@@ -440,7 +443,7 @@ public class Stream {
         }
         return m;
     }
-
+    
     public String getBigTName() {
         return this.bigtable.name;
     }

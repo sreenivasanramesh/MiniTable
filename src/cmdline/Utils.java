@@ -223,18 +223,18 @@ public class Utils {
         userAccName = System.getProperty(useId);
         return "/tmp/" + userAccName + ".db";
     }
-
-    public static void rowJoinWrapper(int NUMBUF, String btName1, String btName2, String outBtName, String columnFilter) throws Exception {
-        int type = 1;
-        // TODO: change type as stream changes
-        new SystemDefs(Utils.getDBPath(), Utils.NUM_PAGES, NUMBUF, "Clock");
-        Stream leftStream = new bigT(btName1, false).openStream(type, "*", columnFilter, "*");
-        rowJoin rj = new rowJoin(NUMBUF, leftStream, btName2, columnFilter, outBtName, btName1);
-        SystemDefs.JavabaseBM.flushAllPages();
-        SystemDefs.JavabaseDB.closeDB();
+    
+    public static void rowJoinWrapper(int numBuf, String btName1, String btName2, String outBtName, String columnFilter) throws Exception {
+        rowJoin rj;
+        new SystemDefs(Utils.getDBPath(), Utils.NUM_PAGES, numBuf, "Clock");
+        
+        Stream leftstream = new bigT(btName1, false).openStream(1, "*", columnFilter, "*");
+        rj = new rowJoin(20, leftstream, btName2, columnFilter, outBtName, btName1);
+        SystemDefs.JavabaseBM.setNumBuffers(0);
+        System.out.println("Query results => ");
         Utils.query(outBtName, 1, "*", "*", "*", NUMBUF);
     }
-
+    
     static CondExpr[] getCondExpr(String filter) {
         if (filter.equals("*")) {
             return null;

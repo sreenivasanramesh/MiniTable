@@ -97,6 +97,7 @@ public class MiniTable {
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Invalid parameters. Try again.\n\n");
+                continue;
             }
             SystemDefs.JavabaseBM.flushAllPages();
 
