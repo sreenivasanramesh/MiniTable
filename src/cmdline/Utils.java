@@ -377,6 +377,7 @@ public class Utils {
             mapObj.setTimeStamp(timeStampVal);
             inBigTName.insertMap(mapObj.getMapByteArray(), indextype);
             mapObj.print();
+            inBigTName.close();
             System.out.println("Inserted Successfully.");
         } catch (Exception exp) {
             exp.printStackTrace();
