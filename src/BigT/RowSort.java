@@ -95,6 +95,7 @@ public class RowSort {
         }
 
         Map map = sortObj.get_next();
+        MiniTable.orderType = 1;
         this.mapStream = this.bigTable.openStream(1, map.getRowLabel(), "*", "*");
 
     }
