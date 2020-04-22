@@ -148,6 +148,7 @@ public class Utils {
                     map.print();
                     map = mapScan.getNext(mid);
                 }
+                mapScan.closescan();
             }
     
             System.out.println("=======================================\n");

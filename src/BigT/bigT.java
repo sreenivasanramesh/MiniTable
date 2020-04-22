@@ -124,6 +124,7 @@ public class bigT {
                 insertMapFile(i);
             }
         }
+        mapScan.closescan();
     }
 
     // Return number of maps in the bigtable.
@@ -213,7 +214,6 @@ public class bigT {
 
     private void insertMapFile(int type) throws HFDiskMgrException, InvalidTupleSizeException, InvalidMapSizeException, IOException, InvalidSlotNumberException, SpaceNotAvailableException, HFException, HFBufMgrException {
         MiniTable.insertType = type;
-        System.out.println("type = " + type);
         MID mid = new MID();
         MapScan mapScan = this.heapfiles[type].openMapScan();
         Heapfile tempHeapFile = new Heapfile(String.format("%s.%d.tmp.heap", this.name, type));
