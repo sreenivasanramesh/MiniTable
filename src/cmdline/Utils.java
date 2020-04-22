@@ -3,6 +3,7 @@ package cmdline;
 import BigT.Map;
 import BigT.Stream;
 import BigT.bigT;
+import BigT.RowSort;
 import bufmgr.*;
 import diskmgr.pcounter;
 import global.*;
@@ -147,6 +148,33 @@ class Utils {
         System.out.println("\n=======================================\n");
 
     }
+
+
+    public static void rowSort(String inTableName, String outTableName, String columnName, int NUMBUF) throws Exception {
+
+        String dbPath = getDBPath();
+        new SystemDefs(dbPath, 0, NUMBUF, "Clock");
+        pcounter.initialize();
+
+
+        RowSort rowSort = new RowSort(inTableName, columnName, NUMBUF);
+        bigT bigTable = new bigT(outTableName, true);
+        Map map = rowSort.getNext();
+        while(map != null){
+            bigTable.insertMap(map.getMapByteArray());
+            map = rowSort.getNext();
+        }
+
+        System.out.println("\n=======================================\n");
+        System.out.println("Reads : " + pcounter.rcounter);
+        System.out.println("Writes: " + pcounter.wcounter);
+        System.out.println("\n=======================================\n");
+
+        rowSort.closeStream();
+        SystemDefs.JavabaseBM.flushAllPages();
+        SystemDefs.JavabaseDB.closeDB();
+    }
+
 
     public static String getDBPath() {
         String useId = "user.name";

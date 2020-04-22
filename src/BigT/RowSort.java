@@ -14,10 +14,10 @@ public class RowSort {
     private MapSort sortObj;
     private int numBuffers;
 
-    public RowSort(String column, String outTable, int numBuffers) throws Exception {
+    public RowSort(String bigTable, String column, int numBuffers) throws Exception {
         this.column = column;
         this.numBuffers = numBuffers;
-        this.bigTable = new bigT(outTable, true);
+        this.bigTable = new bigT(bigTable, true);
         this.heapfile = new Heapfile("temp_sort_file");
         insertTempHeapFile();
         createMapStream();
