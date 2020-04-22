@@ -439,4 +439,8 @@ public class Stream {
         }
         return m;
     }
+
+    public String getBigTName() {
+        return this.bigtable.name;
+    }
 }
