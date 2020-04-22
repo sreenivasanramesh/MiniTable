@@ -72,7 +72,6 @@ public class Stream {
     
     /**
      * This type value for each type to use index or file.
-     *
      * @throws Exception Throws generic exception.
      */
     public void queryConditions(int indexType) throws Exception {
@@ -439,5 +438,9 @@ public class Stream {
             return null;
         }
         return m;
+    }
+
+    public String getBigTName() {
+        return this.bigtable.name;
     }
 }

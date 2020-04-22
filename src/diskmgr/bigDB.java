@@ -79,7 +79,7 @@ public class bigDB implements GlobalConst {
             FileIOException,
             DiskMgrException {
 
-        name = new String(fname);
+        name = fname;
         num_pages = (num_pgs > 2) ? num_pgs : 2;
 
         File DBfile = new File(name);
@@ -227,7 +227,6 @@ public class bigDB implements GlobalConst {
      * @param start_page_num the starting page id of the run of pages
      * @param runsize       the number of page need allocated
      * @throws OutOfSpaceException        No space left
-     *
      * @throws InvalidRunSizeException    invalid run size
      * @throws InvalidPageNumberException invalid page number
      * @throws FileIOException            file I/O error
@@ -457,7 +456,7 @@ public class bigDB implements GlobalConst {
             pinPage(hpid, apage, true/*no diskIO*/);
             apage.emptyPage();
             dp = new DBDirectoryPage(apage);
-            
+
             free_slot = 0;
         }
 

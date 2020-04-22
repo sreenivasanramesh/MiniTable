@@ -3,6 +3,7 @@ package cmdline;
 import BigT.Map;
 import BigT.Stream;
 import BigT.bigT;
+import BigT.rowJoin;
 import bufmgr.*;
 import commonutils.EvictingQueue;
 import diskmgr.pcounter;
@@ -14,19 +15,19 @@ import java.io.*;
 
 import static global.GlobalConst.NUMBUF;
 
-class Utils {
+public class Utils {
     
-    private static final int NUM_PAGES = 100000;
+    public static final int NUM_PAGES = 100000;
     
-    static void batchInsert(String dataFile, String tableName, int type) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException, HFDiskMgrException, HFBufMgrException, HFException {
+    public static void batchInsert(String dataFile, String tableName, int type) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException, HFDiskMgrException, HFBufMgrException, HFException {
+        String UTF8_BOM = "\uFEFF";
         String dbPath = getDBPath();
         System.out.println("DB name =>" + dbPath);
         File f = new File(dbPath);
         Integer numPages = NUM_PAGES;
         new SystemDefs(dbPath, numPages, NUMBUF, "Clock");
         pcounter.initialize();
-        String UTF8_BOM = "\uFEFF";
-        
+
         FileInputStream fileStream = null;
         BufferedReader br = null;
         Heapfile hf = new Heapfile(tableName + "tempfile");
@@ -43,22 +44,19 @@ class Utils {
                 Map map = new Map();
                 map.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
         
-                if (input[0].length() > 25) {
-                    System.out.println("input[0] = " + input[0]);
-                    input[0] = input[0].substring(0, 25);
+                if (input[0].length() > MiniTable.BIGT_STR_SIZES[0]) {
+                    input[0] = input[0].substring(0, MiniTable.BIGT_STR_SIZES[0]);
                 }
-//                if (input[0].startsWith(UTF8_BOM)) {
-//                    System.out.println("BOM BOM input[0] = " + input[0]);
-//                    input[0] = input[0].substring(1).trim();
-//                }
-                if (input[1].length() > 25) {
-                    System.out.println("input[1] = " + input[1]);
-                    input[1] = input[1].substring(0, 25);
+                if (input[1].length() > MiniTable.BIGT_STR_SIZES[1]) {
+                    input[1] = input[1].substring(0, MiniTable.BIGT_STR_SIZES[1]);
                 }
-                if (input[3].length() > 25) {
-                    System.out.println("input[3] = " + input[3]);
-                    input[3] = input[3].substring(0, 25);
+                if (input[3].length() > MiniTable.BIGT_STR_SIZES[3]) {
+                    input[3] = input[3].substring(0, MiniTable.BIGT_STR_SIZES[3]);
                 }
+                if(input[0].startsWith(UTF8_BOM)){
+                    input[0] = input[0].substring(1).trim();
+                }
+                
                 map.setRowLabel(input[0]);
                 map.setColumnLabel(input[1]);
                 map.setTimeStamp(Integer.parseInt(input[2]));
@@ -220,8 +218,18 @@ class Utils {
         userAccName = System.getProperty(useId);
         return "/tmp/" + userAccName + ".db";
     }
-    
-    
+
+    public static void rowJoinWrapper(int NUMBUF, String btName1, String btName2, String outBtName, String columnFilter) throws Exception {
+        int type = 1;
+        // TODO: change type as stream changes
+        new SystemDefs(Utils.getDBPath(Utils.getDBPath("ganesh")), Utils.NUM_PAGES, NUMBUF, "Clock");
+        Stream leftStream = new bigT(btName1).openStream(type, "*", columnFilter, "*");
+        rowJoin rj = new rowJoin(NUMBUF, leftStream, btName2, columnFilter, outBtName, btName1);
+        SystemDefs.JavabaseBM.flushAllPages();
+        SystemDefs.JavabaseDB.closeDB();
+        //Utils.query("res_ganesh", type, 1, "*", "*", "*", NUMBUF);
+    }
+
     static CondExpr[] getCondExpr(String filter) {
         if (filter.equals("*")) {
             return null;

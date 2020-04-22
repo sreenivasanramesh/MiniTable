@@ -19,19 +19,16 @@ public class Projection {
      * we know that this two tuple can join in the common field
      *
      * @param t1         The Tuple will be joined with t2
-     * @param type1[]    The array used to store the each attribute type
      * @param t2         The Tuple will be joined with t1
-     * @param type2[]    The array used to store the each attribute type
      * @param Jtuple     the returned Tuple
-     * @param perm_mat[] shows what input fields go where in the output tuple
      * @param nOutFlds   number of outer relation field
      * @throws UnknowAttrType                 attrbute type does't match
      * @throws FieldNumberOutOfBoundException field number exceeds limit
      * @throws IOException                    some I/O fault
      */
-    public static void Join(Tuple t1, AttrType[] type1,
-                            Tuple t2, AttrType[] type2,
-                            Tuple Jtuple, FldSpec[] perm_mat,
+    public static void Join(Map t1, AttrType[] type1,
+                            Map t2, AttrType[] type2,
+                            Map Jtuple, FldSpec[] perm_mat,
                             int nOutFlds
     )
             throws UnknowAttrType,
@@ -44,6 +41,7 @@ public class Projection {
                 case RelSpec.outer:        // Field of outer (t1)
                     switch (type1[perm_mat[i].offset - 1].attrType) {
                         case AttrType.attrInteger:
+                            // TODO: need getIntFld, getFloFld and getStrFld in Map.java
                             Jtuple.setIntFld(i + 1, t1.getIntFld(perm_mat[i].offset));
                             break;
                         case AttrType.attrReal:
@@ -87,9 +85,7 @@ public class Projection {
      * the result will be stored in Tuple Jtuple
      *
      * @param t1         The Tuple will be projected
-     * @param type1[]    The array used to store the each attribute type
      * @param Jtuple     the returned Tuple
-     * @param perm_mat[] shows what input fields go where in the output tuple
      * @param nOutFlds   number of outer relation field
      * @throws UnknowAttrType                 attrbute type doesn't match
      * @throws WrongPermat                    wrong FldSpec argument
@@ -97,8 +93,8 @@ public class Projection {
      * @throws IOException                    some I/O fault
      */
 
-    public static void Project(Tuple t1, AttrType[] type1,
-                               Tuple Jtuple, FldSpec[] perm_mat,
+    public static void Project(Map t1, AttrType[] type1,
+                               Map Jtuple, FldSpec[] perm_mat,
                                int nOutFlds
     )
             throws UnknowAttrType,
