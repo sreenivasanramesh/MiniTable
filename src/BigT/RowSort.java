@@ -42,7 +42,7 @@ public class RowSort {
         {
             if(!map.getRowLabel().equals(row)){
                 if(value.isEmpty()){
-                    value = "zzzzz";
+                    value = "99999";
                 }
                 Map tempMap = new Map();
                 tempMap.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
@@ -104,13 +104,13 @@ public class RowSort {
         Map map = this.mapStream.getNext();
         if(map == null){
             this.mapStream.closeStream();
-            Map NextVal = this.sortObj.get_next();
-            if (NextVal == null)
+            Map nextVal = this.sortObj.get_next();
+            if (nextVal == null)
                 return null;
-            Stream tempMapStream = this.bigTable.openStream(1, NextVal.getRowLabel(), "*", "*");
-            map = tempMapStream.getNext();
+            this.mapStream = this.bigTable.openStream(1, nextVal.getRowLabel(), "*", "*");
+            map = this.mapStream.getNext();
             if(map == null)
-                tempMapStream.closeStream();
+                this.mapStream.closeStream();
         }
 
         return map;
