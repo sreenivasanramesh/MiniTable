@@ -204,19 +204,37 @@ public class Map implements GlobalConst {
         System.arraycopy(fromMap, offset, this.data, 0, this.mapLength);
         this.mapOffset = 0;
     }
-
+    
     private void setFieldOffsetFromData() throws IOException {
         int position = this.mapOffset + 2;
         this.fieldOffset = new short[NUM_FIELDS + 1];
-
-        for (int i=0; i <= NUM_FIELDS; i++){
+        
+        for (int i = 0; i <= NUM_FIELDS; i++) {
             this.fieldOffset[i] = Convert.getShortValue(position, this.data);
             position += 2;
         }
     }
     
+    @Override
+    public String toString() {
+        String rowLabel = null;
+        String columnLabel = null;
+        String value = null;
+        int timestamp = 0;
+        try {
+            rowLabel = getRowLabel();
+            columnLabel = getColumnLabel();
+            timestamp = getTimeStamp();
+            value = getValue();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        String s = new String("{RowLabel:" + rowLabel + ", ColumnLabel:" + columnLabel + ", TimeStamp:" + timestamp + ", Value:" + value + "}");
+        return s;
+    }
+    
     public void setHeader(AttrType[] types, short[] stringSizes) throws InvalidMapSizeException, IOException, InvalidTypeException, InvalidStringSizeArrayException {
-
+        
         if (stringSizes.length != 3) {
             throw new InvalidStringSizeArrayException(null, "String sizes array must exactly be 3");
         }

@@ -5,6 +5,7 @@ import BigT.Stream;
 import BigT.bigT;
 import BigT.RowSort;
 import bufmgr.*;
+import commonutils.EvictingQueue;
 import diskmgr.pcounter;
 import global.*;
 import heap.*;
@@ -42,17 +43,21 @@ class Utils {
                 //set the map
                 Map map = new Map();
                 map.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
-                
+
                 if (input[0].length() > 25) {
+                    System.out.println("input[0] = " + input[0]);
                     input[0] = input[0].substring(0, 25);
                 }
-                if(input[0].startsWith(UTF8_BOM)){
-                    input[0] = input[0].substring(1).trim();
-                }
+//                if (input[0].startsWith(UTF8_BOM)) {
+//                    System.out.println("BOM BOM input[0] = " + input[0]);
+//                    input[0] = input[0].substring(1).trim();
+//                }
                 if (input[1].length() > 25) {
+                    System.out.println("input[1] = " + input[1]);
                     input[1] = input[1].substring(0, 25);
                 }
                 if (input[3].length() > 25) {
+                    System.out.println("input[3] = " + input[3]);
                     input[3] = input[3].substring(0, 25);
                 }
                 map.setRowLabel(input[0]);
@@ -82,39 +87,68 @@ class Utils {
             MapSort sort = null;
             try {
                 MiniTable.orderType = 1;
-                sort = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, 1, new TupleOrder(TupleOrder.Ascending), 10, 25, false);
+                sort = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, 1, new TupleOrder(TupleOrder.Ascending), 20, 25, false);
             } catch (Exception e) {
                 e.printStackTrace();
             }
             Heapfile duplicateRemoved = new Heapfile(tableName + "_duplicate_removed");
             Map m = sort.get_next();
             // TODO: Add duplicate elimination logic
-            String oldRowLabel;
-            String oldColumnLabel;
+            String oldRowLabel = null;
+            String oldColumnLabel = null;
             if (m != null) {
                 oldRowLabel = m.getRowLabel();
                 oldColumnLabel = m.getColumnLabel();
             }
-    
+            EvictingQueue<Map> evictingQueue = new EvictingQueue<>(3);
+            FileWriter fileWriter = new FileWriter("/tmp/resultsash");
+            int count = 1;
             while (m != null) {
-//                m.print();
+//                if ((!oldRowLabel.equals(m.getRowLabel()) && oldColumnLabel.equals(m.getColumnLabel())) || ((oldRowLabel.equals(m.getRowLabel()) && !oldColumnLabel.equals(m.getColumnLabel()))) || ((oldRowLabel.equals(m.getRowLabel()) && oldColumnLabel.equals(m.getColumnLabel())))) {
+                if (!oldRowLabel.equals(m.getRowLabel()) || !oldColumnLabel.equals(m.getColumnLabel())) {
+                    //Heap push evicting queue
+                    for (Map map : evictingQueue) {
+                        count += 1;
+                        fileWriter.write(map.getRowLabel() + "," + map.getColumnLabel() + "," + map.getTimeStamp() + "," + map.getValue() + "\n");
+                        duplicateRemoved.insertMap(map.getMapByteArray());
+                    }
+                    evictingQueue.clear();
+                }
+                Map insertMap = new Map();
+                insertMap.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
+                insertMap.copyMap(m);
+                evictingQueue.add(insertMap);
+                oldRowLabel = new String(m.getRowLabel());
+                oldColumnLabel = new String(m.getColumnLabel());
                 m = sort.get_next();
-        
             }
+
+//            System.out.println("evict len:");
+//            System.out.println(evictingQueue.size());
+            for (Map map : evictingQueue) {
+                count += 1;
+                fileWriter.write(map.getRowLabel() + "," + map.getColumnLabel() + "," + map.getTimeStamp() + "," + map.getValue() + "\n");
+                duplicateRemoved.insertMap(map.getMapByteArray());
+            }
+            System.out.println("count = " + count);
+            fileWriter.close();
+            evictingQueue.clear();
+
+
             System.out.println("Sorting done");
-            System.out.println("hf.getRecCnt() = " + hf.getRecCnt());
-            bigTable.batchInsert(hf, type);
-    
+            System.out.println("duplicateRemoved.getRecCnt() = " + duplicateRemoved.getRecCnt());
+            bigTable.batchInsert(duplicateRemoved, type);
+            duplicateRemoved.deleteFile();
     
             System.out.println("Final Records =>");
-            for(int i=0;i<5;i++){
+            for (int i = 0; i < 5; i++) {
                 System.out.println("===========================");
                 System.out.println("Heapfile " + i);
                 System.out.println("===========================");
                 MapScan mapScan = bigTable.heapfiles[i].openMapScan();
                 MID mid = new MID();
                 Map map = mapScan.getNext(mid);
-                while(map != null){
+                while (map != null) {
                     map.print();
                     map = mapScan.getNext(mid);
                 }
@@ -180,33 +214,6 @@ class Utils {
         System.out.println("\n=======================================\n");
 
     }
-
-
-    public static void rowSort(String inTableName, String outTableName, String columnName, int NUMBUF) throws Exception {
-
-        String dbPath = getDBPath();
-        new SystemDefs(dbPath, 0, NUMBUF, "Clock");
-        pcounter.initialize();
-
-
-        RowSort rowSort = new RowSort(inTableName, columnName, NUMBUF);
-        bigT bigTable = new bigT(outTableName, true);
-        Map map = rowSort.getNext();
-        while(map != null){
-            bigTable.insertMap(map.getMapByteArray(), 1);
-            map = rowSort.getNext();
-        }
-
-        System.out.println("\n=======================================\n");
-        System.out.println("Reads : " + pcounter.rcounter);
-        System.out.println("Writes: " + pcounter.wcounter);
-        System.out.println("\n=======================================\n");
-
-        rowSort.closeStream();
-        SystemDefs.JavabaseBM.flushAllPages();
-        SystemDefs.JavabaseDB.closeDB();
-    }
-
 
     public static String getDBPath() {
         String useId = "user.name";
