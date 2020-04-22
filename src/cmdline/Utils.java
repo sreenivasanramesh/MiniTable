@@ -193,7 +193,7 @@ class Utils {
         bigT bigTable = new bigT(outTableName, true);
         Map map = rowSort.getNext();
         while(map != null){
-            bigTable.insertMap(map.getMapByteArray());
+            bigTable.insertMap(map.getMapByteArray(), 1);
             map = rowSort.getNext();
         }
 
