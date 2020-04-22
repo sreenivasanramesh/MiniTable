@@ -2,17 +2,13 @@ package iterator;
 
 import BigT.Map;
 import BigT.rowJoin;
-import bufmgr.PageNotReadException;
 import cmdline.MiniTable;
-import global.AttrType;
-import global.GlobalConst;
-import global.TupleOrder;
-import heap.Heapfile;
-import heap.InvalidTupleSizeException;
-import heap.InvalidTypeException;
-import index.IndexException;
+import heap.*;
+import global.*;
+import bufmgr.*;
+import index.*;
 
-import java.io.IOException;
+import java.io.*;
 
 /**
  * This file contains the interface for the sort_merge joins.
@@ -131,19 +127,22 @@ public class SortMerge extends MapIterator implements GlobalConst {
 
         p_i1 = am1;
         p_i2 = am2;
-        MiniTable.orderType = 1;
 
         if (!in1_sorted) {
             try {
+                MiniTable.mapInsertOrder = false;
+                MiniTable.orderType = 1;
                 p_i1 = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, am1, join_col_in1, order, amt_of_mem / 2, sortFld1Len, false);
-        } catch (Exception e) {
+            } catch (Exception e) {
                 throw new SortException(e, "Sort failed");
             }
         }
 
         if (!in2_sorted) {
             try {
-                p_i2 = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, am2, join_col_in2, order, amt_of_mem / 2, sortFld2Len, false);
+                MiniTable.mapInsertOrder = false;
+                MiniTable.orderType = 1;
+                p_i2 = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, am2, join_col_in2, order, amt_of_mem/2, sortFld2Len, false);
             } catch (Exception e) {
                 throw new SortException(e, "Sort failed");
             }
@@ -354,7 +353,7 @@ public class SortMerge extends MapIterator implements GlobalConst {
                 }
             }
             if (PredEval.Eval(OutputFilter, TempMap1, TempMap2, _in1, _in2) == true) {
-                return rowJoin.joinMapRows(TempMap1.getRowLabel(), TempMap2.getRowLabel(), "1", 1);
+                return rowJoin.getJoinMap(TempMap1.getRowLabel(), TempMap2.getRowLabel(), "1", 1);
             }
         }
     }
