@@ -177,9 +177,10 @@ public class bigT {
     
     public void insertMap(byte[] mapPtr, int type) throws Exception {
         type -= 1;
-        boolean inserted = false;
         MID oldestMID = null;
+        MID updateMID = null;
         int oldestType = -1;
+        int updateType = -1;
         int oldestTimestamp = Integer.MAX_VALUE;
         Map map = new Map();
         map.setData(mapPtr);
@@ -189,40 +190,45 @@ public class bigT {
         if (arrayList.size() > 3) {
             throw new Exception("This list size cannot be greater than 3");
         }
-        if (arrayList.size() == 3) {
-            for (Integer key : searchResults.keySet()) {
-                for (MID mid : searchResults.get(key)) {
-                    Map map1 = this.heapfiles[key].getMap(mid);
+        for (Integer key : searchResults.keySet()) {
+            for (MID mid1 : searchResults.get(key)) {
+                Map map1 = this.heapfiles[key].getMap(mid1);
+                if (arrayList.size() == 3) {
                     if (map1.getTimeStamp() < oldestTimestamp) {
-                        oldestMID = mid;
+                        oldestMID = mid1;
                         oldestTimestamp = map1.getTimeStamp();
                         oldestType = key;
                     }
                 }
+                if (map1.getTimeStamp() == map.getTimeStamp()) {
+                    updateMID = mid1;
+                    updateType = key;
+                }
             }
+        }
+        if (oldestType != -1) {
             if (map.getTimeStamp() < oldestTimestamp) {
                 return;
             }
-            this.heapfiles[oldestType].deleteMap(oldestMID);
-            if (oldestType == type) {
-                this.heapfiles[oldestType].insertMap(mapPtr);
-                inserted = true;
-                if (type == 0) {
-                    return;
-                }
-            }
-            if (oldestType != 0) {
-                insertMapFile(oldestType);
+        }
+        if (updateType != -1) {
+            this.heapfiles[updateType].deleteMap(updateMID);
+        } else {
+            if (oldestType != -1) {
+                this.heapfiles[oldestType].deleteMap(oldestMID);
             }
         }
-        if (!inserted) {
-            this.heapfiles[type].insertMap(mapPtr);
-            if (type != 0) {
-                insertMapFile(type);
-            }
+    
+        if (oldestType != -1 && oldestType != 0) {
+            insertMapFile(oldestType);
         }
+        this.heapfiles[type].insertMap(mapPtr);
+        if (type != 0) {
+            insertMapFile(type);
+        }
+    
     }
-
+    
     private void insertMapFile(int type) throws HFDiskMgrException, InvalidTupleSizeException, InvalidMapSizeException, IOException, InvalidSlotNumberException, SpaceNotAvailableException, HFException, HFBufMgrException {
         MiniTable.insertType = type;
         MID mid = new MID();
@@ -241,7 +247,7 @@ public class bigT {
         projection[1] = new FldSpec(rel, 2);
         projection[2] = new FldSpec(rel, 3);
         projection[3] = new FldSpec(rel, 4);
-        System.out.println("tempHeapFile.getRecCnt() = " + tempHeapFile.getRecCnt());
+        
         try {
             fscan = new FileScan(String.format("%s.%d.tmp.heap", this.name, type), MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, (short) 4, 4, projection, null);
         } catch (Exception e) {

@@ -93,7 +93,6 @@ public class RowSort {
         }
 
         Map map = sortObj.get_next();
-        MiniTable.orderType = 1;
         this.mapStream = this.bigTable.openStream(1, map.getRowLabel(), "*", "*");
     
     
@@ -103,6 +102,7 @@ public class RowSort {
         Map map = this.mapStream.getNext();
         if(map == null){
             this.mapStream.closeStream();
+            MiniTable.orderType = 9;
             Map nextVal = this.sortObj.get_next();
             if (nextVal == null) {
                 return null;

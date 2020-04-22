@@ -66,7 +66,6 @@ public class rowJoin {
         }
 //        oldMap.print();
         this.leftHeapFile.insertMap(oldMap.getMapByteArray());
-        System.out.println("left count = " + this.leftHeapFile.getRecCnt());
 
         this.leftStream.closeStream();
     }
@@ -90,7 +89,6 @@ public class rowJoin {
         }
 //        oldMap.print();
         this.rightHeapFile.insertMap(oldMap.getMapByteArray());
-        System.out.println("right count = " + this.rightHeapFile.getRecCnt());
     
         this.rightStream.closeStream();
     }
@@ -270,10 +268,9 @@ public class rowJoin {
             if (resultantBigT != null) {
                 resultantBigT.close();
             }
-            System.out.println("resultane closed");
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("resultane did not closed");
+            System.out.println("ResultantBigT did not close");
         }
 
         this.leftHeapFile.deleteFile();

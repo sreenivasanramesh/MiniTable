@@ -131,14 +131,14 @@ public class Utils {
             evictingQueue.clear();
 
 
-            System.out.println("duplicateRemoved.getRecCnt() = " + duplicateRemoved.getRecCnt());
+            /*System.out.println("duplicateRemoved.getRecCnt() = " + duplicateRemoved.getRecCnt());*/
             bigTable.batchInsert(duplicateRemoved, type);
             duplicateRemoved.deleteFile();
 
             System.out.println("Final Records =>");
             for (int i = 0; i < 5; i++) {
                 System.out.println("===========================");
-                System.out.println("Heapfile " + (i + 1));
+                System.out.println("IndexType " + (i + 1));
                 System.out.println("===========================");
                 MapScan mapScan = bigTable.heapfiles[i].openMapScan();
                 MID mid = new MID();

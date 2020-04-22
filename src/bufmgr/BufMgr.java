@@ -449,7 +449,6 @@ public class BufMgr implements GlobalConst {
             }
 
         if (all_pages != 0) {
-            System.out.println("unpinned = " + unpinned);
             if (unpinned != 0)
                 throw new PagePinnedException(null, "BUFMGR: PAGE_PINNED.");
         }

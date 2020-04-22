@@ -423,6 +423,7 @@ public class Stream {
      * @throws Exception throws generic exception.
      */
     public Map getNext() throws Exception {
+        MiniTable.orderType = orderType;
         if (this.sortObj == null) {
             System.out.println("sort object is not initialised");
             return null;
