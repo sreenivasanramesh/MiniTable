@@ -39,7 +39,7 @@ public class Stream {
     private boolean versionEnabled = true;
     private MapScan mapScan;
     private int type, orderType;
-    private String tempHeapFileName = "tempSort4";
+    private String tempHeapFileName = null;
 
 
     /**
@@ -59,6 +59,7 @@ public class Stream {
         this.orderType = orderType;
         this.starFilter = "*";
         this.lastChar = "Z";
+        this.tempHeapFileName = this.bigtable.name + "tempSort4";
         this.tempHeapFile = new Heapfile(tempHeapFileName);
     
     

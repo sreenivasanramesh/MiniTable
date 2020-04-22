@@ -16,8 +16,8 @@ public class MiniTable {
     public static boolean mapInsertOrder = false;
     public static int insertType = 0;
     
-    public static void main(String[] args) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException {
-        
+    public static void main(String[] args) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException, Exception {
+    
         String input = null;
         String[] inputStr = null;
         while (true) {
@@ -70,13 +70,11 @@ public class MiniTable {
 //                    // Always close files.
 //                    bufferedReader.close();
 //                    BIGT_STR_SIZES = setBigTConstants(metadataFile);
-                    Integer type = Integer.parseInt(inputStr[2]);
-                    orderType = Integer.parseInt(inputStr[3]);
-                    String rowFilter = inputStr[4].trim();
-                    String colFilter = inputStr[5].trim();
-                    String valFilter = inputStr[6].trim();
-                    Integer NUMBUF = Integer.parseInt(inputStr[7]);
-//                    checkDBMissing(tableName);
+                    orderType = Integer.parseInt(inputStr[2]);
+                    String rowFilter = inputStr[3].trim();
+                    String colFilter = inputStr[4].trim();
+                    String valFilter = inputStr[5].trim();
+                    Integer NUMBUF = Integer.parseInt(inputStr[6]);
                     Utils.query(tableName, orderType, rowFilter, colFilter, valFilter, NUMBUF);
                 } else if (inputStr[0].equalsIgnoreCase("rowjoin")) {
 
@@ -95,7 +93,6 @@ public class MiniTable {
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Invalid parameters. Try again.\n\n");
-                continue;
             }
             SystemDefs.JavabaseBM.flushAllPages();
 

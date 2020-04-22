@@ -43,24 +43,24 @@ public class Utils {
                 //set the map
                 Map map = new Map();
                 map.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
-        
+    
                 if (input[0].length() > MiniTable.BIGT_STR_SIZES[0]) {
                     input[0] = input[0].substring(0, MiniTable.BIGT_STR_SIZES[0]);
                 }
                 if (input[1].length() > MiniTable.BIGT_STR_SIZES[1]) {
                     input[1] = input[1].substring(0, MiniTable.BIGT_STR_SIZES[1]);
                 }
-                if (input[3].length() > MiniTable.BIGT_STR_SIZES[3]) {
-                    input[3] = input[3].substring(0, MiniTable.BIGT_STR_SIZES[3]);
+                if (input[2].length() > MiniTable.BIGT_STR_SIZES[2]) {
+                    input[2] = input[2].substring(0, MiniTable.BIGT_STR_SIZES[2]);
                 }
-                if(input[0].startsWith(UTF8_BOM)){
+                if (input[0].startsWith(UTF8_BOM)) {
                     input[0] = input[0].substring(1).trim();
                 }
-                
+    
                 map.setRowLabel(input[0]);
                 map.setColumnLabel(input[1]);
-                map.setTimeStamp(Integer.parseInt(input[2]));
-                map.setValue(input[3]);
+                map.setTimeStamp(Integer.parseInt(input[3]));
+                map.setValue(input[2]);
                 hf.insertMap(map.getMapByteArray());
                 mapCount++;
             }
@@ -139,7 +139,7 @@ public class Utils {
             System.out.println("Final Records =>");
             for (int i = 0; i < 5; i++) {
                 System.out.println("===========================");
-                System.out.println("Heapfile " + i);
+                System.out.println("Heapfile " + (i + 1));
                 System.out.println("===========================");
                 MapScan mapScan = bigTable.heapfiles[i].openMapScan();
                 MID mid = new MID();
@@ -149,7 +149,7 @@ public class Utils {
                     map = mapScan.getNext(mid);
                 }
             }
-            
+    
             System.out.println("=======================================\n");
             System.out.println("map count: " + bigTable.getMapCnt());
             System.out.println("Distinct Rows = " + bigTable.getRowCnt());
@@ -159,6 +159,8 @@ public class Utils {
             System.out.println("Writes: " + pcounter.wcounter);
             System.out.println("NumBUFS: " + NUMBUF);
             System.out.println("\n=======================================\n");
+            assert fscan != null;
+            fscan.close();
             hf.deleteFile();
             sort.close();
             bigTable.close();
@@ -176,7 +178,7 @@ public class Utils {
     }
     
     
-    static void query(String tableName, Integer orderType, String rowFilter, String colFilter, String valFilter, Integer NUMBUF) throws Exception {
+    public static void query(String tableName, Integer orderType, String rowFilter, String colFilter, String valFilter, Integer NUMBUF) throws Exception {
         //String dbPath = getDBPath(tableName, type);
         String dbPath = getDBPath();
         new SystemDefs(dbPath, 0, NUMBUF, "Clock");

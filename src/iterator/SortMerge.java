@@ -2,13 +2,17 @@ package iterator;
 
 import BigT.Map;
 import BigT.rowJoin;
+import bufmgr.PageNotReadException;
 import cmdline.MiniTable;
-import heap.*;
-import global.*;
-import bufmgr.*;
-import index.*;
+import global.AttrType;
+import global.GlobalConst;
+import global.TupleOrder;
+import heap.Heapfile;
+import heap.InvalidTupleSizeException;
+import heap.InvalidTypeException;
+import index.IndexException;
 
-import java.io.*;
+import java.io.IOException;
 
 /**
  * This file contains the interface for the sort_merge joins.
@@ -127,10 +131,11 @@ public class SortMerge extends MapIterator implements GlobalConst {
 
         p_i1 = am1;
         p_i2 = am2;
+        MiniTable.orderType = 1;
 
         if (!in1_sorted) {
             try {
-                p_i1 = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, am1, join_col_in1, order, amt_of_mem / 2, sortFld1Len);
+                p_i1 = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, am1, join_col_in1, order, amt_of_mem / 2, sortFld1Len, false);
         } catch (Exception e) {
                 throw new SortException(e, "Sort failed");
             }
@@ -138,7 +143,7 @@ public class SortMerge extends MapIterator implements GlobalConst {
 
         if (!in2_sorted) {
             try {
-                p_i2 = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, am2, join_col_in2, order, amt_of_mem/2, sortFld2Len);
+                p_i2 = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, am2, join_col_in2, order, amt_of_mem / 2, sortFld2Len, false);
             } catch (Exception e) {
                 throw new SortException(e, "Sort failed");
             }
