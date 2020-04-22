@@ -9,15 +9,15 @@ import java.io.*;
 
 public class MiniTable {
     public static final AttrType[] BIGT_ATTR_TYPES = new AttrType[]{new AttrType(0), new AttrType(0), new AttrType(1), new AttrType(0)};
-    public static short[] BIGT_STR_SIZES = new short[]{(short) 21,  //rowValue
-            (short) 21,  //colValue
-            (short) 21}; //keyValue;
+    public static short[] BIGT_STR_SIZES = new short[]{(short) 25,  //rowValue
+            (short) 25,  //colValue
+            (short) 25}; //keyValue;
     public static int orderType = 1;
     public static boolean mapInsertOrder = false;
     public static int insertType = 0;
     
-    public static void main(String[] args) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException {
-        
+    public static void main(String[] args) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException, Exception {
+
         String input = null;
         String[] inputStr = null;
         while (true) {
@@ -49,25 +49,27 @@ public class MiniTable {
                             new BufferedWriter(fileWriter);
                     bufferedWriter.write(dataFile);
                     bufferedWriter.close();
-                    Utils.batchInsert(dataFile, tableName, type);
-                } else if (inputStr[0].equalsIgnoreCase("query")) {
+                    Utils.batchInsert(dataFile, tableName, type, Integer.parseInt(inputStr[4]));
+                }
+                else if (inputStr[0].equalsIgnoreCase("query")) {
 
                     //query BIGTABLENAME TYPE ORDERTYPE ROWFILTER COLUMNFILTER VALUEFILTER NUMBUF
                     String tableName = inputStr[1].trim();
                     String filename = "/tmp/" + tableName + "_metadata.txt";
-
-                    FileReader fileReader;
-                    BufferedReader bufferedReader = null;
-                    try {
-                        fileReader = new FileReader(filename);
-                        bufferedReader = new BufferedReader(fileReader);
-                    } catch (FileNotFoundException e) {
-                        System.out.println("Given tableName does not exist\n\n");
-                        continue;
-                    }
-                    String metadataFile = bufferedReader.readLine();
-                    // Always close files.
-                    bufferedReader.close();
+//
+//                    FileReader fileReader;
+//                    BufferedReader bufferedReader = null;
+//                    try {
+//                        fileReader = new FileReader(filename);
+//                        bufferedReader = new BufferedReader(fileReader);
+//                    }
+//                    catch (FileNotFoundException e){
+//                        System.out.println("Given tableName does not exist\n\n");
+//                        continue;
+//                    }
+//                    String metadataFile = bufferedReader.readLine();
+//                    // Always close files.
+//                    bufferedReader.close();
 //                    BIGT_STR_SIZES = setBigTConstants(metadataFile);
                     orderType = Integer.parseInt(inputStr[2]);
                     String rowFilter = inputStr[3].trim();
@@ -75,6 +77,17 @@ public class MiniTable {
                     String valFilter = inputStr[5].trim();
                     Integer NUMBUF = Integer.parseInt(inputStr[6]);
                     Utils.query(tableName, orderType, rowFilter, colFilter, valFilter, NUMBUF);
+                }
+                else if (inputStr[0].equalsIgnoreCase("rowjoin")) {
+
+                    String btName1 = inputStr[1].trim();
+                    String btName2 = inputStr[2].trim();
+                    String outBtName = inputStr[3].trim();
+                    String columnFilter = inputStr[4].trim();
+                    int num_buf = Integer.parseInt(inputStr[5].trim());
+                    //GlobalConst.NUMBUF = num_buf;
+                    Utils.rowJoinWrapper(num_buf, btName1, btName2, outBtName, columnFilter);
+
                 }
                 else if (inputStr[0].equalsIgnoreCase("rowsort")) {
                     //rowsort INBTNAME OUTBTNAME COLUMNNAME NUMBUF
@@ -86,11 +99,17 @@ public class MiniTable {
                     Utils.rowSort(inTableName, outTableName, columnName, NUMBUF);
 
                 }
+                else if (inputStr[0].equalsIgnoreCase("getCounts")) {
+                    Integer numBufs = Integer.parseInt(inputStr[1].trim());
+                    Utils.getCounts(numBufs);
+
+                }
                 else {
                     System.out.println("Invalid input. Type exit to quit.\n\n");
                     continue;
                 }
             } catch (Exception e) {
+                e.printStackTrace();
                 System.out.println("Invalid parameters. Try again.\n\n");
                 continue;
             }
@@ -105,7 +124,7 @@ public class MiniTable {
         System.out.print("exiting...");
     }
 
-    private static short[] setBigTConstants(String dataFileName) {
+    protected static short[] setBigTConstants(String dataFileName) {
         try (BufferedReader br = new BufferedReader(new FileReader(dataFileName))) {
             String line;
             int maxRowKeyLength = Short.MIN_VALUE;

@@ -255,15 +255,20 @@ class BufHashTbl implements GlobalConst {
                     System.out.println(cur.frameNo + "[" + cur.pageNo.pid + "]-");
                 }
                 System.out.println("\t\t");
-
+    
             } else {
                 System.out.println("NONE\t");
             }
         }
         System.out.println();
-
+    
     }
-
+    
+    public void clearHashTable() {
+        for (int i = 0; i < HTSIZE; i++)
+            ht[i] = null;
+    }
+    
 }
 
 // *****************************************************
@@ -826,8 +831,8 @@ public class BufMgr implements GlobalConst {
         PageId pageId = new PageId(INVALID_PAGE);
         privFlushPages(pageId, 1);
     }
-
-
+    
+    
     /**
      * Gets the total number of buffers.
      *
@@ -836,8 +841,22 @@ public class BufMgr implements GlobalConst {
     public int getNumBuffers() {
         return numBuffers;
     }
-
-
+    
+    public void setNumBuffers(int numBuf) throws Exception {
+        for (int i = 0; i < numBuffers; ++i) {
+            frmeTable[i].pin_cnt = 0;
+        }
+        flushAllPages();
+        hashTable.clearHashTable();
+        this.numBuffers = numBuf;
+        frmeTable = new FrameDesc[numBuffers];
+        for (int i = 0; i < numBuffers; i++)  // initialize frameTable
+            frmeTable[i] = new FrameDesc();
+        bufPool = new byte[numBuffers][MAX_SPACE];
+        replacer = new Clock(this);
+        replacer.setBufferManager(this);
+    }
+    
     /**
      * Gets the total number of unpinned buffer frames.
      *
@@ -864,7 +883,8 @@ public class BufMgr implements GlobalConst {
         }
 
     } // end of write_page
-
+    
+    
     private void read_page(PageId pageno, Page page)
             throws BufMgrException {
 

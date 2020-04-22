@@ -1539,10 +1539,9 @@ public class Heapfile implements Filetype, GlobalConst {
             throws HFDiskMgrException {
 
         try {
-            System.out.println(filename);
             SystemDefs.JavabaseDB.add_file_entry(filename, pageno);
         } catch (Exception e) {
-            throw new HFDiskMgrException(e, "Heapfile.java: add_file_entry() failed");
+            throw new HFDiskMgrException(e, "Heapfile.java: add_file_entry() failed" + filename);
         }
 
     } // end of add_file_entry
