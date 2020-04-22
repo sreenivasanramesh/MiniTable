@@ -29,7 +29,7 @@ public class joinTest extends MiniTable {
                 new BufferedWriter(fileWriter);
         bufferedWriter.write(dataFile);
         bufferedWriter.close();
-        Utils.batchInsert(dataFile, tableName, type);
+        Utils.batchInsert(dataFile, tableName, type, NUMBUF);
     }
     
     public static void getCount(String tableName) throws PageNotFoundException, PagePinnedException, PageUnpinnedException, HashOperationException, ReplacerException, BufMgrException, InvalidFrameNumberException, IOException, HashEntryNotFoundException, InvalidTupleSizeException, HFBufMgrException, InvalidSlotNumberException, HFDiskMgrException {

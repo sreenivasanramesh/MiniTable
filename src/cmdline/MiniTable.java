@@ -49,7 +49,7 @@ public class MiniTable {
                             new BufferedWriter(fileWriter);
                     bufferedWriter.write(dataFile);
                     bufferedWriter.close();
-                    Utils.batchInsert(dataFile, tableName, type);
+                    Utils.batchInsert(dataFile, tableName, type, Integer.parseInt(inputStr[4]));
                 } else if (inputStr[0].equalsIgnoreCase("query")) {
 
                     //query BIGTABLENAME TYPE ORDERTYPE ROWFILTER COLUMNFILTER VALUEFILTER NUMBUF

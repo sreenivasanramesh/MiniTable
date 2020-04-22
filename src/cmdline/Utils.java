@@ -7,11 +7,12 @@ import BigT.rowJoin;
 import commonutils.EvictingQueue;
 import diskmgr.pcounter;
 import global.*;
-import heap.Heapfile;
-import heap.MapScan;
+import heap.*;
 import iterator.*;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static global.GlobalConst.NUMBUF;
 
@@ -19,13 +20,13 @@ public class Utils {
     
     public static final int NUM_PAGES = 100000;
     
-    public static void batchInsert(String dataFile, String tableName, int type) throws Exception {
+    public static void batchInsert(String dataFile, String tableName, int type, int numBufs) throws Exception {
         String UTF8_BOM = "\uFEFF";
         String dbPath = getDBPath();
         System.out.println("DB name =>" + dbPath);
         File f = new File(dbPath);
         Integer numPages = NUM_PAGES;
-        new SystemDefs(dbPath, numPages, NUMBUF, "Clock");
+        new SystemDefs(dbPath, numPages, numBufs, "Clock");
         pcounter.initialize();
         
         FileInputStream fileStream = null;
@@ -272,9 +273,58 @@ public class Utils {
         }
     }
     
-    public static void getCounts(Integer numBufs) {
+    public static void addTableToInventory(String bigTable) throws Exception {
+        try {
+            Heapfile inventory = new Heapfile("bigT_inventory");
+            Map tableInfo = new Map();
+            tableInfo.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
+            tableInfo.setRowLabel(bigTable);
+            tableInfo.setColumnLabel("0");
+            tableInfo.setTimeStamp(0);
+            tableInfo.setValue("0");
+            inventory.insertMap(tableInfo.getMapByteArray());
+        } catch (Exception exp) {
+            exp.printStackTrace();
+            throw new Exception("Fetching from Inventory failed " + exp.toString());
+        }
+    }
     
+    public static List<String> getAllTablesInventory() throws InvalidTupleSizeException, IOException, HFDiskMgrException, HFBufMgrException, HFException {
+        List<String> bigTableList = new ArrayList<>();
+        Heapfile bigTInventory = new Heapfile("bigT_inventory");
+        MapScan mapScan = bigTInventory.openMapScan();
+        MID mid = new MID();
+        Map m = mapScan.getNext(mid);
+        while (m != null) {
+            bigTableList.add(m.getRowLabel());
+            mid = new MID();
+            m = mapScan.getNext(mid);
+        }
+        mapScan.closescan();
+        return bigTableList;
+    }
     
+    public static void getCounts(Integer numBufs) throws Exception {
+        try {
+            new SystemDefs(Utils.getDBPath(), Utils.NUM_PAGES, numBufs, "Clock");
+            List<String> tables = getAllTablesInventory();
+            System.out.println("================================");
+            for (String table : tables) {
+                System.out.println("Big Table Name: " + table);
+                System.out.println("----------------------------");
+                bigT bigT = new bigT(table, false);
+                System.out.println("MapCount: " + bigT.getMapCnt());
+                System.out.println("RowCount: " + bigT.getRowCnt());
+                System.out.println("ColCount: " + bigT.getColumnCnt());
+                System.out.println("----------------------------");
+                bigT.close();
+            }
+            System.out.println("================================");
+        } catch (Exception exp) {
+            exp.printStackTrace();
+            throw new Exception("Error while getting counts : " + exp.toString());
+        }
+        
     }
 }
 

@@ -72,7 +72,6 @@ public class SystemDefs {
     
         File file = new File(dbname);
         if(file.exists()){
-            System.out.println("DB file exists, so just reopening");
             MINIBASE_RESTART_FLAG = true;
         }
         
