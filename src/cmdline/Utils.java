@@ -253,8 +253,9 @@ public class Utils {
         System.out.println("\n=======================================\n");
 
         rowSort.closeStream();
-        SystemDefs.JavabaseBM.flushAllPages();
-        SystemDefs.JavabaseDB.closeDB();
+        SystemDefs.JavabaseBM.setNumBuffers(0);
+//        SystemDefs.JavabaseBM.flushAllPages();
+//        SystemDefs.JavabaseDB.closeDB();
     }
 
 

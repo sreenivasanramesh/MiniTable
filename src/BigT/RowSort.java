@@ -3,7 +3,10 @@ package BigT;
 import cmdline.MiniTable;
 import global.TupleOrder;
 import heap.Heapfile;
-import iterator.*;
+import iterator.FileScan;
+import iterator.FldSpec;
+import iterator.MapSort;
+import iterator.RelSpec;
 
 public class RowSort {
 
@@ -18,6 +21,7 @@ public class RowSort {
         this.column = column;
         this.numBuffers = numBuffers;
         this.bigTable = new bigT(bigTable, false);
+        System.out.println("bigTable = " + bigTable);
         this.heapfile = new Heapfile("temp_sort_file");
         insertTempHeapFile();
         createMapStream();
@@ -27,10 +31,12 @@ public class RowSort {
 
     private void insertTempHeapFile() throws Exception {
 
+        MiniTable.orderType = 1;
         Stream tempStream = this.bigTable.openStream(1, "*", "*", "*");
         Map map = tempStream.getNext();
+        System.out.println("map = " + map);
         String value = "";
-        String row = "";
+        String row = ""; //previous row
 
         while(map != null)
         {
@@ -39,23 +45,27 @@ public class RowSort {
                     value = "zzzzz";
                 }
                 Map tempMap = new Map();
+                tempMap.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
                 tempMap.setRowLabel(row);
                 tempMap.setColumnLabel("temp_column");
                 tempMap.setValue(value);
                 tempMap.setTimeStamp(1);
                 this.heapfile.insertMap(tempMap.getMapByteArray());
-                row = map.getRowLabel(); //next
+                map.print();
+                row = map.getRowLabel();
                 value = "";
             }
             if(map.getColumnLabel().equals(this.column)){
                 value = map.getValue();
             }
             map = tempStream.getNext();
+
         }
 
         tempStream.closeStream();
 
         Map tempMap = new Map();
+        tempMap.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
         tempMap.setRowLabel(row);
         tempMap.setColumnLabel("temp_column");
         tempMap.setValue(value);
@@ -79,24 +89,24 @@ public class RowSort {
         }
 
         try {
-            this.sortObj = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, 4, new TupleOrder(TupleOrder.Ascending), this.numBuffers, MiniTable.BIGT_STR_SIZES[1], false);
+            this.sortObj = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, 4, new TupleOrder(TupleOrder.Ascending), 20, MiniTable.BIGT_STR_SIZES[1], false);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         Map map = sortObj.get_next();
-        this.mapStream = this.bigTable.openStream(9999, map.getRowLabel(), "*", "*");
+        this.mapStream = this.bigTable.openStream(1, map.getRowLabel(), "*", "*");
 
     }
 
     public Map getNext() throws Exception {
         Map map = this.mapStream.getNext();
         if(map == null){
-            mapStream.closeStream();
+            this.mapStream.closeStream();
             Map NextVal = this.sortObj.get_next();
             if (NextVal == null)
                 return null;
-            Stream tempMapStream = this.bigTable.openStream(9999, NextVal.getRowLabel(), "*", "*");
+            Stream tempMapStream = this.bigTable.openStream(1, NextVal.getRowLabel(), "*", "*");
             map = tempMapStream.getNext();
             if(map == null)
                 tempMapStream.closeStream();
