@@ -4,6 +4,7 @@ import BigT.Map;
 import BigT.Stream;
 import BigT.bigT;
 import bufmgr.*;
+import commonutils.EvictingQueue;
 import diskmgr.pcounter;
 import global.*;
 import heap.*;
@@ -14,9 +15,9 @@ import java.io.*;
 import static global.GlobalConst.NUMBUF;
 
 class Utils {
-
+    
     private static final int NUM_PAGES = 100000;
-
+    
     static void batchInsert(String dataFile, String tableName, int type) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException, HFDiskMgrException, HFBufMgrException, HFException {
         String dbPath = getDBPath();
         System.out.println("DB name =>" + dbPath);
@@ -25,7 +26,7 @@ class Utils {
         new SystemDefs(dbPath, numPages, NUMBUF, "Clock");
         pcounter.initialize();
         String UTF8_BOM = "\uFEFF";
-
+        
         FileInputStream fileStream = null;
         BufferedReader br = null;
         Heapfile hf = new Heapfile(tableName + "tempfile");
@@ -35,23 +36,27 @@ class Utils {
             br = new BufferedReader(new InputStreamReader(fileStream));
             String inputStr;
             int mapCount = 0;
-
+    
             while ((inputStr = br.readLine()) != null) {
                 String[] input = inputStr.split(",");
                 //set the map
                 Map map = new Map();
                 map.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
-                
+        
                 if (input[0].length() > 25) {
+                    System.out.println("input[0] = " + input[0]);
                     input[0] = input[0].substring(0, 25);
                 }
-                if(input[0].startsWith(UTF8_BOM)){
-                    input[0] = input[0].substring(1).trim();
-                }
+//                if (input[0].startsWith(UTF8_BOM)) {
+//                    System.out.println("BOM BOM input[0] = " + input[0]);
+//                    input[0] = input[0].substring(1).trim();
+//                }
                 if (input[1].length() > 25) {
+                    System.out.println("input[1] = " + input[1]);
                     input[1] = input[1].substring(0, 25);
                 }
                 if (input[3].length() > 25) {
+                    System.out.println("input[3] = " + input[3]);
                     input[3] = input[3].substring(0, 25);
                 }
                 map.setRowLabel(input[0]);
@@ -70,7 +75,7 @@ class Utils {
             projlist[3] = new FldSpec(rel, 4);
     
             FileScan fscan = null;
-
+    
             try {
                 fscan = new FileScan(tableName + "tempfile", MiniTable.BIGT_ATTR_TYPES,
                         MiniTable.BIGT_STR_SIZES, (short) 4, 4, projlist, null);
@@ -81,39 +86,70 @@ class Utils {
             MapSort sort = null;
             try {
                 MiniTable.orderType = 1;
-                sort = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, 1, new TupleOrder(TupleOrder.Ascending), 10, 25, false);
+                sort = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, 1, new TupleOrder(TupleOrder.Ascending), 20, 25, false);
             } catch (Exception e) {
                 e.printStackTrace();
             }
             Heapfile duplicateRemoved = new Heapfile(tableName + "_duplicate_removed");
             Map m = sort.get_next();
             // TODO: Add duplicate elimination logic
-            String oldRowLabel;
-            String oldColumnLabel;
+            String oldRowLabel = null;
+            String oldColumnLabel = null;
             if (m != null) {
                 oldRowLabel = m.getRowLabel();
                 oldColumnLabel = m.getColumnLabel();
             }
-    
+            EvictingQueue<Map> evictingQueue = new EvictingQueue<>(3);
+            FileWriter fileWriter = new FileWriter("/tmp/resultsash");
+            int count = 1;
             while (m != null) {
-//                m.print();
+//                if ((!oldRowLabel.equals(m.getRowLabel()) && oldColumnLabel.equals(m.getColumnLabel())) || ((oldRowLabel.equals(m.getRowLabel()) && !oldColumnLabel.equals(m.getColumnLabel()))) || ((oldRowLabel.equals(m.getRowLabel()) && oldColumnLabel.equals(m.getColumnLabel())))) {
+                if (!oldRowLabel.equals(m.getRowLabel()) || !oldColumnLabel.equals(m.getColumnLabel())) {
+                    //Heap push evicting queue
+                    for (Map map : evictingQueue) {
+                        count += 1;
+                        fileWriter.write(map.getRowLabel() + "," + map.getColumnLabel() + "," + map.getTimeStamp() + "," + map.getValue() + "\n");
+                        duplicateRemoved.insertMap(map.getMapByteArray());
+                    }
+                    evictingQueue.clear();
+                }
+                Map insertMap = new Map();
+                insertMap.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
+                insertMap.copyMap(m);
+                evictingQueue.add(insertMap);
+                oldRowLabel = new String(m.getRowLabel());
+                oldColumnLabel = new String(m.getColumnLabel());
+                m.print();
                 m = sort.get_next();
-        
             }
+
+//            System.out.println("evict len:");
+//            System.out.println(evictingQueue.size());
+            for (Map map : evictingQueue) {
+                count += 1;
+                fileWriter.write(map.getRowLabel() + "," + map.getColumnLabel() + "," + map.getTimeStamp() + "," + map.getValue() + "\n");
+                duplicateRemoved.insertMap(map.getMapByteArray());
+            }
+            System.out.println("count = " + count);
+            fileWriter.close();
+            evictingQueue.clear();
+    
+    
             System.out.println("Sorting done");
-            System.out.println("hf.getRecCnt() = " + hf.getRecCnt());
-            bigTable.batchInsert(hf, type);
+            System.out.println("duplicateRemoved.getRecCnt() = " + duplicateRemoved.getRecCnt());
+            if (true) return;
+            bigTable.batchInsert(duplicateRemoved, type);
     
     
             System.out.println("Final Records =>");
-            for(int i=0;i<5;i++){
+            for (int i = 0; i < 5; i++) {
                 System.out.println("===========================");
                 System.out.println("Heapfile " + i);
                 System.out.println("===========================");
                 MapScan mapScan = bigTable.heapfiles[i].openMapScan();
                 MID mid = new MID();
                 Map map = mapScan.getNext(mid);
-                while(map != null){
+                while (map != null) {
                     map.print();
                     map = mapScan.getNext(mid);
                 }
@@ -131,15 +167,15 @@ class Utils {
             hf.deleteFile();
             sort.close();
             bigTable.close();
-
-
+    
+    
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             fileStream.close();
             br.close();
         }
-
+        
         SystemDefs.JavabaseBM.flushAllPages();
         SystemDefs.JavabaseDB.closeDB();
     }
@@ -157,7 +193,7 @@ class Utils {
             bigT bigTable = new bigT(tableName, false);
             Stream mapStream = bigTable.openStream(orderType, rowFilter, colFilter, valFilter);
             MID mapId = null;
-
+    
             while (true) {
                 Map mapObj = mapStream.getNext();
                 if (mapObj == null)
@@ -167,27 +203,27 @@ class Utils {
             }
             bigTable.close();
             mapStream.closeStream();
-
+    
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+    
         System.out.println("\n=======================================\n");
         System.out.println("Matched Records: " + resultCount);
         System.out.println("Reads : " + pcounter.rcounter);
         System.out.println("Writes: " + pcounter.wcounter);
         System.out.println("\n=======================================\n");
-
+    
     }
-
+    
     public static String getDBPath() {
         String useId = "user.name";
         String userAccName;
         userAccName = System.getProperty(useId);
         return "/tmp/" + userAccName + ".db";
     }
-
-
+    
+    
     static CondExpr[] getCondExpr(String filter) {
         if (filter.equals("*")) {
             return null;

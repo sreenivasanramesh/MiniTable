@@ -15,7 +15,7 @@ public class MapSort extends MapIterator implements GlobalConst {
 
     private int[] n_Maps;
     private int n_runs;
-    private static final int ARBIT_RUNS = 10;
+    private static final int ARBIT_RUNS = 30;
     private short mapSize;
     private short[] str_fld_lens = null;
     private int num_cols = 4;

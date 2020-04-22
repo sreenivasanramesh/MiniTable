@@ -1,7 +1,6 @@
 package BigT;
 
 import cmdline.MiniTable;
-import global.AttrType;
 import global.MID;
 import global.PageId;
 import global.SystemDefs;
@@ -14,12 +13,14 @@ import java.util.HashMap;
 import static global.GlobalConst.MINIBASE_DB_SIZE;
 import static global.GlobalConst.NUMBUF;
 
+
 public class BigTTest {
     
     public void testMID(MID mid){
         mid.setPageNo(new PageId(10));
         mid.setSlotNo(20);
     }
+    
     public void addArrayList(java.util.Map<Integer, ArrayList<MID>> searchResults, MID mid){
         Integer key = 1;
         ArrayList<MID> arrayList = searchResults.get(key) == null ? new ArrayList<>() : searchResults.get(key);
@@ -65,50 +66,28 @@ public class BigTTest {
         map2.print();
     }
     
-    public void printHeapFiles(bigT bigT) throws InvalidTupleSizeException, IOException {
-        Map map;
-        System.out.println("=========================");
-        for(int i=0;i<5;i++){
-            System.out.println("=====Heap file " + i);
-            MapScan mapScan = bigT.heapfiles[i].openMapScan();
-            MID mid = new MID();
-            map = mapScan.getNext(mid);
-            while(map != null){
-                map.print();
-                map = mapScan.getNext(mid);
-            }
-        }
-        System.out.println("=========================");
-    }
-    
-    public void printSameLine(){
-        
-        for(int i=0; i<Integer.MAX_VALUE;i++){
-            System.out.print("\r" + i);
-        }
-    }
-    
     public static void main(String[] args) throws Exception {
         boolean isNewDb = true;
         int numPages = isNewDb ? MINIBASE_DB_SIZE : 0;
         System.out.println("numPages = " + numPages);
         new SystemDefs("/tmp/ash_test.db", numPages, NUMBUF, "Clock");
-        
+    
         MID midtest = new MID();
         BigTTest bigTTest = new BigTTest();
-        bigTTest.checkHeap();
+//        bigTTest.checkHeap();
+        bigTTest.queueCheck();
         int test = 0;
-        if (test == 0){
+        if (test == 0) {
             return;
         }
         bigTTest.testMID(midtest);
         System.out.println("midtest = " + midtest);
-        
+    
         bigTTest.printSameLine();
-       
+
 //        java.util.Map<Integer, ArrayList<Integer>> test = new HashMap<>();
 //        System.out.println(test.get(0));
-        
+
 //        BigTTest bigTTest = new BigTTest();
 //        MID mid = new MID();
 //        bigTTest.checkMid(mid);
@@ -186,6 +165,67 @@ public class BigTTest {
 //
 //        bigT.close();
     
+    }
+    
+    public void printHeapFiles(bigT bigT) throws InvalidTupleSizeException, IOException {
+        Map map;
+        System.out.println("=========================");
+        for (int i = 0; i < 5; i++) {
+            System.out.println("=====Heap file " + i);
+            MapScan mapScan = bigT.heapfiles[i].openMapScan();
+            MID mid = new MID();
+            map = mapScan.getNext(mid);
+            while (map != null) {
+                map.print();
+                map = mapScan.getNext(mid);
+            }
+        }
+        System.out.println("=========================");
+    }
+    
+    public void printSameLine() {
+        
+        for (int i = 0; i < Integer.MAX_VALUE; i++) {
+            System.out.print("\r" + i);
+        }
+    }
+    
+    public void queueCheck() throws InvalidTypeException, InvalidStringSizeArrayException, InvalidMapSizeException, IOException {
+        LimitedSizeQueue<Map> limitedSizeQueue = new LimitedSizeQueue<>(3);
+        limitedSizeQueue.add(this.formMap("1", "2", 3, "4"));
+        limitedSizeQueue.add(this.formMap("5", "6", 7, "8"));
+        limitedSizeQueue.add(this.formMap("9", "10", 11, "12"));
+        limitedSizeQueue.add(this.formMap("13", "14", 15, "16"));
+        limitedSizeQueue.add(this.formMap("17", "18", 19, "20"));
+        
+        System.out.println("limitedSizeQueue.toString() = " + limitedSizeQueue.toString());
+        
+        
+    }
+    
+    public class LimitedSizeQueue<K> extends ArrayList<K> {
+        
+        private int maxSize;
+        
+        public LimitedSizeQueue(int size) {
+            this.maxSize = size;
+        }
+        
+        public boolean add(K k) {
+            boolean r = super.add(k);
+            if (size() > maxSize) {
+                removeRange(0, size() - maxSize);
+            }
+            return r;
+        }
+        
+        public K getYoungest() {
+            return get(size() - 1);
+        }
+        
+        public K getOldest() {
+            return get(0);
+        }
     }
     
     private Map formMap(String row, String col, int timestamp, String value) throws IOException, InvalidMapSizeException, InvalidStringSizeArrayException, InvalidTypeException {
