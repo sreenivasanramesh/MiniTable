@@ -40,7 +40,7 @@ public class RowSort {
         {
             if(!map.getRowLabel().equals(row)){
                 if (value.equals("")) {
-                    value = "99999";
+                    value = "0";
                 }
                 Map tempMap = new Map();
                 tempMap.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
@@ -56,15 +56,18 @@ public class RowSort {
                 value = map.getValue();
             }
             map = tempStream.getNext();
-
+    
         }
-
+    
         tempStream.closeStream();
-
+    
         Map tempMap = new Map();
         tempMap.setHeader(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES);
         tempMap.setRowLabel(row);
         tempMap.setColumnLabel("temp_column");
+        if (value == "") {
+            value = "0";
+        }
         tempMap.setValue(value);
         tempMap.setTimeStamp(1);
         this.heapfile.insertMap(tempMap.getMapByteArray());
