@@ -26,8 +26,8 @@ We have also extended the diskmgr package, which created and maintains our Btree
 - Type 1: No index.
 - Type 2: One Btree to index row labels.
 - Type 3: One Btree to index column labels.
--  Type 4: One Btree to index column label and row label (combined key) and one Btree to index timestamps.
-- Type 5: One Btree to index row label and value (combined key) and one Btree to index timestamps
+-  Type 4: One Btree to index column label and row label (combined key)
+- Type 5: One Btree to index row label and value (combined key)
 
 
 ## Usage
@@ -38,18 +38,28 @@ java cmdline/MiniTable.java
 ```
 The batch insert query is used to insert multiple Maps into a bigTable. A csv with Maps (row, column, timestamp, value) is provided to the batch insert command. The command for batch insert:
 ``` 
-batchinsert PATH_TO_DATAFILE TYPE BIGTABLENAME
+batchinsert BTNAME1 TYPE TABLENAME NUMBUF
 ```
+To do Map insert, use the following command
+```
+mapinsert ROW COLUMN VALUE TIMESTAMP TYPE TABLENAME NUMBUF
+``` 
+
 To query the data you need to pass the index type and order type along with the filters. `NUMBUF` is the number of buffers which will be used during querying. The command for querying:
 ```
-query BIGTABLENAME TYPE ORDERTYPE ROWFILTER COLUMNFILTER VALUEFILTER NUMBUF
+query TABLENAME ORDERTYPE ROWFILTER COLUMNFILTER VALUEFILTER NUMBUF
 ```
 
-## Future Enhancements
-- Supporting different storage types in one bigDB.
-- Supporting different maps stored of different types in one big table.
-- More indexing options, with possibly sorted heap file storage.
-- Map insert into the big table. Currently only batch inserts are supported.
-- Implementing a join operator.
-- Modifying all Minibase internal structures such as directory pages to use Maps instead of Tuples.
-- Other sorting options.
+To do a join on a column
+```
+rowjoin BTNAME1 BTNAME2 OUTBTNAME COLUMNFILTER NUMBUF
+```
+
+To do rowsort use the following command
+```
+rowsort IN_TABLE OUT_TABLE COLUMN_NAME NUMBUF
+```
+The command used to get the count of maps, distinct rows and distinct  columns in all the heap files is given below
+```
+getCounts NUMBUF
+```
