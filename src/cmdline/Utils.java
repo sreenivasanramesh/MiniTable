@@ -126,7 +126,6 @@ public class Utils {
                 fileWriter.write(map.getRowLabel() + "," + map.getColumnLabel() + "," + map.getTimeStamp() + "," + map.getValue() + "\n");
                 duplicateRemoved.insertMap(map.getMapByteArray());
             }
-            System.out.println("count = " + count);
             fileWriter.close();
             evictingQueue.clear();
 
@@ -224,12 +223,18 @@ public class Utils {
     public static void rowJoinWrapper(int numBuf, String btName1, String btName2, String outBtName, String columnFilter) throws Exception {
         rowJoin rj;
         new SystemDefs(Utils.getDBPath(), Utils.NUM_PAGES, numBuf, "Clock");
-
+        pcounter.initialize();
+    
         Stream leftstream = new bigT(btName1, false).openStream(1, "*", columnFilter, "*");
         rj = new rowJoin(20, leftstream, btName2, columnFilter, outBtName, btName1);
         SystemDefs.JavabaseBM.setNumBuffers(0);
         System.out.println("Query results => ");
         Utils.query(outBtName, 1, "*", "*", "*", NUMBUF);
+    
+        System.out.println("\n=======================================\n");
+        System.out.println("Reads : " + pcounter.rcounter);
+        System.out.println("Writes: " + pcounter.wcounter);
+        System.out.println("\n=======================================\n");
     }
 
     public static void rowSort(String inTableName, String outTableName, String columnName, int NUMBUF) throws Exception {
@@ -346,6 +351,8 @@ public class Utils {
     public static void getCounts(Integer numBufs) throws Exception {
         try {
             new SystemDefs(Utils.getDBPath(), Utils.NUM_PAGES, numBufs, "Clock");
+            pcounter.initialize();
+    
             List<String> tables = getAllTablesInventory();
             System.out.println("================================");
             for (String table : tables) {
@@ -358,7 +365,11 @@ public class Utils {
                 System.out.println("----------------------------");
                 bigT.close();
             }
-            System.out.println("================================");
+    
+            System.out.println("\n=======================================\n");
+            System.out.println("Reads : " + pcounter.rcounter);
+            System.out.println("Writes: " + pcounter.wcounter);
+            System.out.println("\n=======================================\n");
         } catch (Exception exp) {
             exp.printStackTrace();
             throw new Exception("Error while getting counts : " + exp.toString());
@@ -367,6 +378,7 @@ public class Utils {
     }
     public static void insertMap(String bigtName, int indextype, String rowLabel, String columnLabel, String ValueInfo, int timeStampVal, int NUMBUF) throws Exception {
         new SystemDefs(Utils.getDBPath(), Utils.NUM_PAGES, NUMBUF, "Clock");
+        pcounter.initialize();
         try{
             bigT inBigTName = new bigT(bigtName, false);
             Map mapObj = new Map();
@@ -381,8 +393,12 @@ public class Utils {
             System.out.println("Inserted Successfully.");
         } catch (Exception exp) {
             exp.printStackTrace();
-            throw new Exception("Table "+bigtName+"does not exist!!");
+            throw new Exception("Table " + bigtName + "does not exist!!");
         }
+        System.out.println("\n=======================================\n");
+        System.out.println("Reads : " + pcounter.rcounter);
+        System.out.println("Writes: " + pcounter.wcounter);
+        System.out.println("\n=======================================\n");
     }
 }
 
