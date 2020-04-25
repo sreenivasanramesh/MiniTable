@@ -13,8 +13,10 @@ public class MiniTable {
             (short) 25,  //colValue
             (short) 25}; //keyValue;
     public static int orderType = 1;
+    public static boolean mapInsertOrder = false;
+    public static int insertType = 0;
 
-    public static void main(String[] args) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException {
+    public static void main(String[] args) throws IOException, PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException, HashOperationException, Exception {
 
         String input = null;
         String[] inputStr = null;
@@ -33,10 +35,13 @@ public class MiniTable {
                 else if (inputStr[0].equalsIgnoreCase("batchinsert")) {
                     //batchinsert DATAFILENAME TYPE BIGTABLENAME
                     String dataFile = inputStr[1];
-                    BIGT_STR_SIZES = setBigTConstants(dataFile);
+                    /*
+                    Setting constant size strings of 25 bytes
+                    */
+//                    BIGT_STR_SIZES = setBigTConstants(dataFile);
                     Integer type = Integer.parseInt(inputStr[2]);
                     String tableName = inputStr[3];
-                    checkDBExists(tableName);
+//                    checkDBExists(tableName);
                     // Set the metadata name for the given DB. This is used to set the headers for the Maps
                     File file = new File("/tmp/" + tableName + "_metadata.txt");
                     FileWriter fileWriter = new FileWriter(file);
@@ -44,40 +49,69 @@ public class MiniTable {
                             new BufferedWriter(fileWriter);
                     bufferedWriter.write(dataFile);
                     bufferedWriter.close();
-                    Utils.batchInsert(dataFile, tableName, type);
+                    Utils.batchInsert(dataFile, tableName, type, Integer.parseInt(inputStr[4]));
                 } else if (inputStr[0].equalsIgnoreCase("query")) {
 
                     //query BIGTABLENAME TYPE ORDERTYPE ROWFILTER COLUMNFILTER VALUEFILTER NUMBUF
                     String tableName = inputStr[1].trim();
                     String filename = "/tmp/" + tableName + "_metadata.txt";
+//
+//                    FileReader fileReader;
+//                    BufferedReader bufferedReader = null;
+//                    try {
+//                        fileReader = new FileReader(filename);
+//                        bufferedReader = new BufferedReader(fileReader);
+//                    }
+//                    catch (FileNotFoundException e){
+//                        System.out.println("Given tableName does not exist\n\n");
+//                        continue;
+//                    }
+//                    String metadataFile = bufferedReader.readLine();
+//                    // Always close files.
+//                    bufferedReader.close();
+//                    BIGT_STR_SIZES = setBigTConstants(metadataFile);
+                    orderType = Integer.parseInt(inputStr[2]);
+                    String rowFilter = inputStr[3].trim();
+                    String colFilter = inputStr[4].trim();
+                    String valFilter = inputStr[5].trim();
+                    Integer NUMBUF = Integer.parseInt(inputStr[6]);
+                    Utils.query(tableName, orderType, rowFilter, colFilter, valFilter, NUMBUF);
+                } else if (inputStr[0].equalsIgnoreCase("rowjoin")) {
+                    String btName1 = inputStr[1].trim();
+                    String btName2 = inputStr[2].trim();
+                    String outBtName = inputStr[3].trim();
+                    String columnFilter = inputStr[4].trim();
+                    int num_buf = Integer.parseInt(inputStr[5].trim());
+                    //GlobalConst.NUMBUF = num_buf;
+                    Utils.rowJoinWrapper(num_buf, btName1, btName2, outBtName, columnFilter);
 
-                    FileReader fileReader;
-                    BufferedReader bufferedReader = null;
-                    try {
-                        fileReader = new FileReader(filename);
-                        bufferedReader = new BufferedReader(fileReader);
-                    }
-                    catch (FileNotFoundException e){
-                        System.out.println("Given tableName does not exist\n\n");
-                        continue;
-                    }
-                    String metadataFile = bufferedReader.readLine();
-                    // Always close files.
-                    bufferedReader.close();
-                    BIGT_STR_SIZES = setBigTConstants(metadataFile);
-                    Integer type = Integer.parseInt(inputStr[2]);
-                    orderType = Integer.parseInt(inputStr[3]);
-                    String rowFilter = inputStr[4].trim();
-                    String colFilter = inputStr[5].trim();
-                    String valFilter = inputStr[6].trim();
-                    Integer NUMBUF = Integer.parseInt(inputStr[7]);
-                    checkDBMissing(tableName);
-                    Utils.query(tableName, type, orderType, rowFilter, colFilter, valFilter, NUMBUF);
+                } else if (inputStr[0].equalsIgnoreCase("rowsort")) {
+                    String inTableName = inputStr[1].trim();
+                    String outTableName = inputStr[2].trim();
+                    String columnName = inputStr[3].trim();
+                    Integer NUMBUF = Integer.parseInt(inputStr[4].trim());
+                    Utils.rowSort(inTableName, outTableName, columnName, NUMBUF);
+
+                } else if (inputStr[0].equalsIgnoreCase("getCounts")) {
+                    Integer numBufs = Integer.parseInt(inputStr[1].trim());
+                    Utils.getCounts(numBufs);
+
+                } else  if (inputStr[0].equalsIgnoreCase("mapinsert")) {
+                    String rowLabel = inputStr[1].trim();
+                    String columnLabel = inputStr[2].trim();
+                    String ValueInfo = inputStr[3].trim();
+                    int timeStampVal = Integer.parseInt(inputStr[4].trim());
+                    int indextype = Integer.parseInt(inputStr[5].trim());
+                    String bigtName = inputStr[6].trim();
+                    int NUMBUF = Integer.parseInt(inputStr[4].trim());
+                    Utils.insertMap(bigtName, indextype, rowLabel, columnLabel, ValueInfo, timeStampVal, NUMBUF);
+
                 } else {
                     System.out.println("Invalid input. Type exit to quit.\n\n");
                     continue;
                 }
             } catch (Exception e) {
+                e.printStackTrace();
                 System.out.println("Invalid parameters. Try again.\n\n");
                 continue;
             }
@@ -92,7 +126,7 @@ public class MiniTable {
         System.out.print("exiting...");
     }
 
-    private static short[] setBigTConstants(String dataFileName) {
+    protected static short[] setBigTConstants(String dataFileName) {
         try (BufferedReader br = new BufferedReader(new FileReader(dataFileName))) {
             String line;
             int maxRowKeyLength = Short.MIN_VALUE;
@@ -129,23 +163,5 @@ public class MiniTable {
             ex.printStackTrace();
         }
         return new short[0];
-    }
-
-    private static void checkDBExists(String dbName) {
-        String dbPath = Utils.getDBPath(dbName);
-        File f = new File(dbPath);
-        if (f.exists()) {
-            System.out.println("DB already exists. Exiting.");
-            System.exit(0);
-        }
-    }
-
-    private static void checkDBMissing(String dbName) {
-        String dbPath = Utils.getDBPath(dbName);
-        File f = new File(dbPath);
-        if (!f.exists()) {
-            System.out.println("DB does not exist. Exiting.");
-            System.exit(0);
-        }
     }
 }

@@ -66,8 +66,8 @@ public class bigDB implements GlobalConst {
      * Create a database with the specified number of pages where the page
      * size is the default page size.
      *
-     * @param name      DB name
-     * @param num_pages number of pages in DB
+     * @param fname      DB name
+     * @param num_pgs number of pages in DB
      * @throws IOException                I/O errors
      * @throws InvalidPageNumberException invalid page number
      * @throws FileIOException            file I/O error
@@ -90,7 +90,7 @@ public class bigDB implements GlobalConst {
         fp = new RandomAccessFile(fname, "rw");
 
         // Make the file num_pages pages long, filled with zeroes.
-        fp.seek(num_pages * MINIBASE_PAGESIZE - 1);
+        fp.seek((long) num_pages * MINIBASE_PAGESIZE - 1);
         fp.writeByte(0);
 
         // Initialize space map and directory pages.
@@ -155,7 +155,7 @@ public class bigDB implements GlobalConst {
             throw new InvalidPageNumberException(null, "BAD_PAGE_NUMBER");
 
         // Seek to the correct page
-        fp.seek(pageno.pid * MINIBASE_PAGESIZE);
+        fp.seek((long) pageno.pid * MINIBASE_PAGESIZE);
 
         // Read the appropriate number of bytes.
         byte[] buffer = apage.getpage();  //new byte[MINIBASE_PAGESIZE];
@@ -186,7 +186,7 @@ public class bigDB implements GlobalConst {
             throw new InvalidPageNumberException(null, "INVALID_PAGE_NUMBER");
 
         // Seek to the correct page
-        fp.seek(pageno.pid * MINIBASE_PAGESIZE);
+        fp.seek((long)pageno.pid * MINIBASE_PAGESIZE);
 
         // Write the appropriate number of bytes.
         try {
@@ -225,7 +225,7 @@ public class bigDB implements GlobalConst {
      * user specified run_size
      *
      * @param start_page_num the starting page id of the run of pages
-     * @param run_size       the number of page need allocated
+     * @param runsize       the number of page need allocated
      * @throws OutOfSpaceException        No space left
      * @throws InvalidRunSizeException    invalid run size
      * @throws InvalidPageNumberException invalid page number
@@ -454,6 +454,7 @@ public class bigDB implements GlobalConst {
             hpid.pid = nexthpid.pid;
 
             pinPage(hpid, apage, true/*no diskIO*/);
+            apage.emptyPage();
             dp = new DBDirectoryPage(apage);
 
             free_slot = 0;
@@ -791,7 +792,7 @@ public class bigDB implements GlobalConst {
     /**
      * short cut to access the pinPage function in bufmgr package.
      *
-     * @see bufmgr.pinPage
+     * @see bufmgr
      */
     private void pinPage(PageId pageno, Page page, boolean emptyPage)
             throws DiskMgrException {
@@ -807,7 +808,7 @@ public class bigDB implements GlobalConst {
     /**
      * short cut to access the unpinPage function in bufmgr package.
      *
-     * @see bufmgr.unpinPage
+     * @see bufmgr
      */
     private void unpinPage(PageId pageno, boolean dirty)
             throws DiskMgrException {
@@ -923,7 +924,7 @@ class DBHeaderPage implements PageUsedBytes, GlobalConst {
      * initialize file entries as empty
      *
      * @param empty   invalid page number (=-1)
-     * @param entryno file entry number
+     * @param entryNo file entry number
      * @throws IOException I/O errors
      */
     private void initFileEntry(int empty, int entryNo)
@@ -935,9 +936,9 @@ class DBHeaderPage implements PageUsedBytes, GlobalConst {
     /**
      * set file entry
      *
-     * @param pageno  page ID
+     * @param pageNo  page ID
      * @param fname   the file name
-     * @param entryno file entry number
+     * @param entryNo file entry number
      * @throws IOException I/O errors
      */
     public void setFileEntry(PageId pageNo, String fname, int entryNo)
@@ -951,7 +952,7 @@ class DBHeaderPage implements PageUsedBytes, GlobalConst {
     /**
      * return file entry info
      *
-     * @param pageno  page Id
+     * @param pageNo  page Id
      * @param entryNo the file entry number
      * @return file name
      * @throws IOException I/O errors

@@ -15,7 +15,7 @@ public class MapSort extends MapIterator implements GlobalConst {
 
     private int[] n_Maps;
     private int n_runs;
-    private static final int ARBIT_RUNS = 10;
+    private static final int ARBIT_RUNS = 30;
     private short mapSize;
     private short[] str_fld_lens = null;
     private int num_cols = 4;
@@ -49,9 +49,8 @@ public class MapSort extends MapIterator implements GlobalConst {
      * @param n_pages     amount of memory (attrTypes pages) available for sorting
      * @throws SortException something went wrong attrTypes the lower layer.
      */
-    public MapSort(AttrType[] attrTypes, short[] field_sizes, MapIterator am, int sort_fld, TupleOrder sort_order, int n_pages, int sortFieldLength) throws SortException {
-
-
+    public MapSort(AttrType[] attrTypes, short[] field_sizes, MapIterator am, int sort_fld, TupleOrder sort_order, int n_pages, int sortFieldLength, boolean mapInsertOrder) throws SortException {
+        MiniTable.mapInsertOrder = mapInsertOrder;
         int str_att_count = 0; // number of string field in maps
         for (int i = 0; i < num_cols; i++) {
             mapAttributes[i] = new AttrType(attrTypes[i].attrType);
@@ -261,7 +260,12 @@ public class MapSort extends MapIterator implements GlobalConst {
 
             // comp_res = TupleUtils.CompareTupleWithValue(sortFldType, cur_node.tuple, _sort_fld, lastElem);  // need tuple_utils.java
             // comp_res = MapUtils.CompareMapWithValue(cur_node.map, _sort_fld, lastElem);
-            comp_res = MapUtils.CompareMapsOnOrderType(cur_node.map, lastElem);
+            if (MiniTable.mapInsertOrder) {
+                comp_res = MapUtils.CompareMapsOnInsertType(cur_node.map, lastElem);
+            } else {
+                comp_res = MapUtils.CompareMapsOnOrderType(cur_node.map, lastElem);
+            }
+
 
             if ((comp_res < 0 && sortOrder.tupleOrder == TupleOrder.Ascending) || (comp_res > 0 && sortOrder.tupleOrder == TupleOrder.Descending)) {
                 // doesn't fit in current run, put into the other queue
@@ -466,8 +470,8 @@ public class MapSort extends MapIterator implements GlobalConst {
      * from each run into a heap. <code>delete_min() </code> will then get
      * the minimum of all runs.
      *
-     * @param mapSize size (in bytes) of each tuple
-     * @param n_R_runs   number of runs
+     * @param mapSize  size (in bytes) of each tuple
+     * @param n_R_runs number of runs
      * @throws IOException     from lower layers
      * @throws LowMemException there is not enough memory to
      *                         sort in two passes (a subclass of SortException).

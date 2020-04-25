@@ -61,6 +61,7 @@ public class MapUtils {
         }
     }
 
+
     public static int CompareMapWithValue(Map m1, int fieldNo, String value)
             throws IOException,
             UnknowAttrType,
@@ -99,6 +100,9 @@ public class MapUtils {
         return mid;
     }
 
+    public static boolean checkSameMap(Map map1, Map map2) throws IOException {
+        return map1.getRowLabel().equals(map2.getRowLabel()) && map1.getColumnLabel().equals(map2.getColumnLabel());
+    }
 
     public static short[] setup_op_tuple(Map Jmap, AttrType[] res_attrs,
                                          AttrType[] in1, int len_in1,
@@ -145,10 +149,11 @@ public class MapUtils {
         return res_str_sizes;
     }
 
-    
+
     public static int CompareMapsOnOrderType(Map mapObj1, Map mapObj2) throws IOException {
         int mapRowCompare = mapObj1.getRowLabel().compareTo(mapObj2.getRowLabel());
         int mapColumnCompare = mapObj1.getColumnLabel().compareTo(mapObj2.getColumnLabel());
+        int mapValueCompare = mapObj1.getValue().compareTo(mapObj2.getValue());
         boolean mapTsCompare = (mapObj1.getTimeStamp() >= mapObj2.getTimeStamp());
 
         if (MiniTable.orderType == 2) {
@@ -175,6 +180,10 @@ public class MapUtils {
         } else if (MiniTable.orderType == 5) {
             if (mapTsCompare) return 1;
             else return -1;
+        } else if (MiniTable.orderType == 9) {
+            if (mapValueCompare > 0) {
+                return 1;
+            } else return -1;
         }
         if (mapRowCompare > 0) return 1;
         else if (mapRowCompare < 0) return -1;
@@ -183,6 +192,29 @@ public class MapUtils {
         else {
             if (mapTsCompare) return 1;
             else return -1;
+        }
+    }
+
+    public static int CompareMapsOnInsertType(Map mapObj1, Map mapObj2) throws Exception {
+        int mapRowCompare = mapObj1.getRowLabel().compareTo(mapObj2.getRowLabel());
+        int mapColumnCompare = mapObj1.getColumnLabel().compareTo(mapObj2.getColumnLabel());
+        int mapValueCompare = mapObj1.getValue().compareTo(mapObj2.getValue());
+    
+        switch (MiniTable.insertType) {
+            case 1:
+                return mapRowCompare;
+            case 2:
+                return mapColumnCompare;
+            case 3:
+                if (mapColumnCompare > 0) return 1;
+                else if (mapColumnCompare < 0) return -1;
+                return mapRowCompare;
+            case 4:
+                if (mapRowCompare > 0) return 1;
+                else if (mapRowCompare < 0) return -1;
+                return mapValueCompare;
+            default:
+                throw new Exception("Invalid value");
         }
     }
 }

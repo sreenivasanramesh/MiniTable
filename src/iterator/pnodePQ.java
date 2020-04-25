@@ -1,6 +1,7 @@
 
 package iterator;
 
+import cmdline.MiniTable;
 import global.AttrType;
 import global.TupleOrder;
 
@@ -68,7 +69,7 @@ public abstract class pnodePQ {
      * @throws TupleUtilsException error in tuple compare routines
      */
     abstract public void enq(pnode item)
-            throws IOException, UnknowAttrType, TupleUtilsException, InvalidFieldNo;
+            throws Exception;
 
     /**
      * removes the minimum (Ascending) or maximum (Descending) element
@@ -93,13 +94,17 @@ public abstract class pnodePQ {
      * @throws TupleUtilsException error in tuple compare routines
      */
     public int pnodeCMP(pnode a, pnode b)
-            throws IOException, UnknowAttrType, TupleUtilsException, InvalidFieldNo {
+            throws Exception {
         if (b.map == null) {
             System.out.println("b = " + b);
         }
         if (a.map != null ) {
+            if (MiniTable.mapInsertOrder) {
+                return MapUtils.CompareMapsOnInsertType(a.map, b.map);
+            } else {
+                return MapUtils.CompareMapsOnOrderType(a.map, b.map);
+            }
 
-            return MapUtils.CompareMapsOnOrderType(a.map, b.map);
 //            int ans = MapUtils.CompareMapWithMap(a.map, b.map, fld_no);
 
 
@@ -121,7 +126,7 @@ public abstract class pnodePQ {
      *                             <code>attrNull</code> encountered
      * @throws TupleUtilsException error in tuple compare routines
      */
-    public boolean pnodeEQ(pnode a, pnode b) throws IOException, UnknowAttrType, TupleUtilsException, InvalidFieldNo {
+    public boolean pnodeEQ(pnode a, pnode b) throws Exception {
         return pnodeCMP(a, b) == 0;
     }
 

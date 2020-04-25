@@ -68,12 +68,13 @@ public class SystemDefs {
         JavabaseLogName = logname;
         MINIBASE_DBNAME = JavabaseDBName;
 
-        // create or open the DB
+//        // create or open the DB
+    
         File file = new File(dbname);
-        if (file.exists()) {
+        if(file.exists()){
             MINIBASE_RESTART_FLAG = true;
         }
-
+        
         if ((MINIBASE_RESTART_FLAG) || (num_pgs == 0)) {//open an existing database
             try {
                 JavabaseDB.openDB(dbname);

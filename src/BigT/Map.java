@@ -80,6 +80,7 @@ public class Map implements GlobalConst {
         this.fieldCount = 4;
     }
 
+
     public byte[] getData() {
         return data;
     }
@@ -203,19 +204,37 @@ public class Map implements GlobalConst {
         System.arraycopy(fromMap, offset, this.data, 0, this.mapLength);
         this.mapOffset = 0;
     }
-
+    
     private void setFieldOffsetFromData() throws IOException {
         int position = this.mapOffset + 2;
         this.fieldOffset = new short[NUM_FIELDS + 1];
-
-        for (int i=0; i <= NUM_FIELDS; i++){
+        
+        for (int i = 0; i <= NUM_FIELDS; i++) {
             this.fieldOffset[i] = Convert.getShortValue(position, this.data);
             position += 2;
         }
     }
     
+    @Override
+    public String toString() {
+        String rowLabel = null;
+        String columnLabel = null;
+        String value = null;
+        int timestamp = 0;
+        try {
+            rowLabel = getRowLabel();
+            columnLabel = getColumnLabel();
+            timestamp = getTimeStamp();
+            value = getValue();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        String s = new String("{RowLabel:" + rowLabel + ", ColumnLabel:" + columnLabel + ", TimeStamp:" + timestamp + ", Value:" + value + "}");
+        return s;
+    }
+    
     public void setHeader(AttrType[] types, short[] stringSizes) throws InvalidMapSizeException, IOException, InvalidTypeException, InvalidStringSizeArrayException {
-
+        
         if (stringSizes.length != 3) {
             throw new InvalidStringSizeArrayException(null, "String sizes array must exactly be 3");
         }
@@ -293,6 +312,35 @@ public class Map implements GlobalConst {
 
     }
 
+    public int getIntFld(int fldNo) throws IOException, FieldNumberOutOfBoundException {
+        int val;
+        if ((fldNo > 0) && (fldNo <= fieldCount)) {
+            val = Convert.getIntValue(fieldOffset[fldNo - 1], data);
+            return val;
+        } else
+            throw new FieldNumberOutOfBoundException(null, "Map:Map_FLDNO_OUT_OF_BOUND");
+    }
+
+    public float getFloFld(int fldNo)
+            throws IOException, FieldNumberOutOfBoundException {
+        float val;
+        if ((fldNo > 0) && (fldNo <= fieldCount)) {
+            val = Convert.getFloValue(fieldOffset[fldNo - 1], data);
+            return val;
+        } else
+            throw new FieldNumberOutOfBoundException(null, "Map:Map_FLDNO_OUT_OF_BOUND");
+    }
+
+    public String getStrFld(int fldNo)
+            throws IOException, FieldNumberOutOfBoundException {
+        String val;
+        if ((fldNo > 0) && (fldNo <= fieldCount)) {
+            val = Convert.getStrValue(fieldOffset[fldNo - 1], data,
+                    fieldOffset[fldNo] - fieldOffset[fldNo - 1]); //strlen+2
+            return val;
+        } else
+            throw new FieldNumberOutOfBoundException(null, "Map:Map_FLDNO_OUT_OF_BOUND");
+    }
 //    public String getStringField(short fieldNumber) throws IOException, FieldNumberOutOfBoundException {
 //        if (fieldNumber == 3) {
 //            throw new FieldNumberOutOfBoundException(null, "MAP: INVALID_FIELD PASSED");
