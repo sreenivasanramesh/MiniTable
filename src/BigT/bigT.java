@@ -73,6 +73,7 @@ public class bigT {
         
         
         MapScan mapScan = heapfile.openMapScan();
+        int heapfileCount = heapfile.getRecCnt();
         MID mid = new MID();
         Map map = mapScan.getNext(mid);
         int count = 1;
@@ -81,7 +82,7 @@ public class bigT {
             int oldestType = -1;
             int updateType = -1;
             MID updateMID = null;
-            System.out.print("\r" + count);
+            System.out.print("\r" + count + " / " + heapfileCount);
             count += 1;
             java.util.Map<Integer, ArrayList<MID>> searchResults = searchForRecords(map);
             ArrayList<MID> arrayList = new ArrayList<>();
@@ -123,6 +124,7 @@ public class bigT {
             this.heapfiles[type].insertMap(map.getMapByteArray());
             map = mapScan.getNext(mid);
         }
+        System.out.println("");
         deletedTypes.add(type);
         for (int i : deletedTypes) {
             if (i != 0) {

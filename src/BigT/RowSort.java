@@ -90,7 +90,7 @@ public class RowSort {
 
         try {
             MiniTable.orderType = 9;
-            this.sortObj = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, 4, new TupleOrder(TupleOrder.Ascending), 20, MiniTable.BIGT_STR_SIZES[1], false);
+            this.sortObj = new MapSort(MiniTable.BIGT_ATTR_TYPES, MiniTable.BIGT_STR_SIZES, fscan, 4, new TupleOrder(TupleOrder.Ascending), 100, MiniTable.BIGT_STR_SIZES[1], false);
         } catch (Exception e) {
             e.printStackTrace();
         }
